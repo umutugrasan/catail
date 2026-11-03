@@ -14,8 +14,8 @@ Tüm veriler yereldir, telemetri yoktur.
 | 0 | Yapıştırma denemesi (`spikes/paste-test`, `docs/paste-matrix.md`) | Tamam |
 | 1 | Tauri iskeleti, tray, bölge yakalama | Tamam |
 | 2 | Görsel kuyruğu, rozet, toplu/sıralı yapıştırma | Tamam |
-| 3 | Metin kuyruğu (MVP) | — |
-| 4 | Önizleme paneli, çizim araçları | — |
+| 3 | Metin kuyruğu: kuyruk modunda Ctrl+C ile kopyalanan metin kuyruğa eklenir; kuyruk modu kısayolu Alt+Q olur (MVP) | — |
+| 4 | Rozete tıklayınca yukarı açılan kuyruk paneli (sıralı önizleme, sürükleyerek yer değiştirme, ✕ ile silme), çizim araçları | — |
 | 5 | Ayarlar, kurulum, güncelleme (v1) | — |
 | 6 | macOS | — |
 | 7 | Dışa aktarma ve paylaşım (v2) | — |
