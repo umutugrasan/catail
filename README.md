@@ -18,6 +18,8 @@ Tüm veriler yereldir, telemetri yoktur.
 | 4 | Önizleme paneli, çizim araçları | — |
 | 5 | Ayarlar, kurulum, güncelleme (v1) | — |
 | 6 | macOS | — |
+| 7 | Dışa aktarma ve paylaşım (v2) | — |
+| 8 | Ekran görüntüsünden metin tanıma (OCR), metin seçme, çeviri | Planlandı |
 
 ## Geliştirme
 
