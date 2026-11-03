@@ -1,22 +1,15 @@
 //! System tray icon and menu.
 
-use tauri::menu::{CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem};
+use tauri::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager, Runtime, WebviewUrl, WebviewWindowBuilder};
 
 use crate::capture::region;
 use crate::i18n::t;
-use crate::queue;
 
 const MENU_CAPTURE: &str = "capture";
-const MENU_QUEUE: &str = "queue";
 const MENU_SETTINGS: &str = "settings";
 const MENU_QUIT: &str = "quit";
-
-/// Kept in managed state so the check mark can follow hotkey toggles.
-struct TrayMenu<R: Runtime> {
-    queue_mode: CheckMenuItem<R>,
-}
 
 pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     let capture = MenuItem::with_id(
@@ -26,18 +19,10 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         true,
         Some("PrintScreen"),
     )?;
-    let queue_mode = CheckMenuItem::with_id(
-        app,
-        MENU_QUEUE,
-        t("tray.queue_mode"),
-        true,
-        false,
-        Some("Ctrl+Shift+Q"),
-    )?;
     let settings = MenuItem::with_id(app, MENU_SETTINGS, t("tray.settings"), true, None::<&str>)?;
     let quit = MenuItem::with_id(app, MENU_QUIT, t("tray.quit"), true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&capture, &queue_mode, &settings, &separator, &quit])?;
+    let menu = Menu::with_items(app, &[&capture, &settings, &separator, &quit])?;
 
     TrayIconBuilder::with_id("main")
         .icon(
@@ -62,14 +47,7 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         })
         .build(app)?;
 
-    app.manage(TrayMenu { queue_mode });
     Ok(())
-}
-
-pub fn sync_queue_mode<R: Runtime>(app: &AppHandle<R>, on: bool) {
-    if let Some(menu) = app.try_state::<TrayMenu<R>>() {
-        let _ = menu.queue_mode.set_checked(on);
-    }
 }
 
 fn on_menu_event<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
@@ -77,9 +55,6 @@ fn on_menu_event<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
     match event.id.as_ref() {
         MENU_CAPTURE => {
             std::thread::spawn(move || region::start(&app));
-        }
-        MENU_QUEUE => {
-            std::thread::spawn(move || queue::toggle_mode(&app));
         }
         MENU_SETTINGS => {
             std::thread::spawn(move || open_settings(&app));

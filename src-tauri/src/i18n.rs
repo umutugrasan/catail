@@ -39,7 +39,6 @@ mod tests {
         "app.name",
         "tray.tooltip",
         "tray.capture",
-        "tray.queue_mode",
         "tray.settings",
         "tray.quit",
         "save.dialog_title",

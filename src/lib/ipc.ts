@@ -9,8 +9,8 @@ export interface OverlayInfo {
   index: number;
   width: number;
   height: number;
-  /** Confirming adds to the queue instead of copying. */
-  queueMode: boolean;
+  /** Items already queued; decides between "create queue" and "add to queue". */
+  queueCount: number;
 }
 
 export interface BadgeState {
@@ -30,8 +30,10 @@ export const overlaySession = () => invoke<OverlayInfo | null>("overlay_session"
 export const overlayReady = () => invoke<void>("overlay_ready");
 export const overlaySelectionStarted = () => invoke<void>("overlay_selection_started");
 export const overlayCancel = () => invoke<void>("overlay_cancel");
-/** Copies the selection, or adds it to the queue in queue mode. */
-export const captureCommit = (rect: ImageRect) => invoke<void>("capture_commit", { rect });
+export const captureCopy = (rect: ImageRect) => invoke<void>("capture_copy", { rect });
+/** Starts the queue with the selection, or appends to it. */
+export const captureEnqueue = (rect: ImageRect) => invoke<void>("capture_enqueue", { rect });
+export const queueClear = () => invoke<void>("queue_clear");
 export const captureSave = (rect: ImageRect) => invoke<void>("capture_save", { rect });
 export const badgeState = () => invoke<BadgeState>("badge_state");
 

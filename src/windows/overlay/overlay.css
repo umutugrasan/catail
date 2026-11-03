@@ -83,7 +83,6 @@ body,
   box-sizing: border-box;
   display: flex;
   gap: 4px;
-  width: 252px;
   height: 40px;
   padding: 4px;
   border: 1px solid var(--chrome-border);
@@ -100,6 +99,7 @@ body,
   color: var(--chrome-fg);
   font: inherit;
   font-size: 13px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -113,4 +113,9 @@ body,
 
 .overlay__toolbar button.primary:hover {
   background: #2563eb;
+}
+
+.overlay__toolbar button.danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fecaca;
 }

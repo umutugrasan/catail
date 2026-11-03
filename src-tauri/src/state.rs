@@ -5,13 +5,6 @@ use crate::capture::MonitorShot;
 use crate::queue::store::QueueStore;
 use crate::settings::Settings;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum Mode {
-    #[default]
-    Normal,
-    Queue,
-}
-
 /// Frozen screenshots of every monitor, taken when the region overlay opens.
 pub struct CaptureSession {
     pub id: u64,
@@ -19,7 +12,6 @@ pub struct CaptureSession {
 }
 
 pub struct AppState {
-    pub mode: Mutex<Mode>,
     pub queue: Mutex<QueueStore>,
     pub settings: Mutex<Settings>,
     /// True while the paste engine owns the clipboard and keyboard.
@@ -33,7 +25,6 @@ pub struct AppState {
 impl AppState {
     pub fn new(queue: QueueStore, settings: Settings) -> Self {
         Self {
-            mode: Mutex::new(Mode::default()),
             queue: Mutex::new(queue),
             settings: Mutex::new(settings),
             pasting: AtomicBool::new(false),
@@ -41,10 +32,6 @@ impl AppState {
             overlay_active: AtomicBool::new(false),
             last_session_id: AtomicU64::new(0),
         }
-    }
-
-    pub fn is_queue_mode(&self) -> bool {
-        *self.mode.lock().unwrap() == Mode::Queue
     }
 
     pub fn next_session_id(&self) -> u64 {

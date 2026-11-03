@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { t } from "../../lib/i18n";
 import {
-  captureCommit,
+  captureCopy,
+  captureEnqueue,
   captureSave,
   frameUrl,
   onWindowEvent,
@@ -11,6 +12,7 @@ import {
   overlaySelectionStarted,
   overlaySession,
   OverlayEvents,
+  queueClear,
   type OverlayInfo,
 } from "../../lib/ipc";
 import {
@@ -27,8 +29,14 @@ import {
 
 /** Selections smaller than this (CSS px) count as a stray click. */
 const MIN_SELECTION = 3;
-const TOOLBAR_SIZE = { width: 252, height: 40 };
+const TOOLBAR_HEIGHT = 40;
+const TOOLBAR_BUTTON_WIDTH = 112;
+const TOOLBAR_GAP = 4;
+/** Padding plus border on both sides. */
+const TOOLBAR_CHROME = 10;
 const SIZE_LABEL_HEIGHT = 22;
+
+type Action = "copy" | "save" | "enqueue";
 
 type Drag =
   | { kind: "none" }
@@ -69,15 +77,25 @@ export function Overlay() {
   }, [loadSession, resetSelection]);
 
   const finish = useCallback(
-    (action: "copy" | "save") => {
+    (action: Action) => {
       if (!info || !selection || busy.current) return;
       busy.current = true;
       const scale = info.width / window.innerWidth;
       const rect = toImageRect(selection, scale, info);
-      void (action === "copy" ? captureCommit(rect) : captureSave(rect));
+      const commands = { copy: captureCopy, save: captureSave, enqueue: captureEnqueue };
+      void commands[action](rect);
     },
     [info, selection],
   );
+
+  // Once a queue exists, adding to it becomes the main action (Enter).
+  const hasQueue = (info?.queueCount ?? 0) > 0;
+  const primary: Action = hasQueue ? "enqueue" : "copy";
+
+  const clearQueue = useCallback(async () => {
+    await queueClear();
+    setInfo((current) => current && { ...current, queueCount: 0 });
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -85,9 +103,12 @@ export function Overlay() {
       if (key === "escape") {
         e.preventDefault();
         void overlayCancel();
-      } else if ((e.ctrlKey && key === "c") || key === "enter") {
+      } else if (e.ctrlKey && key === "c") {
         e.preventDefault();
         finish("copy");
+      } else if (key === "enter") {
+        e.preventDefault();
+        finish(primary);
       } else if (e.ctrlKey && key === "s") {
         e.preventDefault();
         finish("save");
@@ -95,7 +116,7 @@ export function Overlay() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [finish]);
+  }, [finish, primary]);
 
   const pointFrom = (e: ReactPointerEvent) => clampPoint({ x: e.clientX, y: e.clientY }, viewSize());
 
@@ -139,7 +160,13 @@ export function Overlay() {
   const scale = info.width / window.innerWidth;
   const imageRect = selection && toImageRect(selection, scale, info);
   const settled = selection !== null && drag.kind === "none";
-  const toolbar = settled && toolbarPosition(selection, TOOLBAR_SIZE, viewSize());
+  const buttonCount = hasQueue ? 5 : 4;
+  const toolbarSize = {
+    width: buttonCount * TOOLBAR_BUTTON_WIDTH + (buttonCount - 1) * TOOLBAR_GAP + TOOLBAR_CHROME,
+    height: TOOLBAR_HEIGHT,
+  };
+  const toolbar = settled && toolbarPosition(selection, toolbarSize, viewSize());
+  const primaryClass = (action: Action) => (action === primary ? "primary" : undefined);
   const label = selection && sizeLabelPosition(selection, SIZE_LABEL_HEIGHT);
 
   return (
@@ -184,20 +211,42 @@ export function Overlay() {
       {toolbar && (
         <div
           className="overlay__toolbar"
-          style={{ left: toolbar.x, top: toolbar.y }}
+          style={{ left: toolbar.x, top: toolbar.y, width: toolbarSize.width }}
           onPointerDown={(e) => e.stopPropagation()}
         >
           <button
             type="button"
-            className="primary"
-            title={t(info.queueMode ? "overlay.add_to_queue_title" : "overlay.copy_title")}
+            className={primaryClass("copy")}
+            title={t(hasQueue ? "overlay.copy_title_queue" : "overlay.copy_title")}
             onClick={() => finish("copy")}
           >
-            {t(info.queueMode ? "overlay.add_to_queue" : "overlay.copy")}
+            {t("overlay.copy")}
           </button>
           <button type="button" title={t("overlay.save_title")} onClick={() => finish("save")}>
             {t("overlay.save")}
           </button>
+          <button
+            type="button"
+            className={primaryClass("enqueue")}
+            title={
+              hasQueue
+                ? t("overlay.add_to_queue_title", { count: info.queueCount })
+                : t("overlay.create_queue_title")
+            }
+            onClick={() => finish("enqueue")}
+          >
+            {t(hasQueue ? "overlay.add_to_queue" : "overlay.create_queue")}
+          </button>
+          {hasQueue && (
+            <button
+              type="button"
+              className="danger"
+              title={t("overlay.clear_queue_title", { count: info.queueCount })}
+              onClick={() => void clearQueue()}
+            >
+              {t("overlay.clear_queue")}
+            </button>
+          )}
           <button type="button" title={t("overlay.cancel_title")} onClick={() => void overlayCancel()}>
             {t("overlay.cancel")}
           </button>

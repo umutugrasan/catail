@@ -1,4 +1,5 @@
-//! "Kuyruk: N" badge in the bottom-right corner of the primary monitor.
+//! "Kuyruk: N" badge in the bottom-right corner of the primary monitor, shown while the
+//! queue has items.
 //! Always on top, never focused, and click-through so it can't get in the way.
 
 use std::sync::atomic::Ordering;
@@ -42,7 +43,8 @@ pub fn current<R: Runtime>(app: &AppHandle<R>) -> BadgeState {
 
 fn should_show<R: Runtime>(app: &AppHandle<R>) -> bool {
     let state = app.state::<AppState>();
-    state.is_queue_mode() && !state.overlay_active.load(Ordering::SeqCst)
+    let has_items = state.queue.lock().unwrap().len() > 0;
+    has_items && !state.overlay_active.load(Ordering::SeqCst)
 }
 
 /// Pushes the current count to the badge and shows or hides it. Safe on any thread.

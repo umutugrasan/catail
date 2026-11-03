@@ -1,12 +1,10 @@
-//! Full-screen capture of the monitor under the cursor: to the queue in queue mode,
-//! otherwise straight to the clipboard.
+//! Full-screen capture of the monitor under the cursor, straight to the clipboard.
 
 use anyhow::{Context, Result};
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Runtime};
 
 use crate::i18n::{t, t_with};
-use crate::state::AppState;
-use crate::{badge, clipboard, notify, queue};
+use crate::{badge, clipboard, notify};
 
 /// Hotkey entry point. Runs on a worker thread.
 pub fn capture<R: Runtime>(app: &AppHandle<R>) {
@@ -24,9 +22,5 @@ fn capture_monitor<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
         .context("no monitor under cursor")?;
     badge::hide_for_capture(app);
     let image = monitor.capture_image().context("monitor capture")?;
-    if app.state::<AppState>().is_queue_mode() {
-        queue::add_image(app, &image)
-    } else {
-        clipboard::write_image(&image)
-    }
+    clipboard::write_image(&image)
 }

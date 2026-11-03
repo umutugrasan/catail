@@ -21,8 +21,8 @@ pub struct OverlayInfo {
     /// Frame size in physical pixels.
     width: u32,
     height: u32,
-    /// Confirming adds to the queue instead of copying.
-    queue_mode: bool,
+    /// Items already queued; decides between "create queue" and "add to queue".
+    queue_count: usize,
 }
 
 #[tauri::command]
@@ -36,7 +36,7 @@ pub fn overlay_session(window: WebviewWindow, state: State<'_, AppState>) -> Opt
         index,
         width: shot.image.width(),
         height: shot.image.height(),
-        queue_mode: state.is_queue_mode(),
+        queue_count: state.queue.lock().unwrap().len(),
     })
 }
 
@@ -55,24 +55,37 @@ pub fn overlay_cancel(app: AppHandle) {
     overlay::close_all(&app);
 }
 
-/// Copy (normal mode) or add to the queue (queue mode).
 #[tauri::command]
-pub async fn capture_commit(
+pub async fn capture_copy(
     app: AppHandle,
     window: WebviewWindow,
     rect: SelectionRect,
 ) -> Result<(), String> {
     let image = take_selection(&app, &window, rect)?;
-    let (result, error_key) = if app.state::<AppState>().is_queue_mode() {
-        (queue::add_image(&app, &image), "notify.queue_add_failed")
-    } else {
-        (clipboard::write_image(&image), "notify.copy_failed")
-    };
-    result.map_err(|e| {
-        let msg = t_with(error_key, &[("error", &format!("{e:#}"))]);
-        notify::show(&app, &t("app.name"), &msg);
-        msg
-    })
+    clipboard::write_image(&image).map_err(|e| report(&app, "notify.copy_failed", e))
+}
+
+/// Starts the queue with this selection, or appends to the existing one.
+#[tauri::command]
+pub async fn capture_enqueue(
+    app: AppHandle,
+    window: WebviewWindow,
+    rect: SelectionRect,
+) -> Result<(), String> {
+    let image = take_selection(&app, &window, rect)?;
+    queue::add_image(&app, &image).map_err(|e| report(&app, "notify.queue_add_failed", e))
+}
+
+/// Clears the queue from the overlay toolbar; the overlay stays open.
+#[tauri::command]
+pub fn queue_clear(app: AppHandle) {
+    queue::clear(&app);
+}
+
+fn report(app: &AppHandle, key: &str, error: anyhow::Error) -> String {
+    let msg = t_with(key, &[("error", &format!("{error:#}"))]);
+    notify::show(app, &t("app.name"), &msg);
+    msg
 }
 
 #[tauri::command]

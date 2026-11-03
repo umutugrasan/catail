@@ -5,7 +5,6 @@
   "tray": {
     "tooltip": "ClipQueue — PrintScreen ile ekran görüntüsü al",
     "capture": "Ekran görüntüsü al",
-    "queue_mode": "Kuyruk modu",
     "settings": "Ayarlar",
     "quit": "Çıkış"
   },
@@ -18,7 +17,12 @@
     "save_title": "PNG olarak kaydet (Ctrl+S)",
     "cancel_title": "İptal (Esc)",
     "add_to_queue": "Kuyruğa ekle",
-    "add_to_queue_title": "Kuyruğa ekle (Ctrl+C / Enter)"
+    "add_to_queue_title": "Kuyruğa ekle — kuyrukta {count} öğe var (Enter)",
+    "copy_title_queue": "Panoya kopyala (Ctrl+C)",
+    "create_queue": "Kuyruk oluştur",
+    "create_queue_title": "Bu seçimle yeni bir kuyruk başlat. Kuyruktakiler Ctrl+Shift+Alt+V ile sırayla yapıştırılır.",
+    "clear_queue": "Kuyruğu temizle",
+    "clear_queue_title": "Kuyruktaki {count} öğeyi sil"
   },
   "save": {
     "dialog_title": "Ekran görüntüsünü kaydet",
@@ -34,7 +38,7 @@
     "copy_failed": "Görsel panoya kopyalanamadı: {error}",
     "save_failed": "Görsel kaydedilemedi: {error}",
     "queue_add_failed": "Görsel kuyruğa eklenemedi: {error}",
-    "queue_empty": "Kuyruk boş. Kuyruk modunu Ctrl+Shift+Q ile açıp ekran görüntüsü alın.",
+    "queue_empty": "Kuyruk boş. PrintScreen ile alan seçip \"Kuyruk oluştur\"a basın.",
     "paste_cancelled": "Yapıştırma durduruldu: {done}/{total} öğe yapıştırıldı. Kuyruk korunuyor.",
     "paste_failed": "Yapıştırma başarısız: {error}",
     "release_keys": "Kısayol tuşları bırakılmadı, yapıştırma iptal edildi."
@@ -44,18 +48,17 @@
     "shortcuts": "Kısayollar",
     "shortcut_region": "Bölge seçerek yakala",
     "shortcut_fullscreen": "Tam ekran yakala (imlecin olduğu ekran)",
-    "shortcut_queue_mode": "Kuyruk modunu aç/kapat",
     "shortcut_paste": "Kuyruğu yapıştır",
     "shortcut_clear": "Kuyruğu temizle",
     "shortcut_undo": "Kuyruktaki son öğeyi geri al",
     "overlay_keys": "Seçim ekranında",
-    "overlay_copy": "Kopyala (kuyruk modunda: kuyruğa ekle)",
+    "overlay_copy": "Kopyala (kuyruk varken Enter: kuyruğa ekle)",
     "overlay_save": "Kaydet",
     "overlay_cancel": "İptal",
     "printscreen_note": "PrintScreen basınca Windows Ekran Alıntısı Aracı açılıyorsa: Ayarlar → Erişilebilirlik → Klavye → \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın ve ClipQueue'yu yeniden başlatın (tepsi → Çıkış, sonra tekrar açın).",
     "coming_soon": "Kısayolları ve diğer ayarları değiştirme sonraki sürümde eklenecek.",
     "version": "Sürüm {version}",
-    "queue_note": "Kuyruk modunda alınan her ekran görüntüsü sıraya eklenir. Hedef uygulamaya geçip Ctrl+Shift+Alt+V'ye basınca hepsi sırasıyla yapıştırılır ve önceki pano içeriği geri yüklenir."
+    "queue_note": "Kuyruk: Seçim ekranında \"Kuyruk oluştur\"a basınca kuyruk başlar ve sağ altta \"Kuyruk: N\" görünür. Sonraki seçimlerde \"Kuyruğa ekle\" ile devam edin. Hedef uygulamaya geçip Ctrl+Shift+Alt+V'ye basınca hepsi sırasıyla yapıştırılır ve önceki pano içeriği geri yüklenir."
   },
   "badge": {
     "count": "Kuyruk: {count}",

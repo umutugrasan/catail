@@ -48,7 +48,9 @@ fn main() {
             commands::overlay_ready,
             commands::overlay_selection_started,
             commands::overlay_cancel,
-            commands::capture_commit,
+            commands::capture_copy,
+            commands::capture_enqueue,
+            commands::queue_clear,
             commands::capture_save,
             commands::badge_state,
         ])

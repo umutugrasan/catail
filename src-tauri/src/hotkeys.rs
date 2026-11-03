@@ -13,7 +13,6 @@ use crate::{notify, paste, queue};
 enum Action {
     CaptureRegion,
     CaptureFullScreen,
-    ToggleQueueMode,
     PasteQueue,
     ClearQueue,
     UndoLast,
@@ -21,7 +20,7 @@ enum Action {
 
 /// Default bindings. Never plain Ctrl+Alt (AltGr on Turkish keyboards) or Ctrl+Shift+V
 /// (paste-as-plain-text in many apps).
-fn bindings() -> [(Shortcut, &'static str, Action); 6] {
+fn bindings() -> [(Shortcut, &'static str, Action); 5] {
     let csa = Modifiers::CONTROL | Modifiers::SHIFT | Modifiers::ALT;
     [
         (
@@ -33,11 +32,6 @@ fn bindings() -> [(Shortcut, &'static str, Action); 6] {
             Shortcut::new(Some(Modifiers::SHIFT), Code::PrintScreen),
             "Shift+PrintScreen",
             Action::CaptureFullScreen,
-        ),
-        (
-            Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyQ),
-            "Ctrl+Shift+Q",
-            Action::ToggleQueueMode,
         ),
         (
             Shortcut::new(Some(csa), Code::KeyV),
@@ -71,7 +65,6 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
     std::thread::spawn(move || match action {
         Action::CaptureRegion => region::start(&app),
         Action::CaptureFullScreen => fullscreen::capture(&app),
-        Action::ToggleQueueMode => queue::toggle_mode(&app),
         Action::PasteQueue => paste::run(&app),
         Action::ClearQueue => queue::clear(&app),
         Action::UndoLast => queue::undo_last(&app),
