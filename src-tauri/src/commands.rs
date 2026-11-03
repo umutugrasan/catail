@@ -10,8 +10,9 @@ use tauri_plugin_dialog::DialogExt;
 use crate::badge::{self, BadgeState};
 use crate::capture::region::{self, SelectionRect};
 use crate::i18n::{t, t_with};
+use crate::panel::{self, ItemView};
 use crate::state::AppState;
-use crate::{clipboard, notify, overlay, queue};
+use crate::{clipboard, notify, overlay, paste, queue};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -57,25 +58,75 @@ pub fn overlay_cancel(app: AppHandle) {
     overlay::close_all(&app);
 }
 
-#[tauri::command]
-pub async fn capture_copy(
-    app: AppHandle,
-    window: WebviewWindow,
-    rect: SelectionRect,
-) -> Result<(), String> {
-    let image = take_selection(&app, &window, rect)?;
-    clipboard::write_image(&image).map_err(|e| report(&app, "notify.copy_failed", e))
+/// What to do with a finished capture.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Delivery {
+    Copy,
+    /// Starts the queue, or appends to the existing one.
+    Enqueue,
+    Save,
 }
 
-/// Starts the queue with this selection, or appends to the existing one.
+impl Delivery {
+    fn parse(value: &str) -> Option<Self> {
+        match value {
+            "copy" => Some(Self::Copy),
+            "enqueue" => Some(Self::Enqueue),
+            "save" => Some(Self::Save),
+            _ => None,
+        }
+    }
+}
+
+/// Selection without drawings: cropped from the frozen frame in Rust, pixel for pixel.
 #[tauri::command]
-pub async fn capture_enqueue(
+pub async fn capture_deliver(
     app: AppHandle,
     window: WebviewWindow,
     rect: SelectionRect,
+    action: Delivery,
 ) -> Result<(), String> {
     let image = take_selection(&app, &window, rect)?;
-    queue::add_image(&app, &image).map_err(|e| report(&app, "notify.queue_add_failed", e))
+    deliver(&app, image, action)
+}
+
+/// Selection with drawings: the overlay composes it at full resolution and sends the PNG as
+/// the raw request body, with the action in the `x-action` header.
+#[tauri::command]
+pub async fn capture_deliver_annotated(
+    app: AppHandle,
+    request: tauri::ipc::Request<'_>,
+) -> Result<(), String> {
+    let tauri::ipc::InvokeBody::Raw(png) = request.body() else {
+        return Err("expected a raw PNG body".into());
+    };
+    let action = request
+        .headers()
+        .get("x-action")
+        .and_then(|v| v.to_str().ok())
+        .and_then(Delivery::parse)
+        .ok_or("missing or unknown x-action header")?;
+    overlay::close_all(&app);
+    let image = image::load_from_memory(png)
+        .map_err(|e| format!("cannot decode annotated capture: {e}"))?
+        .to_rgba8();
+    deliver(&app, image, action)
+}
+
+fn deliver(app: &AppHandle, image: image::RgbaImage, action: Delivery) -> Result<(), String> {
+    match action {
+        Delivery::Copy => {
+            clipboard::write_image(&image).map_err(|e| report(app, "notify.copy_failed", e))
+        }
+        Delivery::Enqueue => {
+            queue::add_image(app, &image).map_err(|e| report(app, "notify.queue_add_failed", e))
+        }
+        Delivery::Save => {
+            save_with_dialog(app, image);
+            Ok(())
+        }
+    }
 }
 
 /// Overlay top bar. Turning text mode on closes the overlay so the user can start copying;
@@ -86,6 +137,39 @@ pub fn text_mode_set(app: AppHandle, enabled: bool) {
         overlay::close_all(&app);
     }
     queue::set_text_mode(&app, enabled);
+}
+
+/// Badge click. Async: the panel window may be created here.
+#[tauri::command]
+pub async fn panel_toggle(app: AppHandle) {
+    panel::toggle(&app);
+}
+
+#[tauri::command]
+pub fn panel_close(app: AppHandle) {
+    panel::hide(&app);
+}
+
+/// Panel "Yapıştır". The panel never takes focus, so the target app is still in front.
+#[tauri::command]
+pub async fn panel_paste(app: AppHandle) {
+    panel::hide(&app);
+    paste::run(&app);
+}
+
+#[tauri::command]
+pub fn queue_items(app: AppHandle) -> Vec<ItemView> {
+    panel::items(&app)
+}
+
+#[tauri::command]
+pub fn queue_remove(app: AppHandle, id: uuid::Uuid) {
+    queue::remove(&app, id);
+}
+
+#[tauri::command]
+pub fn queue_reorder(app: AppHandle, ids: Vec<uuid::Uuid>) {
+    queue::reorder(&app, &ids);
 }
 
 /// Clears the queue from the overlay toolbar; the overlay stays open.
@@ -105,15 +189,8 @@ pub fn badge_state(app: AppHandle) -> BadgeState {
     badge::current(&app)
 }
 
-#[tauri::command]
-pub async fn capture_save(
-    app: AppHandle,
-    window: WebviewWindow,
-    rect: SelectionRect,
-) -> Result<(), String> {
-    // The overlays close first so the always-on-top windows don't cover the dialog.
-    let image = take_selection(&app, &window, rect)?;
-
+/// The overlays are already closed, so the always-on-top windows don't cover the dialog.
+fn save_with_dialog(app: &AppHandle, image: image::RgbaImage) {
     let mut dialog = app
         .dialog()
         .file()
@@ -137,7 +214,6 @@ pub async fn capture_save(
             notify::show(&app_for_result, &t("app.name"), &msg);
         }
     });
-    Ok(())
 }
 
 /// Crops the selection, then closes the overlays (which frees the frozen frames).
@@ -178,6 +254,14 @@ mod tests {
     fn file_name_has_timestamp() {
         let now = Local.with_ymd_and_hms(2026, 11, 3, 9, 5, 7).unwrap();
         assert_eq!(default_file_name(now), "ClipQueue_2026-11-03_09-05-07.png");
+    }
+
+    #[test]
+    fn delivery_actions_parse() {
+        assert_eq!(Delivery::parse("copy"), Some(Delivery::Copy));
+        assert_eq!(Delivery::parse("enqueue"), Some(Delivery::Enqueue));
+        assert_eq!(Delivery::parse("save"), Some(Delivery::Save));
+        assert_eq!(Delivery::parse("print"), None);
     }
 
     #[test]

@@ -15,6 +15,14 @@ export interface OverlayInfo {
   textMode: boolean;
 }
 
+export interface QueueItemView {
+  id: string;
+  kind: "image" | "text";
+  /** Start of the text, for text items. */
+  preview: string | null;
+  sourceApp: string | null;
+}
+
 export interface BadgeState {
   count: number;
   textMode: boolean;
@@ -33,14 +41,28 @@ export const overlaySession = () => invoke<OverlayInfo | null>("overlay_session"
 export const overlayReady = () => invoke<void>("overlay_ready");
 export const overlaySelectionStarted = () => invoke<void>("overlay_selection_started");
 export const overlayCancel = () => invoke<void>("overlay_cancel");
-export const captureCopy = (rect: ImageRect) => invoke<void>("capture_copy", { rect });
-/** Starts the queue with the selection, or appends to it. */
-export const captureEnqueue = (rect: ImageRect) => invoke<void>("capture_enqueue", { rect });
+/** What to do with a capture: copy it, add it to the queue (starting one if needed), or save it. */
+export type Delivery = "copy" | "enqueue" | "save";
+
+/** Selection without drawings; Rust crops the frozen frame pixel for pixel. */
+export const captureDeliver = (rect: ImageRect, action: Delivery) =>
+  invoke<void>("capture_deliver", { rect, action });
+/** Selection with drawings, already composed into a PNG; sent as a raw body. */
+export const captureDeliverAnnotated = (png: Uint8Array, action: Delivery) =>
+  invoke<void>("capture_deliver_annotated", png, { headers: { "x-action": action } });
 export const queueClear = () => invoke<void>("queue_clear");
 /** Turning it on also closes the overlay. */
 export const textModeSet = (enabled: boolean) => invoke<void>("text_mode_set", { enabled });
-export const captureSave = (rect: ImageRect) => invoke<void>("capture_save", { rect });
 export const badgeState = () => invoke<BadgeState>("badge_state");
+
+export const panelToggle = () => invoke<void>("panel_toggle");
+export const panelClose = () => invoke<void>("panel_close");
+/** Pastes the queue into the app that was in front (the panel never takes focus). */
+export const panelPaste = () => invoke<void>("panel_paste");
+export const queueItems = () => invoke<QueueItemView[]>("queue_items");
+export const queueRemove = (id: string) => invoke<void>("queue_remove", { id });
+export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { ids });
+export const queueImageUrl = (id: string) => convertFileSrc(`${id}.png`, "queue");
 
 /** URL of the frozen frame served by the Rust `capture` protocol. */
 export const frameUrl = (info: OverlayInfo) =>
@@ -60,4 +82,8 @@ export const OverlayEvents = {
 
 export const BadgeEvents = {
   update: "badge:update",
+} as const;
+
+export const PanelEvents = {
+  update: "panel:update",
 } as const;

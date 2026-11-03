@@ -40,6 +40,7 @@ pub fn start<R: Runtime>(app: &AppHandle<R>) {
 }
 
 fn open_overlays<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<()> {
+    crate::panel::hide(app);
     crate::badge::hide_for_capture(app);
     let shots = crate::capture::capture_all_monitors()?;
     let bounds: Vec<_> = shots
@@ -99,7 +100,11 @@ pub fn serve<R: Runtime>(
         session.shots.get(index).map(|shot| shot.png.clone())
     });
 
-    let builder = Response::builder().header(header::CACHE_CONTROL, "no-store");
+    let builder = Response::builder()
+        .header(header::CACHE_CONTROL, "no-store")
+        // The overlay draws the frame into a canvas to export annotations; without CORS the
+        // canvas would be tainted and refuse to export.
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
     match png {
         Some(png) => builder
             .header(header::CONTENT_TYPE, "image/png")

@@ -4,6 +4,7 @@ import {
   containsPoint,
   moveRect,
   rectFromPoints,
+  sidebarPosition,
   sizeLabelPosition,
   toImageRect,
   toolbarPosition,
@@ -98,5 +99,23 @@ describe("sizeLabelPosition", () => {
   it("sits above, or inside at the top edge", () => {
     expect(sizeLabelPosition({ x: 5, y: 100, width: 1, height: 1 }, 20)).toEqual({ x: 5, y: 76 });
     expect(sizeLabelPosition({ x: 5, y: 0, width: 1, height: 1 }, 20)).toEqual({ x: 5, y: 4 });
+  });
+});
+
+describe("sidebarPosition", () => {
+  const bar = { width: 48, height: 400 };
+
+  it("sits right of the selection", () => {
+    expect(sidebarPosition({ x: 100, y: 200, width: 300, height: 200 }, bar, view)).toEqual({ x: 408, y: 200 });
+  });
+
+  it("moves left when the right side is full", () => {
+    const p = sidebarPosition({ x: 1300, y: 200, width: 400, height: 200 }, bar, view);
+    expect(p.x).toBe(1300 - 8 - 48);
+  });
+
+  it("goes inside for full-width selections and stays on screen vertically", () => {
+    const p = sidebarPosition({ x: 0, y: 900, width: 1707, height: 100 }, bar, view);
+    expect(p).toEqual({ x: 1707 - 48 - 8, y: 1067 - 400 - 8 });
   });
 });

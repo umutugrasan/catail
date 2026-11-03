@@ -74,6 +74,19 @@ export function toolbarPosition(sel: Rect, bar: Size, view: Size): Point {
   return { x, y: Math.max(sel.y + sel.height - bar.height - GAP, GAP) };
 }
 
+/**
+ * Places the vertical drawing palette to the right of the selection, or to its left when
+ * there's no room, or inside its right edge when neither side fits.
+ */
+export function sidebarPosition(sel: Rect, bar: Size, view: Size): Point {
+  const y = clamp(sel.y, GAP, view.height - bar.height - GAP);
+  const right = sel.x + sel.width + GAP;
+  if (right + bar.width <= view.width) return { x: right, y };
+  const left = sel.x - GAP - bar.width;
+  if (left >= 0) return { x: left, y };
+  return { x: Math.max(sel.x + sel.width - bar.width - GAP, GAP), y };
+}
+
 /** Places the size label just above the selection, or inside it at the top edge. */
 export function sizeLabelPosition(sel: Rect, labelHeight: number): Point {
   const above = sel.y - labelHeight - 4;

@@ -19,7 +19,7 @@ use tauri::{AppHandle, Manager, Runtime};
 use crate::clipboard::{self, Clip, Copied};
 use crate::i18n::{t, t_with};
 use crate::state::AppState;
-use crate::{badge, hotkeys, notify};
+use crate::{badge, hotkeys, notify, panel};
 use item::QueueItem;
 
 /// Some apps announce one copy several times; identical content this soon is ignored.
@@ -56,6 +56,18 @@ pub fn undo_last<R: Runtime>(app: &AppHandle<R>) {
     changed(app);
 }
 
+/// Removes one item (the panel's ✕).
+pub fn remove<R: Runtime>(app: &AppHandle<R>, id: uuid::Uuid) {
+    app.state::<AppState>().queue.lock().unwrap().remove(id);
+    changed(app);
+}
+
+/// Applies the order the user dragged items into in the panel.
+pub fn reorder<R: Runtime>(app: &AppHandle<R>, order: &[uuid::Uuid]) {
+    app.state::<AppState>().queue.lock().unwrap().reorder(order);
+    changed(app);
+}
+
 /// Empties the queue and leaves text mode: everything is back to normal.
 pub fn clear<R: Runtime>(app: &AppHandle<R>) {
     let state = app.state::<AppState>();
@@ -81,6 +93,7 @@ pub fn changed<R: Runtime>(app: &AppHandle<R>) {
     clipboard::watcher::set_active(state.text_mode.load(Ordering::SeqCst));
     hotkeys::set_queue_paste(app, has_items);
     badge::refresh(app);
+    panel::refresh(app);
 }
 
 /// Clipboard watcher callback: the user copied something in text mode.

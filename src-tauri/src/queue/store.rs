@@ -67,6 +67,33 @@ impl QueueStore {
         }
     }
 
+    /// Removes one item and its file. Returns whether it was found.
+    pub fn remove(&mut self, id: Uuid) -> bool {
+        match self.items.iter().position(|item| item.id == id) {
+            Some(index) => {
+                remove_file(&self.items.remove(index));
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Puts items in the order of `order`. Unknown ids are ignored and items missing from
+    /// `order` (e.g. added while the user was dragging) keep their order at the end.
+    pub fn reorder(&mut self, order: &[Uuid]) {
+        let mut rest = std::mem::take(&mut self.items);
+        for id in order {
+            if let Some(index) = rest.iter().position(|item| item.id == *id) {
+                self.items.push(rest.remove(index));
+            }
+        }
+        self.items.extend(rest);
+    }
+
+    pub fn get(&self, id: Uuid) -> Option<&QueueItem> {
+        self.items.iter().find(|item| item.id == id)
+    }
+
     /// Removes every item and its file.
     pub fn clear(&mut self) {
         for item in self.items.drain(..) {
@@ -182,6 +209,40 @@ mod tests {
         assert_eq!(store.len(), 1);
         assert_eq!(store.items()[0].text.as_deref(), Some("added during paste"));
         assert!(pasted.image_path.unwrap().is_file());
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn reorder_follows_ids_and_keeps_unlisted_items() {
+        let mut store = QueueStore::new(&temp_root("reorder"), "s1");
+        let items: Vec<QueueItem> = ["a", "b", "c", "d"]
+            .iter()
+            .map(|t| QueueItem::text((*t).into(), None))
+            .collect();
+        let ids: Vec<Uuid> = items.iter().map(|i| i.id).collect();
+        items.into_iter().for_each(|i| store.push(i));
+
+        store.reorder(&[ids[2], ids[0], Uuid::new_v4(), ids[1]]);
+        let texts: Vec<&str> = store
+            .items()
+            .iter()
+            .map(|i| i.text.as_deref().unwrap())
+            .collect();
+        assert_eq!(texts, ["c", "a", "b", "d"]);
+    }
+
+    #[test]
+    fn remove_deletes_one_item_and_its_file() {
+        let root = temp_root("remove");
+        let mut store = QueueStore::new(&root, "s1");
+        store.push_image(&RgbaImage::new(1, 1)).unwrap();
+        store.push_image(&RgbaImage::new(1, 1)).unwrap();
+        let first = store.items()[0].clone();
+
+        assert!(store.remove(first.id));
+        assert!(!store.remove(first.id));
+        assert_eq!(store.len(), 1);
+        assert!(!first.image_path.unwrap().exists());
         std::fs::remove_dir_all(&root).unwrap();
     }
 

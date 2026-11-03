@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { t } from "../../lib/i18n";
-import { BadgeEvents, badgeState, onWindowEvent, type BadgeState } from "../../lib/ipc";
+import { BadgeEvents, badgeState, onWindowEvent, panelToggle, type BadgeState } from "../../lib/ipc";
 
 export function Badge() {
   const [state, setState] = useState<BadgeState>({ count: 0, textMode: false, pasting: false });
@@ -12,11 +12,20 @@ export function Badge() {
   }, []);
 
   return (
-    <div className={`badge${state.pasting ? " badge--pasting" : ""}`}>
+    <button
+      type="button"
+      className={`badge${state.pasting ? " badge--pasting" : ""}`}
+      title={t("badge.open_panel")}
+      // Act on press: the window never takes focus, so there may be no click event.
+      onMouseDown={(e) => {
+        e.preventDefault();
+        void panelToggle();
+      }}
+    >
       <span className="badge__dot" />
       {state.pasting
         ? t("badge.pasting")
         : t(state.textMode ? "badge.text_mode" : "badge.count", { count: state.count })}
-    </div>
+    </button>
   );
 }

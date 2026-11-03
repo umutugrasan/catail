@@ -9,6 +9,7 @@ mod hotkeys;
 mod i18n;
 mod notify;
 mod overlay;
+mod panel;
 mod paste;
 #[cfg(windows)]
 mod process;
@@ -45,16 +46,22 @@ fn main() {
             Settings::load(),
         ))
         .register_uri_scheme_protocol(capture::region::PROTOCOL, capture::region::serve)
+        .register_uri_scheme_protocol(panel::PROTOCOL, panel::serve)
         .invoke_handler(tauri::generate_handler![
             commands::overlay_session,
             commands::overlay_ready,
             commands::overlay_selection_started,
             commands::overlay_cancel,
-            commands::capture_copy,
-            commands::capture_enqueue,
+            commands::capture_deliver,
+            commands::capture_deliver_annotated,
             commands::queue_clear,
             commands::text_mode_set,
-            commands::capture_save,
+            commands::panel_toggle,
+            commands::panel_close,
+            commands::panel_paste,
+            commands::queue_items,
+            commands::queue_remove,
+            commands::queue_reorder,
             commands::badge_state,
         ])
         .setup(move |app| {

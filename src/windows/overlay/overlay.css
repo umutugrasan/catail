@@ -161,3 +161,98 @@ body,
   background: rgba(239, 68, 68, 0.25);
   color: #fecaca;
 }
+
+.overlay--drawing,
+.overlay--drawing .overlay__selection {
+  cursor: crosshair;
+}
+
+/* Drawings preview; sized to device pixels in Overlay.tsx. */
+.overlay__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.overlay__sidebar {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--chrome-border);
+  border-radius: 8px;
+  background: var(--chrome-bg);
+  cursor: default;
+}
+
+.overlay__sidebar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--chrome-fg);
+  cursor: pointer;
+}
+
+.overlay__sidebar button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.overlay__sidebar button.active {
+  background: var(--accent);
+}
+
+.overlay__sidebar button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.overlay__sidebar .overlay__swatch {
+  height: 26px;
+}
+
+.overlay__swatch span {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+}
+
+.overlay__sidebar .overlay__swatch.active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.overlay__width-dot {
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.overlay__sidebar-sep {
+  width: 24px;
+  height: 1px;
+  margin: 3px 0;
+  background: var(--chrome-border);
+}
+
+.overlay__text-input {
+  position: absolute;
+  min-width: 160px;
+  margin: 0;
+  padding: 0;
+  border: 1px dashed rgba(255, 255, 255, 0.7);
+  outline: none;
+  background: transparent;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 600;
+  line-height: 1.25;
+  resize: none;
+  overflow: hidden;
+}

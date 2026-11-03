@@ -15,7 +15,7 @@ Tüm veriler yereldir, telemetri yoktur.
 | 1 | Tauri iskeleti, tray, bölge yakalama | Tamam |
 | 2 | Görsel kuyruğu (seçim ekranından "Kuyruk oluştur"), rozet, toplu/sıralı yapıştırma | Tamam |
 | 3 | Metin modu (PrintScreen ekranının üstünden): her Ctrl+C kuyruğa eklenir; kuyruk doluyken Ctrl+V kuyruğu yapıştırır (MVP) | Tamam |
-| 4 | Rozete tıklayınca yukarı açılan kuyruk paneli (sıralı önizleme, sürükleyerek yer değiştirme, ✕ ile silme), çizim araçları | — |
+| 4 | Rozete tıklayınca yukarı açılan kuyruk paneli (sıralı önizleme, sürükleyerek yer değiştirme, ✕ ile silme), çizim araçları | Tamam |
 | 5 | Ayarlar, kurulum, güncelleme (v1) | — |
 | 6 | macOS | — |
 | 7 | Dışa aktarma ve paylaşım (v2) | — |
@@ -45,6 +45,7 @@ cd src-tauri; cargo test; cargo clippy --all-targets -- -D warnings
 | Ctrl+C | Seçimi panoya kopyala |
 | Enter | Vurgulu butonu çalıştır (kuyruk yoksa Kopyala, varsa Kuyruğa ekle) |
 | Ctrl+S | Seçimi PNG olarak kaydet |
+| Ctrl+Z | Seçim ekranında son çizimi geri al |
 | Esc / sağ tık | İptal (sıralı yapıştırmada: durdur) |
 
 ### Kuyruk
@@ -59,6 +60,14 @@ PrintScreen ekranının en üstünde **Ekran görüntüsü · Metin modu** seçe
 Kuyrukta bir şey varken **Ctrl+V** normal yapıştırma yerine kuyruğun tamamını sırayla yapıştırır; ardından kuyruk boşalır, metin modu kapanır ve Ctrl+C / Ctrl+V yeniden normal çalışır. "Kuyruğu temizle" de metin modunu kapatır.
 
 Kuyrukta öğe olduğu sürece sağ altta "Kuyruk: N" rozeti görünür. Hedef uygulamaya geçip Ctrl+V'ye basınca kuyruk sırasıyla yapıştırılır ve boşaltılır.
+
+### Kuyruk paneli
+
+Sağ alttaki rozete tıklayınca yukarı doğru bir panel açılır: kuyruktaki görseller ve metinler sırayla listelenir. Satırları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), ✕ ile tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
+
+### Çizim araçları
+
+Alan seçince sağında araç çubuğu çıkar: seç/taşı, ok, dikdörtgen, kalem, fosforlu kalem, metin, bulanıklaştırma (pikselleştirme); altı renk, üç kalınlık ve geri al (Ctrl+Z). Çizimler kopyalanan, kaydedilen ve kuyruğa eklenen görüntüye tam çözünürlükte işlenir.
 
 ### Yapıştırma yöntemleri
 

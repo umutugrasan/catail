@@ -27,7 +27,18 @@
     "mode_screenshot_title": "Alan seçip ekran görüntüsü al",
     "mode_text": "Metin modu",
     "mode_text_title": "Metin modunu aç: bundan sonra Ctrl+C ile kopyaladığın her şey kuyruğa eklenir, Ctrl+V hepsini sırayla yapıştırır.",
-    "mode_text_on_title": "Metin modu açık. Kapatmak için tıkla."
+    "mode_text_on_title": "Metin modu açık. Kapatmak için tıkla.",
+    "tool_select": "Seç / taşı",
+    "tool_arrow": "Ok",
+    "tool_rect": "Dikdörtgen",
+    "tool_pen": "Kalem",
+    "tool_highlighter": "Fosforlu kalem",
+    "tool_text": "Metin",
+    "tool_blur": "Bulanıklaştır",
+    "color": "Renk",
+    "width": "Kalınlık",
+    "undo": "Geri al (Ctrl+Z)",
+    "text_placeholder": "Yaz, Enter ile bitir"
   },
   "save": {
     "dialog_title": "Ekran görüntüsünü kaydet",
@@ -68,6 +79,18 @@
   "badge": {
     "count": "Kuyruk: {count}",
     "pasting": "Yapıştırılıyor… (Esc: durdur)",
-    "text_mode": "Metin modu · Kuyruk: {count}"
+    "text_mode": "Metin modu · Kuyruk: {count}",
+    "open_panel": "Kuyruğu göster"
+  },
+  "panel": {
+    "title": "Kuyruk · {count} öğe",
+    "hint": "Sürükleyerek sırayı değiştir. Ctrl+V ya da Yapıştır bu sırayla yapıştırır.",
+    "kind_image": "Görsel",
+    "kind_text": "Metin",
+    "remove": "Kuyruktan sil",
+    "close": "Kapat",
+    "clear": "Temizle",
+    "paste": "Yapıştır",
+    "paste_title": "Kuyruğu az önce kullandığın uygulamaya yapıştır"
   }
 }

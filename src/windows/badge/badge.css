@@ -35,10 +35,16 @@ body,
   border-radius: 16px;
   background: var(--badge-bg);
   color: var(--badge-fg);
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.badge:hover {
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .badge__dot {

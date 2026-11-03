@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permissions for the overlay, settings and badge windows",
-  "windows": ["overlay-*", "settings", "badge"],
+  "description": "Permissions for the overlay, settings, badge and panel windows",
+  "windows": ["overlay-*", "settings", "badge", "panel"],
   "permissions": ["core:default"]
 }

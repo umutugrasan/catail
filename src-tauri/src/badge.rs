@@ -1,6 +1,6 @@
 //! "Kuyruk: N" badge in the bottom-right corner of the primary monitor, shown while the
 //! queue has items or text mode is on.
-//! Always on top, never focused, and click-through so it can't get in the way.
+//! Always on top and never focused; clicking it opens the queue panel.
 
 use std::sync::atomic::Ordering;
 use std::time::Duration;
@@ -97,7 +97,7 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
     if let Some(window) = app.get_webview_window(LABEL) {
         return Ok(window);
     }
-    let window = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App(URL.into()))
+    WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App(URL.into()))
         .title("ClipQueue")
         .inner_size(WIDTH, HEIGHT)
         .decorations(false)
@@ -110,11 +110,7 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
         .focused(false)
         .visible(false)
         .build()
-        .context("cannot create badge window")?;
-    window
-        .set_ignore_cursor_events(true)
-        .context("cannot make badge click-through")?;
-    Ok(window)
+        .context("cannot create badge window")
 }
 
 /// Bottom-right of the primary monitor's work area (above the taskbar).
