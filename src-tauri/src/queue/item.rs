@@ -35,8 +35,6 @@ impl QueueItem {
         }
     }
 
-    // Text items are created by the clipboard watcher (phase 3); the router already handles them.
-    #[cfg_attr(not(test), allow(dead_code))]
     pub fn text(text: String, source_app: Option<String>) -> Self {
         Self {
             id: Uuid::new_v4(),

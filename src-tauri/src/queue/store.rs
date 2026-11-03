@@ -52,7 +52,6 @@ impl QueueStore {
         Ok(())
     }
 
-    #[cfg_attr(not(test), allow(dead_code))] // used by the clipboard watcher in phase 3
     pub fn push(&mut self, item: QueueItem) {
         self.items.push(item);
     }

@@ -14,6 +14,8 @@ pub struct CaptureSession {
 pub struct AppState {
     pub queue: Mutex<QueueStore>,
     pub settings: Mutex<Settings>,
+    /// Every Ctrl+C goes into the queue while this is on.
+    pub text_mode: AtomicBool,
     /// True while the paste engine owns the clipboard and keyboard.
     pub pasting: AtomicBool,
     pub session: Mutex<Option<CaptureSession>>,
@@ -27,6 +29,7 @@ impl AppState {
         Self {
             queue: Mutex::new(queue),
             settings: Mutex::new(settings),
+            text_mode: AtomicBool::new(false),
             pasting: AtomicBool::new(false),
             session: Mutex::new(None),
             overlay_active: AtomicBool::new(false),

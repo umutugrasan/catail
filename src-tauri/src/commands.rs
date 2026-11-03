@@ -23,6 +23,7 @@ pub struct OverlayInfo {
     height: u32,
     /// Items already queued; decides between "create queue" and "add to queue".
     queue_count: usize,
+    text_mode: bool,
 }
 
 #[tauri::command]
@@ -37,6 +38,7 @@ pub fn overlay_session(window: WebviewWindow, state: State<'_, AppState>) -> Opt
         width: shot.image.width(),
         height: shot.image.height(),
         queue_count: state.queue.lock().unwrap().len(),
+        text_mode: state.text_mode.load(std::sync::atomic::Ordering::SeqCst),
     })
 }
 
@@ -74,6 +76,16 @@ pub async fn capture_enqueue(
 ) -> Result<(), String> {
     let image = take_selection(&app, &window, rect)?;
     queue::add_image(&app, &image).map_err(|e| report(&app, "notify.queue_add_failed", e))
+}
+
+/// Overlay top bar. Turning text mode on closes the overlay so the user can start copying;
+/// turning it off keeps the overlay open.
+#[tauri::command]
+pub fn text_mode_set(app: AppHandle, enabled: bool) {
+    if enabled {
+        overlay::close_all(&app);
+    }
+    queue::set_text_mode(&app, enabled);
 }
 
 /// Clears the queue from the overlay toolbar; the overlay stays open.

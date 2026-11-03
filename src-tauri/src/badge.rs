@@ -1,5 +1,5 @@
 //! "Kuyruk: N" badge in the bottom-right corner of the primary monitor, shown while the
-//! queue has items.
+//! queue has items or text mode is on.
 //! Always on top, never focused, and click-through so it can't get in the way.
 
 use std::sync::atomic::Ordering;
@@ -19,7 +19,7 @@ const URL: &str = "src/windows/badge/index.html";
 pub const EVENT_UPDATE: &str = "badge:update";
 
 /// Logical size and distance from the work-area corner.
-const WIDTH: f64 = 180.0;
+const WIDTH: f64 = 260.0;
 const HEIGHT: f64 = 40.0;
 const MARGIN: f64 = 16.0;
 
@@ -27,8 +27,10 @@ const MARGIN: f64 = 16.0;
 const HIDE_SETTLE: Duration = Duration::from_millis(80);
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BadgeState {
     pub count: usize,
+    pub text_mode: bool,
     pub pasting: bool,
 }
 
@@ -37,6 +39,7 @@ pub fn current<R: Runtime>(app: &AppHandle<R>) -> BadgeState {
     let count = state.queue.lock().unwrap().len();
     BadgeState {
         count,
+        text_mode: state.text_mode.load(Ordering::SeqCst),
         pasting: state.pasting.load(Ordering::SeqCst),
     }
 }
@@ -44,7 +47,8 @@ pub fn current<R: Runtime>(app: &AppHandle<R>) -> BadgeState {
 fn should_show<R: Runtime>(app: &AppHandle<R>) -> bool {
     let state = app.state::<AppState>();
     let has_items = state.queue.lock().unwrap().len() > 0;
-    has_items && !state.overlay_active.load(Ordering::SeqCst)
+    let active = has_items || state.text_mode.load(Ordering::SeqCst);
+    active && !state.overlay_active.load(Ordering::SeqCst)
 }
 
 /// Pushes the current count to the badge and shows or hides it. Safe on any thread.

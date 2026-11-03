@@ -1,17 +1,11 @@
 //! Keyboard state and foreground-window queries.
 
-use std::path::Path;
 use std::time::{Duration, Instant};
 
-use windows::core::PWSTR;
-use windows::Win32::Foundation::CloseHandle;
-use windows::Win32::System::Threading::{
-    OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION,
-};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     GetAsyncKeyState, VIRTUAL_KEY, VK_CONTROL, VK_ESCAPE, VK_LWIN, VK_MENU, VK_RWIN, VK_SHIFT,
 };
-use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
+use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 
 fn key_state(key: VIRTUAL_KEY) -> u16 {
     // SAFETY: plain Win32 query with no pointers involved.
@@ -44,31 +38,6 @@ pub fn wait_for_modifiers_released(timeout: Duration) -> bool {
 
 /// Lower-case executable name of the foreground window's process, e.g. `chrome.exe`.
 pub fn foreground_process_name() -> Option<String> {
-    // SAFETY: every handle is checked before use and closed before returning.
-    unsafe {
-        let hwnd = GetForegroundWindow();
-        if hwnd.is_invalid() {
-            return None;
-        }
-        let mut pid = 0u32;
-        GetWindowThreadProcessId(hwnd, Some(&mut pid));
-        if pid == 0 {
-            return None;
-        }
-        let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid).ok()?;
-        let mut buf = [0u16; 1024];
-        let mut len = buf.len() as u32;
-        let result = QueryFullProcessImageNameW(
-            process,
-            PROCESS_NAME_WIN32,
-            PWSTR(buf.as_mut_ptr()),
-            &mut len,
-        );
-        let _ = CloseHandle(process);
-        result.ok()?;
-        let path = String::from_utf16_lossy(&buf[..len as usize]);
-        Path::new(&path)
-            .file_name()
-            .map(|name| name.to_string_lossy().to_lowercase())
-    }
+    // SAFETY: plain Win32 query.
+    crate::process::window_process_name(unsafe { GetForegroundWindow() })
 }

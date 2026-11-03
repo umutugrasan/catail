@@ -10,6 +10,8 @@ mod i18n;
 mod notify;
 mod overlay;
 mod paste;
+#[cfg(windows)]
+mod process;
 mod queue;
 mod settings;
 mod state;
@@ -51,6 +53,7 @@ fn main() {
             commands::capture_copy,
             commands::capture_enqueue,
             commands::queue_clear,
+            commands::text_mode_set,
             commands::capture_save,
             commands::badge_state,
         ])
@@ -59,6 +62,11 @@ fn main() {
             remove_stale_sessions(&temp_root, &session);
             tray::build(app.handle())?;
             hotkeys::register_defaults(app.handle());
+            #[cfg(windows)]
+            {
+                let handle = app.handle().clone();
+                clipboard::watcher::start(move || queue::on_clipboard_changed(&handle));
+            }
             let handle = app.handle().clone();
             std::thread::spawn(move || {
                 overlay::prewarm(&handle);

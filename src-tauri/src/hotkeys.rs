@@ -1,5 +1,8 @@
 //! Global hotkey registration and dispatch.
 
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Mutex;
+
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_global_shortcut::{
     Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutEvent, ShortcutState,
@@ -51,6 +54,11 @@ fn bindings() -> [(Shortcut, &'static str, Action); 5] {
     ]
 }
 
+/// Plain Ctrl+V, taken over only while the queue has items so it pastes the whole queue.
+fn queue_paste_shortcut() -> Shortcut {
+    Shortcut::new(Some(Modifiers::CONTROL), Code::KeyV)
+}
+
 /// Global shortcut handler. Runs on the main thread, so real work goes to a worker.
 pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: ShortcutEvent) {
     #[cfg(debug_assertions)]
@@ -58,7 +66,11 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
     if event.state != ShortcutState::Pressed {
         return;
     }
-    let Some((_, _, action)) = bindings().into_iter().find(|(s, _, _)| s == shortcut) else {
+    let action = if *shortcut == queue_paste_shortcut() {
+        Action::PasteQueue
+    } else if let Some((_, _, action)) = bindings().into_iter().find(|(s, _, _)| s == shortcut) {
+        action
+    } else {
         return;
     };
     let app = app.clone();
@@ -69,6 +81,47 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
         Action::ClearQueue => queue::clear(&app),
         Action::UndoLast => queue::undo_last(&app),
     });
+}
+
+/// Whether Ctrl+V should paste the queue. Applied on a worker thread because the plugin
+/// (un)registers on the main thread and waits for it.
+static QUEUE_PASTE_WANTED: AtomicBool = AtomicBool::new(false);
+/// Whether Ctrl+V is currently registered; the lock also serializes changes.
+static QUEUE_PASTE_REGISTERED: Mutex<bool> = Mutex::new(false);
+
+/// Takes over (or releases) Ctrl+V. Safe on any thread; the last call wins.
+pub fn set_queue_paste<R: Runtime>(app: &AppHandle<R>, on: bool) {
+    QUEUE_PASTE_WANTED.store(on, Ordering::SeqCst);
+    let app = app.clone();
+    std::thread::spawn(move || apply_queue_paste(&app));
+}
+
+/// Releases Ctrl+V and returns once it is released, so the paste engine's own Ctrl+V reaches
+/// the target app. Must run on a worker thread.
+pub fn suspend_queue_paste<R: Runtime>(app: &AppHandle<R>) {
+    QUEUE_PASTE_WANTED.store(false, Ordering::SeqCst);
+    apply_queue_paste(app);
+}
+
+fn apply_queue_paste<R: Runtime>(app: &AppHandle<R>) {
+    let mut registered = QUEUE_PASTE_REGISTERED.lock().unwrap();
+    let want = QUEUE_PASTE_WANTED.load(Ordering::SeqCst);
+    if want == *registered {
+        return;
+    }
+    let shortcuts = app.global_shortcut();
+    let result = if want {
+        shortcuts.register(queue_paste_shortcut())
+    } else {
+        shortcuts.unregister(queue_paste_shortcut())
+    };
+    match result {
+        Ok(()) => *registered = want,
+        Err(e) => eprintln!(
+            "cannot {} Ctrl+V: {e}",
+            if want { "register" } else { "release" }
+        ),
+    }
 }
 
 /// Registers the default shortcuts and tells the user (via toast) about any that failed.

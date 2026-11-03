@@ -3,7 +3,7 @@
 Sıralı ekran görüntüsü ve pano kuyruğu aracı (Windows 10/11, ardından macOS).
 
 - **Normal mod:** bölge / tam ekran / pencere yakalama, çizim araçları, panoya kopyalama, PNG kaydetme.
-- **Kuyruk:** seçim ekranındaki "Kuyruk oluştur" / "Kuyruğa ekle" butonlarıyla ekran görüntüleri sıraya eklenir; tek kısayolla hepsi alındıkları sırayla hedef uygulamaya yapıştırılır.
+- **Kuyruk:** seçim ekranındaki "Kuyruk oluştur" / "Kuyruğa ekle" butonlarıyla ekran görüntüleri, **Metin modu**nda ise her Ctrl+C sıraya eklenir. Kuyruk doluyken Ctrl+V hepsini alındıkları sırayla yapıştırır.
 
 Tüm veriler yereldir, telemetri yoktur.
 
@@ -14,7 +14,7 @@ Tüm veriler yereldir, telemetri yoktur.
 | 0 | Yapıştırma denemesi (`spikes/paste-test`, `docs/paste-matrix.md`) | Tamam |
 | 1 | Tauri iskeleti, tray, bölge yakalama | Tamam |
 | 2 | Görsel kuyruğu (seçim ekranından "Kuyruk oluştur"), rozet, toplu/sıralı yapıştırma | Tamam |
-| 3 | Metin kuyruğu: kuyruk varken Ctrl+C ile kopyalanan metin kuyruğa eklenir (MVP) | — |
+| 3 | Metin modu (PrintScreen ekranının üstünden): her Ctrl+C kuyruğa eklenir; kuyruk doluyken Ctrl+V kuyruğu yapıştırır (MVP) | Elle test bekleniyor |
 | 4 | Rozete tıklayınca yukarı açılan kuyruk paneli (sıralı önizleme, sürükleyerek yer değiştirme, ✕ ile silme), çizim araçları | — |
 | 5 | Ayarlar, kurulum, güncelleme (v1) | — |
 | 6 | macOS | — |
@@ -38,7 +38,8 @@ cd src-tauri; cargo test; cargo clippy --all-targets -- -D warnings
 |---|---|
 | PrintScreen | Bölge seçerek yakala (tepsi ikonuna sol tık da aynı) |
 | Shift+PrintScreen | İmlecin olduğu ekranı panoya kopyala |
-| Ctrl+Shift+Alt+V | Kuyruğu sırasıyla yapıştır, ardından önceki pano içeriğini geri yükle |
+| Ctrl+V (kuyruk doluyken) | Kuyruğu sırasıyla yapıştır, önceki pano içeriğini geri yükle, kuyruğu boşalt |
+| Ctrl+Shift+Alt+V | Aynısı (yedek kısayol) |
 | Ctrl+Shift+Alt+Z | Kuyruktaki son öğeyi geri al |
 | Ctrl+Shift+Alt+X | Kuyruğu temizle |
 | Ctrl+C | Seçimi panoya kopyala |
@@ -53,7 +54,11 @@ PrintScreen ile alan seçtikten sonra araç çubuğunda:
 - Kuyruk yoksa: **Kopyala · Kaydet · Kuyruk oluştur · İptal**
 - Kuyruk varsa: **Kopyala · Kaydet · Kuyruğa ekle · Kuyruğu temizle · İptal**
 
-Kuyrukta öğe olduğu sürece sağ altta "Kuyruk: N" rozeti görünür. Hedef uygulamaya geçip Ctrl+Shift+Alt+V'ye basınca kuyruk sırasıyla yapıştırılır ve boşaltılır.
+PrintScreen ekranının en üstünde **Ekran görüntüsü · Metin modu** seçenekleri var. **Metin modu**nu seçince ekran kapanır ve sağ altta "Metin modu · Kuyruk: N" görünür; bundan sonra Ctrl+C ile kopyaladığın her metin/görsel kuyruğa eklenir. Şifre yöneticilerinin kopyaladıkları alınmaz.
+
+Kuyrukta bir şey varken **Ctrl+V** normal yapıştırma yerine kuyruğun tamamını sırayla yapıştırır; ardından kuyruk boşalır, metin modu kapanır ve Ctrl+C / Ctrl+V yeniden normal çalışır. "Kuyruğu temizle" de metin modunu kapatır.
+
+Kuyrukta öğe olduğu sürece sağ altta "Kuyruk: N" rozeti görünür. Hedef uygulamaya geçip Ctrl+V'ye basınca kuyruk sırasıyla yapıştırılır ve boşaltılır.
 
 ### Yapıştırma yöntemleri
 

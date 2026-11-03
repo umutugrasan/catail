@@ -1,13 +1,14 @@
 //! Raw Win32 clipboard plumbing.
 
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 use anyhow::{anyhow, Context, Result};
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::{GlobalFree, HANDLE, HGLOBAL};
 use windows::Win32::System::DataExchange::{
-    CloseClipboard, EmptyClipboard, EnumClipboardFormats, GetClipboardData, OpenClipboard,
-    RegisterClipboardFormatW, SetClipboardData,
+    CloseClipboard, EmptyClipboard, EnumClipboardFormats, GetClipboardData, GetClipboardOwner,
+    GetClipboardSequenceNumber, OpenClipboard, RegisterClipboardFormatW, SetClipboardData,
 };
 use windows::Win32::System::Memory::{
     GlobalAlloc, GlobalLock, GlobalSize, GlobalUnlock, GMEM_MOVEABLE,
@@ -60,8 +61,33 @@ impl Drop for OpenClipboardGuard {
     }
 }
 
+/// Clipboard sequence number right after our last write, so the watcher can tell our own
+/// writes (copy button, paste engine, restores) from the user's.
+static SELF_WRITE_SEQUENCE: AtomicU32 = AtomicU32::new(0);
+
+/// True if the clipboard still holds what we wrote last.
+pub fn is_self_write() -> bool {
+    // SAFETY: plain Win32 query.
+    unsafe { GetClipboardSequenceNumber() == SELF_WRITE_SEQUENCE.load(Ordering::SeqCst) }
+}
+
 /// Empties the clipboard and writes each `(format, bytes)` pair.
 pub fn set_clipboard(items: &[(u32, Vec<u8>)]) -> Result<()> {
+    let result = write_formats(items);
+    // The sequence number is final once the clipboard is closed.
+    // SAFETY: plain Win32 query.
+    SELF_WRITE_SEQUENCE.store(unsafe { GetClipboardSequenceNumber() }, Ordering::SeqCst);
+    result
+}
+
+/// Executable name of the process that last wrote the clipboard.
+pub fn owner_process_name() -> Option<String> {
+    // SAFETY: plain Win32 query.
+    let owner = unsafe { GetClipboardOwner() }.ok()?;
+    crate::process::window_process_name(owner)
+}
+
+fn write_formats(items: &[(u32, Vec<u8>)]) -> Result<()> {
     let _open = OpenClipboardGuard::open()?;
     unsafe { EmptyClipboard() }.context("EmptyClipboard")?;
     for (format, bytes) in items {

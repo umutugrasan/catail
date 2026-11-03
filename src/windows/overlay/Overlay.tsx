@@ -13,6 +13,7 @@ import {
   overlaySession,
   OverlayEvents,
   queueClear,
+  textModeSet,
   type OverlayInfo,
 } from "../../lib/ipc";
 import {
@@ -94,7 +95,13 @@ export function Overlay() {
 
   const clearQueue = useCallback(async () => {
     await queueClear();
-    setInfo((current) => current && { ...current, queueCount: 0 });
+    // Clearing also leaves text mode.
+    setInfo((current) => current && { ...current, queueCount: 0, textMode: false });
+  }, []);
+
+  const setTextMode = useCallback(async (enabled: boolean) => {
+    await textModeSet(enabled);
+    setInfo((current) => current && { ...current, textMode: enabled });
   }, []);
 
   useEffect(() => {
@@ -185,6 +192,27 @@ export function Overlay() {
         onLoad={() => void overlayReady()}
       />
 
+      <div className="overlay__modes" onPointerDown={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className={info.textMode ? undefined : "active"}
+          title={t("overlay.mode_screenshot_title")}
+          onClick={() => info.textMode && void setTextMode(false)}
+        >
+          <CameraIcon />
+          {t("overlay.mode_screenshot")}
+        </button>
+        <button
+          type="button"
+          className={info.textMode ? "active" : undefined}
+          title={t(info.textMode ? "overlay.mode_text_on_title" : "overlay.mode_text_title")}
+          onClick={() => void setTextMode(!info.textMode)}
+        >
+          <TextIcon />
+          {t("overlay.mode_text")}
+        </button>
+      </div>
+
       {selection ? (
         <div
           className="overlay__selection"
@@ -253,5 +281,34 @@ export function Overlay() {
         </div>
       )}
     </div>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path
+        d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function TextIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path
+        d="M5 6h14M12 6v13M9 19h6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

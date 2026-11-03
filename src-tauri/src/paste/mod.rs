@@ -33,7 +33,7 @@ use uuid::Uuid;
 
 use crate::i18n::{t, t_with};
 use crate::state::AppState;
-use crate::{badge, notify};
+use crate::{badge, hotkeys, notify, queue};
 use router::Plan;
 
 const MODIFIER_RELEASE_TIMEOUT: Duration = Duration::from_secs(3);
@@ -50,9 +50,11 @@ pub fn run<R: Runtime>(app: &AppHandle<R>) {
     if state.pasting.swap(true, Ordering::SeqCst) {
         return; // a paste is already running
     }
+    // Our own Ctrl+V must reach the target app, not our Ctrl+V hotkey.
+    hotkeys::suspend_queue_paste(app);
     let result = paste(app, &state);
     state.pasting.store(false, Ordering::SeqCst);
-    badge::refresh(app);
+    queue::changed(app);
 
     let message = match result {
         Ok(Outcome::Done) => return,
@@ -107,6 +109,8 @@ fn paste<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<Outcome> {
         // Only the pasted items: anything captured meanwhile stays queued.
         let ids: Vec<Uuid> = items.iter().map(|i| i.id).collect();
         state.queue.lock().unwrap().forget(&ids);
+        // Pasting finishes the job: Ctrl+C goes back to normal.
+        state.text_mode.store(false, Ordering::SeqCst);
     }
     Ok(Outcome::Done)
 }
