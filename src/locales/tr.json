@@ -1,0 +1,48 @@
+{
+  "app": {
+    "name": "ClipQueue"
+  },
+  "tray": {
+    "tooltip": "ClipQueue — PrintScreen ile ekran görüntüsü al",
+    "capture": "Ekran görüntüsü al",
+    "queue_mode": "Kuyruk modu",
+    "settings": "Ayarlar",
+    "quit": "Çıkış"
+  },
+  "overlay": {
+    "hint": "Alan seçmek için sürükleyin · Esc: iptal",
+    "copy": "Kopyala",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "copy_title": "Panoya kopyala (Ctrl+C / Enter)",
+    "save_title": "PNG olarak kaydet (Ctrl+S)",
+    "cancel_title": "İptal (Esc)"
+  },
+  "save": {
+    "dialog_title": "Ekran görüntüsünü kaydet",
+    "filter_name": "PNG görseli"
+  },
+  "notify": {
+    "already_running": "ClipQueue zaten çalışıyor. Sistem tepsisindeki simgeyi kullanın.",
+    "hotkey_failed_title": "Kısayol kaydedilemedi",
+    "hotkey_failed_body": "{shortcut} başka bir uygulama tarafından kullanılıyor olabilir.",
+    "snipping_title": "PrintScreen, Windows Ekran Alıntısı Aracı'na ayrılmış",
+    "snipping_body": "Ayarlar → Erişilebilirlik → Klavye bölümünde \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın, ardından ClipQueue'yu yeniden başlatın.",
+    "capture_failed": "Ekran görüntüsü alınamadı: {error}",
+    "copy_failed": "Görsel panoya kopyalanamadı: {error}",
+    "save_failed": "Görsel kaydedilemedi: {error}"
+  },
+  "settings": {
+    "title": "ClipQueue Ayarları",
+    "shortcuts": "Kısayollar",
+    "shortcut_region": "Bölge seçerek yakala",
+    "shortcut_fullscreen": "Tam ekran yakala (imlecin olduğu ekran)",
+    "overlay_keys": "Seçim ekranında",
+    "overlay_copy": "Kopyala",
+    "overlay_save": "Kaydet",
+    "overlay_cancel": "İptal",
+    "printscreen_note": "PrintScreen basınca Windows Ekran Alıntısı Aracı açılıyorsa: Ayarlar → Erişilebilirlik → Klavye → \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın ve ClipQueue'yu yeniden başlatın (tepsi → Çıkış, sonra tekrar açın).",
+    "coming_soon": "Kısayolları ve diğer ayarları değiştirme sonraki sürümde eklenecek.",
+    "version": "Sürüm {version}"
+  }
+}

@@ -1,5 +1,6 @@
-# Rust
+# Rust / Tauri
 target/
+src-tauri/gen/
 
 # Node
 node_modules/
