@@ -7,18 +7,22 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State, WebviewWindow};
 use tauri_plugin_dialog::DialogExt;
 
+use crate::badge::{self, BadgeState};
 use crate::capture::region::{self, SelectionRect};
 use crate::i18n::{t, t_with};
 use crate::state::AppState;
-use crate::{clipboard, notify, overlay};
+use crate::{clipboard, notify, overlay, queue};
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OverlayInfo {
     session: u64,
     index: usize,
     /// Frame size in physical pixels.
     width: u32,
     height: u32,
+    /// Confirming adds to the queue instead of copying.
+    queue_mode: bool,
 }
 
 #[tauri::command]
@@ -32,6 +36,7 @@ pub fn overlay_session(window: WebviewWindow, state: State<'_, AppState>) -> Opt
         index,
         width: shot.image.width(),
         height: shot.image.height(),
+        queue_mode: state.is_queue_mode(),
     })
 }
 
@@ -50,18 +55,29 @@ pub fn overlay_cancel(app: AppHandle) {
     overlay::close_all(&app);
 }
 
+/// Copy (normal mode) or add to the queue (queue mode).
 #[tauri::command]
-pub async fn capture_copy(
+pub async fn capture_commit(
     app: AppHandle,
     window: WebviewWindow,
     rect: SelectionRect,
 ) -> Result<(), String> {
     let image = take_selection(&app, &window, rect)?;
-    clipboard::write_image(&image).map_err(|e| {
-        let msg = t_with("notify.copy_failed", &[("error", &format!("{e:#}"))]);
+    let (result, error_key) = if app.state::<AppState>().is_queue_mode() {
+        (queue::add_image(&app, &image), "notify.queue_add_failed")
+    } else {
+        (clipboard::write_image(&image), "notify.copy_failed")
+    };
+    result.map_err(|e| {
+        let msg = t_with(error_key, &[("error", &format!("{e:#}"))]);
         notify::show(&app, &t("app.name"), &msg);
         msg
     })
+}
+
+#[tauri::command]
+pub fn badge_state(app: AppHandle) -> BadgeState {
+    badge::current(&app)
 }
 
 #[tauri::command]

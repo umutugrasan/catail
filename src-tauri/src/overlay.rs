@@ -128,6 +128,7 @@ pub fn close_all<R: Runtime>(app: &AppHandle<R>) {
     let state = app.state::<AppState>();
     state.session.lock().unwrap().take();
     state.overlay_active.store(false, Ordering::SeqCst);
+    crate::badge::refresh(app);
 }
 
 #[cfg(test)]

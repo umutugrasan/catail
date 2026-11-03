@@ -1,0 +1,53 @@
+:root {
+  --badge-bg: rgba(17, 24, 39, 0.92);
+  --badge-fg: #f9fafb;
+  --badge-accent: #3b82f6;
+  --badge-busy: #f59e0b;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+
+/* The window is transparent; only the pill is painted. */
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}
+
+#root {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: var(--badge-bg);
+  color: var(--badge-fg);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--badge-accent);
+}
+
+.badge--pasting .badge__dot {
+  background: var(--badge-busy);
+}

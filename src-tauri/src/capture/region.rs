@@ -33,12 +33,14 @@ pub fn start<R: Runtime>(app: &AppHandle<R>) {
     }
     if let Err(e) = open_overlays(app, &state) {
         state.overlay_active.store(false, Ordering::SeqCst);
+        crate::badge::refresh(app);
         let msg = t_with("notify.capture_failed", &[("error", &format!("{e:#}"))]);
         notify::show(app, &crate::i18n::t("app.name"), &msg);
     }
 }
 
 fn open_overlays<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<()> {
+    crate::badge::hide_for_capture(app);
     let shots = crate::capture::capture_all_monitors()?;
     let bounds: Vec<_> = shots
         .iter()

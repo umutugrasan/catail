@@ -2,6 +2,15 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 
 use crate::capture::MonitorShot;
+use crate::queue::store::QueueStore;
+use crate::settings::Settings;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Mode {
+    #[default]
+    Normal,
+    Queue,
+}
 
 /// Frozen screenshots of every monitor, taken when the region overlay opens.
 pub struct CaptureSession {
@@ -9,8 +18,12 @@ pub struct CaptureSession {
     pub shots: Vec<MonitorShot>,
 }
 
-#[derive(Default)]
 pub struct AppState {
+    pub mode: Mutex<Mode>,
+    pub queue: Mutex<QueueStore>,
+    pub settings: Mutex<Settings>,
+    /// True while the paste engine owns the clipboard and keyboard.
+    pub pasting: AtomicBool,
     pub session: Mutex<Option<CaptureSession>>,
     /// True from the moment a region capture starts until its overlays close.
     pub overlay_active: AtomicBool,
@@ -18,6 +31,22 @@ pub struct AppState {
 }
 
 impl AppState {
+    pub fn new(queue: QueueStore, settings: Settings) -> Self {
+        Self {
+            mode: Mutex::new(Mode::default()),
+            queue: Mutex::new(queue),
+            settings: Mutex::new(settings),
+            pasting: AtomicBool::new(false),
+            session: Mutex::new(None),
+            overlay_active: AtomicBool::new(false),
+            last_session_id: AtomicU64::new(0),
+        }
+    }
+
+    pub fn is_queue_mode(&self) -> bool {
+        *self.mode.lock().unwrap() == Mode::Queue
+    }
+
     pub fn next_session_id(&self) -> u64 {
         self.last_session_id.fetch_add(1, Ordering::Relaxed) + 1
     }

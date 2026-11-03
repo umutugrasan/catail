@@ -9,6 +9,13 @@ export interface OverlayInfo {
   index: number;
   width: number;
   height: number;
+  /** Confirming adds to the queue instead of copying. */
+  queueMode: boolean;
+}
+
+export interface BadgeState {
+  count: number;
+  pasting: boolean;
 }
 
 /** Selection in physical pixels relative to the monitor's top-left corner. */
@@ -23,19 +30,27 @@ export const overlaySession = () => invoke<OverlayInfo | null>("overlay_session"
 export const overlayReady = () => invoke<void>("overlay_ready");
 export const overlaySelectionStarted = () => invoke<void>("overlay_selection_started");
 export const overlayCancel = () => invoke<void>("overlay_cancel");
-export const captureCopy = (rect: ImageRect) => invoke<void>("capture_copy", { rect });
+/** Copies the selection, or adds it to the queue in queue mode. */
+export const captureCommit = (rect: ImageRect) => invoke<void>("capture_commit", { rect });
 export const captureSave = (rect: ImageRect) => invoke<void>("capture_save", { rect });
+export const badgeState = () => invoke<BadgeState>("badge_state");
 
 /** URL of the frozen frame served by the Rust `capture` protocol. */
 export const frameUrl = (info: OverlayInfo) =>
   convertFileSrc(`${info.session}-${info.index}.png`, "capture");
 
 /** Listens for an event targeted at this window only. */
-export const onWindowEvent = (name: string, handler: () => void): Promise<UnlistenFn> =>
-  getCurrentWebviewWindow().listen(name, handler);
+export const onWindowEvent = <T = unknown>(
+  name: string,
+  handler: (payload: T) => void,
+): Promise<UnlistenFn> => getCurrentWebviewWindow().listen<T>(name, (e) => handler(e.payload));
 
 export const OverlayEvents = {
   refresh: "overlay:refresh",
   clearSelection: "overlay:clear-selection",
   reset: "overlay:reset",
+} as const;
+
+export const BadgeEvents = {
+  update: "badge:update",
 } as const;

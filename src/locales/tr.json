@@ -16,7 +16,9 @@
     "cancel": "İptal",
     "copy_title": "Panoya kopyala (Ctrl+C / Enter)",
     "save_title": "PNG olarak kaydet (Ctrl+S)",
-    "cancel_title": "İptal (Esc)"
+    "cancel_title": "İptal (Esc)",
+    "add_to_queue": "Kuyruğa ekle",
+    "add_to_queue_title": "Kuyruğa ekle (Ctrl+C / Enter)"
   },
   "save": {
     "dialog_title": "Ekran görüntüsünü kaydet",
@@ -30,19 +32,33 @@
     "snipping_body": "Ayarlar → Erişilebilirlik → Klavye bölümünde \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın, ardından ClipQueue'yu yeniden başlatın.",
     "capture_failed": "Ekran görüntüsü alınamadı: {error}",
     "copy_failed": "Görsel panoya kopyalanamadı: {error}",
-    "save_failed": "Görsel kaydedilemedi: {error}"
+    "save_failed": "Görsel kaydedilemedi: {error}",
+    "queue_add_failed": "Görsel kuyruğa eklenemedi: {error}",
+    "queue_empty": "Kuyruk boş. Kuyruk modunu Ctrl+Shift+Q ile açıp ekran görüntüsü alın.",
+    "paste_cancelled": "Yapıştırma durduruldu: {done}/{total} öğe yapıştırıldı. Kuyruk korunuyor.",
+    "paste_failed": "Yapıştırma başarısız: {error}",
+    "release_keys": "Kısayol tuşları bırakılmadı, yapıştırma iptal edildi."
   },
   "settings": {
     "title": "ClipQueue Ayarları",
     "shortcuts": "Kısayollar",
     "shortcut_region": "Bölge seçerek yakala",
     "shortcut_fullscreen": "Tam ekran yakala (imlecin olduğu ekran)",
+    "shortcut_queue_mode": "Kuyruk modunu aç/kapat",
+    "shortcut_paste": "Kuyruğu yapıştır",
+    "shortcut_clear": "Kuyruğu temizle",
+    "shortcut_undo": "Kuyruktaki son öğeyi geri al",
     "overlay_keys": "Seçim ekranında",
-    "overlay_copy": "Kopyala",
+    "overlay_copy": "Kopyala (kuyruk modunda: kuyruğa ekle)",
     "overlay_save": "Kaydet",
     "overlay_cancel": "İptal",
     "printscreen_note": "PrintScreen basınca Windows Ekran Alıntısı Aracı açılıyorsa: Ayarlar → Erişilebilirlik → Klavye → \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın ve ClipQueue'yu yeniden başlatın (tepsi → Çıkış, sonra tekrar açın).",
     "coming_soon": "Kısayolları ve diğer ayarları değiştirme sonraki sürümde eklenecek.",
-    "version": "Sürüm {version}"
+    "version": "Sürüm {version}",
+    "queue_note": "Kuyruk modunda alınan her ekran görüntüsü sıraya eklenir. Hedef uygulamaya geçip Ctrl+Shift+Alt+V'ye basınca hepsi sırasıyla yapıştırılır ve önceki pano içeriği geri yüklenir."
+  },
+  "badge": {
+    "count": "Kuyruk: {count}",
+    "pasting": "Yapıştırılıyor… (Esc: durdur)"
   }
 }

@@ -1,4 +1,6 @@
-use anyhow::Result;
+use std::path::Path;
+
+use anyhow::{Context, Result};
 use image::RgbaImage;
 
 use crate::capture::encode_png;
@@ -8,20 +10,52 @@ const BITMAPINFOHEADER_SIZE: u32 = 40;
 
 /// Puts an image on the clipboard as CF_DIB (classic apps such as Paint and Word)
 /// plus the registered "PNG" format (browsers and Electron apps prefer it).
-#[cfg(windows)]
 pub fn write_image(img: &RgbaImage) -> Result<()> {
+    write_image_with_png(img, encode_png(img)?)
+}
+
+/// Like [`write_image`] for a PNG already on disk, reusing its bytes for the "PNG" format.
+pub fn write_png_file(path: &Path) -> Result<()> {
+    let png = std::fs::read(path).with_context(|| format!("cannot read {}", path.display()))?;
+    let img = image::load_from_memory(&png)
+        .with_context(|| format!("cannot decode {}", path.display()))?
+        .to_rgba8();
+    write_image_with_png(&img, png)
+}
+
+#[cfg(windows)]
+fn write_image_with_png(img: &RgbaImage, png: Vec<u8>) -> Result<()> {
     use super::win32;
 
     let png_format = win32::register_format(windows::core::w!("PNG"))?;
-    win32::set_clipboard(&[
-        (win32::CF_DIB, build_dib(img)),
-        (png_format, encode_png(img)?),
-    ])
+    win32::set_clipboard(&[(win32::CF_DIB, build_dib(img)), (png_format, png)])
 }
 
 #[cfg(not(windows))]
-pub fn write_image(_img: &RgbaImage) -> Result<()> {
+fn write_image_with_png(_img: &RgbaImage, _png: Vec<u8>) -> Result<()> {
     anyhow::bail!("image clipboard is not implemented on this platform yet")
+}
+
+/// Puts plain text on the clipboard as CF_UNICODETEXT.
+#[cfg(windows)]
+pub fn write_text(text: &str) -> Result<()> {
+    use super::win32;
+    win32::set_clipboard(&[(win32::CF_UNICODETEXT, encode_unicode_text(text))])
+}
+
+#[cfg(not(windows))]
+pub fn write_text(_text: &str) -> Result<()> {
+    anyhow::bail!("text clipboard is not implemented on this platform yet")
+}
+
+/// NUL-terminated UTF-16LE with CRLF line endings, as CF_UNICODETEXT expects.
+pub fn encode_unicode_text(text: &str) -> Vec<u8> {
+    let normalized = text.replace("\r\n", "\n").replace('\n', "\r\n");
+    normalized
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .flat_map(u16::to_le_bytes)
+        .collect()
 }
 
 /// Builds a CF_DIB payload: BITMAPINFOHEADER + 32bpp bottom-up BGRA pixels.
@@ -72,6 +106,16 @@ mod tests {
         assert_eq!(&buf[40..44], &[30, 20, 10, 255]);
         // Second stored row is the top row.
         assert_eq!(&buf[48..52], &[3, 2, 1, 255]);
+    }
+
+    #[test]
+    fn unicode_text_is_crlf_utf16_with_nul() {
+        let bytes = encode_unicode_text("a\nğ");
+        let (pairs, _) = bytes.as_chunks::<2>();
+        let units: Vec<u16> = pairs.iter().map(|&p| u16::from_le_bytes(p)).collect();
+        assert_eq!(String::from_utf16(&units).unwrap(), "a\r\nğ\0");
+        // Existing CRLF must not double up.
+        assert_eq!(encode_unicode_text("x\r\ny").len(), (4 + 1) * 2);
     }
 
     #[test]

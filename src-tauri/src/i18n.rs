@@ -52,6 +52,11 @@ mod tests {
         "notify.capture_failed",
         "notify.copy_failed",
         "notify.save_failed",
+        "notify.queue_add_failed",
+        "notify.queue_empty",
+        "notify.paste_cancelled",
+        "notify.paste_failed",
+        "notify.release_keys",
         "settings.title",
     ];
 

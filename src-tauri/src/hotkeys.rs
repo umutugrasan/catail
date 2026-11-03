@@ -7,14 +7,54 @@ use tauri_plugin_global_shortcut::{
 
 use crate::capture::{fullscreen, region};
 use crate::i18n::{t, t_with};
-use crate::notify;
+use crate::{notify, paste, queue};
 
-fn region_shortcut() -> Shortcut {
-    Shortcut::new(None, Code::PrintScreen)
+#[derive(Debug, Clone, Copy)]
+enum Action {
+    CaptureRegion,
+    CaptureFullScreen,
+    ToggleQueueMode,
+    PasteQueue,
+    ClearQueue,
+    UndoLast,
 }
 
-fn fullscreen_shortcut() -> Shortcut {
-    Shortcut::new(Some(Modifiers::SHIFT), Code::PrintScreen)
+/// Default bindings. Never plain Ctrl+Alt (AltGr on Turkish keyboards) or Ctrl+Shift+V
+/// (paste-as-plain-text in many apps).
+fn bindings() -> [(Shortcut, &'static str, Action); 6] {
+    let csa = Modifiers::CONTROL | Modifiers::SHIFT | Modifiers::ALT;
+    [
+        (
+            Shortcut::new(None, Code::PrintScreen),
+            "PrintScreen",
+            Action::CaptureRegion,
+        ),
+        (
+            Shortcut::new(Some(Modifiers::SHIFT), Code::PrintScreen),
+            "Shift+PrintScreen",
+            Action::CaptureFullScreen,
+        ),
+        (
+            Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyQ),
+            "Ctrl+Shift+Q",
+            Action::ToggleQueueMode,
+        ),
+        (
+            Shortcut::new(Some(csa), Code::KeyV),
+            "Ctrl+Shift+Alt+V",
+            Action::PasteQueue,
+        ),
+        (
+            Shortcut::new(Some(csa), Code::KeyX),
+            "Ctrl+Shift+Alt+X",
+            Action::ClearQueue,
+        ),
+        (
+            Shortcut::new(Some(csa), Code::KeyZ),
+            "Ctrl+Shift+Alt+Z",
+            Action::UndoLast,
+        ),
+    ]
 }
 
 /// Global shortcut handler. Runs on the main thread, so real work goes to a worker.
@@ -24,21 +64,23 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
     if event.state != ShortcutState::Pressed {
         return;
     }
+    let Some((_, _, action)) = bindings().into_iter().find(|(s, _, _)| s == shortcut) else {
+        return;
+    };
     let app = app.clone();
-    if *shortcut == region_shortcut() {
-        std::thread::spawn(move || region::start(&app));
-    } else if *shortcut == fullscreen_shortcut() {
-        std::thread::spawn(move || fullscreen::capture_to_clipboard(&app));
-    }
+    std::thread::spawn(move || match action {
+        Action::CaptureRegion => region::start(&app),
+        Action::CaptureFullScreen => fullscreen::capture(&app),
+        Action::ToggleQueueMode => queue::toggle_mode(&app),
+        Action::PasteQueue => paste::run(&app),
+        Action::ClearQueue => queue::clear(&app),
+        Action::UndoLast => queue::undo_last(&app),
+    });
 }
 
 /// Registers the default shortcuts and tells the user (via toast) about any that failed.
 pub fn register_defaults<R: Runtime>(app: &AppHandle<R>) {
-    let shortcuts = [
-        (region_shortcut(), "PrintScreen"),
-        (fullscreen_shortcut(), "Shift+PrintScreen"),
-    ];
-    for (shortcut, name) in shortcuts {
+    for (shortcut, name, _) in bindings() {
         let result = app.global_shortcut().register(shortcut);
         #[cfg(debug_assertions)]
         eprintln!("register {name}: {result:?}");

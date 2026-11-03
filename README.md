@@ -13,7 +13,7 @@ Tüm veriler yereldir, telemetri yoktur.
 |---|---|---|
 | 0 | Yapıştırma denemesi (`spikes/paste-test`, `docs/paste-matrix.md`) | Tamam |
 | 1 | Tauri iskeleti, tray, bölge yakalama | Tamam |
-| 2 | Görsel kuyruğu, rozet, toplu/sıralı yapıştırma | — |
+| 2 | Görsel kuyruğu, rozet, toplu/sıralı yapıştırma | Tamam |
 | 3 | Metin kuyruğu (MVP) | — |
 | 4 | Önizleme paneli, çizim araçları | — |
 | 5 | Ayarlar, kurulum, güncelleme (v1) | — |
@@ -37,10 +37,25 @@ cd src-tauri; cargo test; cargo clippy --all-targets -- -D warnings
 | Kısayol | İşlev |
 |---|---|
 | PrintScreen | Bölge seçerek yakala (tepsi ikonuna sol tık da aynı) |
-| Shift+PrintScreen | İmlecin olduğu ekranı panoya kopyala |
-| Ctrl+C / Enter | Seçimi panoya kopyala |
+| Shift+PrintScreen | İmlecin olduğu ekranı panoya kopyala (kuyruk modunda kuyruğa ekle) |
+| Ctrl+Shift+Q | Kuyruk modunu aç/kapat (sağ altta "Kuyruk: N" rozeti) |
+| Ctrl+Shift+Alt+V | Kuyruğu sırasıyla yapıştır, ardından önceki pano içeriğini geri yükle |
+| Ctrl+Shift+Alt+Z | Kuyruktaki son öğeyi geri al |
+| Ctrl+Shift+Alt+X | Kuyruğu temizle |
+| Ctrl+C / Enter | Seçimi panoya kopyala (kuyruk modunda kuyruğa ekle) |
 | Ctrl+S | Seçimi PNG olarak kaydet |
-| Esc / sağ tık | İptal |
+| Esc / sağ tık | İptal (sıralı yapıştırmada: durdur) |
+
+### Yapıştırma yöntemleri
+
+- **Toplu:** Kuyruktaki tüm görseller tek bir dosya listesi olarak panoya konur ve tek Ctrl+V gönderilir. Yalnız görsel içeren kuyruklarda varsayılandır.
+- **Sıralı:** Her öğe tek tek panoya konup yapıştırılır (öğeler arası bekleme varsayılan 250 ms). Toplu yapıştırmada yalnızca ilk görseli alan uygulamalar için `%APPDATA%\ClipQueue\settings.json` içindeki `app_rules` ile seçilebilir:
+
+```json
+{ "app_rules": [{ "process": "whatsapp.exe", "mode": "sequential", "delay_ms": 400 }] }
+```
+
+Kuyruktaki görseller `%TEMP%\clipqueue\<oturum>` altında tutulur ve uygulama kapanınca silinir.
 
 Windows 11'de PrintScreen varsayılan olarak Ekran Alıntısı Aracı'nı açar. ClipQueue'nun yakalayabilmesi için Ayarlar → Erişilebilirlik → Klavye → "Ekran alıntısı aracını açmak için Print Screen tuşunu kullan" seçeneğini kapatıp ClipQueue'yu yeniden başlatın. Lightshot gibi PrintScreen kullanan başka araçlar açıksa kısayollar çakışır.
 

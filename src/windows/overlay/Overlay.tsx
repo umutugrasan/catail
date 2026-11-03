@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { t } from "../../lib/i18n";
 import {
-  captureCopy,
+  captureCommit,
   captureSave,
   frameUrl,
   onWindowEvent,
@@ -74,7 +74,7 @@ export function Overlay() {
       busy.current = true;
       const scale = info.width / window.innerWidth;
       const rect = toImageRect(selection, scale, info);
-      void (action === "copy" ? captureCopy(rect) : captureSave(rect));
+      void (action === "copy" ? captureCommit(rect) : captureSave(rect));
     },
     [info, selection],
   );
@@ -187,8 +187,13 @@ export function Overlay() {
           style={{ left: toolbar.x, top: toolbar.y }}
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <button type="button" className="primary" title={t("overlay.copy_title")} onClick={() => finish("copy")}>
-            {t("overlay.copy")}
+          <button
+            type="button"
+            className="primary"
+            title={t(info.queueMode ? "overlay.add_to_queue_title" : "overlay.copy_title")}
+            onClick={() => finish("copy")}
+          >
+            {t(info.queueMode ? "overlay.add_to_queue" : "overlay.copy")}
           </button>
           <button type="button" title={t("overlay.save_title")} onClick={() => finish("save")}>
             {t("overlay.save")}

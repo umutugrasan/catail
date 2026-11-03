@@ -5,6 +5,10 @@ import { t } from "../../lib/i18n";
 const SHORTCUTS: [keys: string, labelKey: string][] = [
   ["PrintScreen", "settings.shortcut_region"],
   ["Shift + PrintScreen", "settings.shortcut_fullscreen"],
+  ["Ctrl + Shift + Q", "settings.shortcut_queue_mode"],
+  ["Ctrl + Shift + Alt + V", "settings.shortcut_paste"],
+  ["Ctrl + Shift + Alt + X", "settings.shortcut_clear"],
+  ["Ctrl + Shift + Alt + Z", "settings.shortcut_undo"],
 ];
 
 const OVERLAY_KEYS: [keys: string, labelKey: string][] = [
@@ -51,6 +55,7 @@ export function Settings() {
         <KeyTable rows={OVERLAY_KEYS} />
       </section>
 
+      <p className="note">{t("settings.queue_note")}</p>
       <p className="note">{t("settings.printscreen_note")}</p>
       <p className="muted">{t("settings.coming_soon")}</p>
       {version && <p className="muted">{t("settings.version", { version })}</p>}

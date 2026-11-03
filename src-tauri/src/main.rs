@@ -1,6 +1,7 @@
 // No console window in release builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod badge;
 mod capture;
 mod clipboard;
 mod commands;
@@ -8,21 +9,23 @@ mod hotkeys;
 mod i18n;
 mod notify;
 mod overlay;
+mod paste;
+mod queue;
+mod settings;
 mod state;
+mod tray;
 
-use tauri::menu::{CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem};
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder};
+use tauri::{Manager, RunEvent};
 
 use i18n::t;
+use queue::store::{remove_stale_sessions, session_name, QueueStore};
+use settings::Settings;
 use state::AppState;
 
-const MENU_CAPTURE: &str = "capture";
-const MENU_QUEUE: &str = "queue";
-const MENU_SETTINGS: &str = "settings";
-const MENU_QUIT: &str = "quit";
-
 fn main() {
+    let temp_root = queue::temp_root();
+    let session = session_name(chrono::Local::now(), std::process::id());
+
     tauri::Builder::default()
         // Must be registered first so a second launch exits before doing anything else.
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
@@ -35,116 +38,43 @@ fn main() {
         )
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
-        .manage(AppState::default())
+        .manage(AppState::new(
+            QueueStore::new(&temp_root, &session),
+            Settings::load(),
+        ))
         .register_uri_scheme_protocol(capture::region::PROTOCOL, capture::region::serve)
         .invoke_handler(tauri::generate_handler![
             commands::overlay_session,
             commands::overlay_ready,
             commands::overlay_selection_started,
             commands::overlay_cancel,
-            commands::capture_copy,
+            commands::capture_commit,
             commands::capture_save,
+            commands::badge_state,
         ])
-        .setup(|app| {
-            build_tray(app.handle())?;
+        .setup(move |app| {
+            // Single-instance has already exited any second copy, so older folders are stale.
+            remove_stale_sessions(&temp_root, &session);
+            tray::build(app.handle())?;
             hotkeys::register_defaults(app.handle());
             let handle = app.handle().clone();
-            std::thread::spawn(move || overlay::prewarm(&handle));
+            std::thread::spawn(move || {
+                overlay::prewarm(&handle);
+                badge::prewarm(&handle);
+            });
             Ok(())
         })
         .build(tauri::generate_context!())
         .expect("failed to build ClipQueue")
-        .run(|_app, event| {
+        .run(|app, event| match event {
             // Tray app: closing the settings window must not quit. Only "Çıkış" (exit code set) does.
-            if let RunEvent::ExitRequested { api, code, .. } = event {
-                if code.is_none() {
-                    api.prevent_exit();
-                }
+            RunEvent::ExitRequested { api, code, .. } if code.is_none() => api.prevent_exit(),
+            // Queued screenshots may be sensitive; don't leave them in %TEMP%.
+            RunEvent::Exit => {
+                let state = app.state::<AppState>();
+                let dir = state.queue.lock().unwrap().session_dir().to_path_buf();
+                let _ = std::fs::remove_dir_all(dir);
             }
+            _ => {}
         });
-}
-
-fn build_tray(app: &AppHandle) -> tauri::Result<()> {
-    let capture = MenuItem::with_id(
-        app,
-        MENU_CAPTURE,
-        t("tray.capture"),
-        true,
-        Some("PrintScreen"),
-    )?;
-    // Queue mode arrives in phase 2; shown disabled so the menu layout is final.
-    let queue = CheckMenuItem::with_id(
-        app,
-        MENU_QUEUE,
-        t("tray.queue_mode"),
-        false,
-        false,
-        None::<&str>,
-    )?;
-    let settings = MenuItem::with_id(app, MENU_SETTINGS, t("tray.settings"), true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, MENU_QUIT, t("tray.quit"), true, None::<&str>)?;
-    let separator = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&capture, &queue, &settings, &separator, &quit])?;
-
-    TrayIconBuilder::with_id("main")
-        .icon(
-            app.default_window_icon()
-                .cloned()
-                .expect("bundle icon is configured"),
-        )
-        .tooltip(t("tray.tooltip"))
-        .menu(&menu)
-        .show_menu_on_left_click(false)
-        .on_menu_event(on_menu_event)
-        .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::Click {
-                button: MouseButton::Left,
-                button_state: MouseButtonState::Up,
-                ..
-            } = event
-            {
-                let app = tray.app_handle().clone();
-                std::thread::spawn(move || capture::region::start(&app));
-            }
-        })
-        .build(app)?;
-    Ok(())
-}
-
-fn on_menu_event(app: &AppHandle, event: MenuEvent) {
-    let app = app.clone();
-    match event.id.as_ref() {
-        MENU_CAPTURE => {
-            std::thread::spawn(move || capture::region::start(&app));
-        }
-        MENU_SETTINGS => {
-            std::thread::spawn(move || open_settings(&app));
-        }
-        MENU_QUIT => app.exit(0),
-        _ => {}
-    }
-}
-
-/// Opens (or focuses) the settings window. Must not run on the main thread.
-fn open_settings(app: &AppHandle) {
-    if let Some(window) = app.get_webview_window("settings") {
-        let _ = window.unminimize();
-        let _ = window.show();
-        let _ = window.set_focus();
-        return;
-    }
-    let result = WebviewWindowBuilder::new(
-        app,
-        "settings",
-        WebviewUrl::App("src/windows/settings/index.html".into()),
-    )
-    .title(t("settings.title"))
-    .inner_size(560.0, 520.0)
-    .resizable(false)
-    .maximizable(false)
-    .center()
-    .build();
-    if let Err(e) = result {
-        eprintln!("cannot open settings: {e}");
-    }
 }
