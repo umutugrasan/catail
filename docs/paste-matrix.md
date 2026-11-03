@@ -32,7 +32,7 @@ Her testten önce panoya bir metin kopyala (ör. `ESKI-PANO`). Test bittikten so
 
 | Uygulama | Ortam | Mod A (toplu) | Mod B (sıralı) | Mod B min. gecikme (ms) | Pano geri geldi mi | Not |
 |---|---|---|---|---|---|---|
-| ChatGPT | Chrome | | | | | |
+| ChatGPT | Chrome | ✅ | ✅ | 250 (varsayılan) | kontrol edilmedi | |
 | ChatGPT | Edge | | | | | |
 | Claude | Chrome | | | | | |
 | Claude | Edge | | | | | |
