@@ -18,8 +18,8 @@ Tüm veriler yereldir, telemetri yoktur.
 | 4 | Rozete tıklayınca yukarı açılan kuyruk paneli (sıralı önizleme, sürükleyerek yer değiştirme, ✕ ile silme), çizim araçları | Tamam |
 | 5 | Ayarlar penceresi, kurulum dosyası (NSIS), GitHub Releases ile otomatik güncelleme (v1) | Tamam |
 | 6 | macOS | — |
-| 7 | Dışa aktarma ve paylaşım (v2) | — |
-| 8 | Ekran görüntüsünden metin tanıma (OCR), metin seçme, çeviri | Planlandı |
+| 7 | Kuyruğu ZIP / PDF olarak kaydetme (paylaşım linki ayrıca) | Tamam |
+| 8 | Ekran görüntüsünden metin tanıma (OCR, internetsiz) ve uygulama içi çeviri | Tamam |
 
 ## Kurulum
 
@@ -75,9 +75,17 @@ Kuyrukta öğe olduğu sürece sağ altta "Kuyruk: N" rozeti görünür. Hedef u
 
 Sağ alttaki rozete tıklayınca yukarı doğru bir panel açılır: kuyruktaki görseller ve metinler sırayla listelenir. Satırları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), ✕ ile tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
 
+### Metin tanıma ve çeviri
+
+Alan seçince araç çubuğundaki **Metni al**, seçili alandaki yazıyı Windows'un kendi OCR motoruyla (internetsiz, Türkçe dahil) okur. Çıkan metni düzenleyebilir, kopyalayabilir, kuyruğa ekleyebilir ya da **Çevir** ile uygulamanın içinde çevirebilirsin: Türkçe olmayan metin Türkçeye, Türkçe metin İngilizceye çevrilir. Çeviri için metin yalnızca **Çevir**'e basınca Google Çeviri'ye gönderilir (resmi olmayan ücretsiz uç nokta; Google değiştirirse çeviri hata verebilir).
+
+### Kuyruğu kaydetme
+
+Kuyruk panelindeki **Kaydet** menüsü kuyruğu **ZIP** (görseller PNG, metinler TXT, sırayla numaralı) ya da **PDF** (her öğe bir sayfa) olarak kaydeder.
+
 ### Çizim araçları
 
-Alan seçince sağında araç çubuğu çıkar: seç/taşı, ok, dikdörtgen, kalem, fosforlu kalem, metin, bulanıklaştırma (pikselleştirme); altı renk, üç kalınlık ve geri al (Ctrl+Z). Çizimler kopyalanan, kaydedilen ve kuyruğa eklenen görüntüye tam çözünürlükte işlenir.
+Alan seçince sağında araç çubuğu çıkar: seç/taşı, ok, dikdörtgen, kalemler (kalem, fosforlu kalem), metin, bulanıklaştırma (pikselleştirme), renk ve kalınlık, geri al (Ctrl+Z). Kalemler ile renk/kalınlık tek düğmede toplanır; tıklayınca açılır. Çizimler kopyalanan, kaydedilen ve kuyruğa eklenen görüntüye tam çözünürlükte işlenir.
 
 ### Yapıştırma yöntemleri
 

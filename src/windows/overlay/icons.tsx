@@ -96,3 +96,53 @@ export function ToolIcon({ tool }: { tool: Tool }) {
       );
   }
 }
+
+/** Bin whose lid tilts open on hover (see `.trash` in the stylesheets). */
+export function TrashIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      className="trash"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <g className="trash__lid">
+        <path d="M4 7h16" />
+        <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+      </g>
+      <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+export function ScanTextIcon() {
+  return (
+    <Icon size={16}>
+      <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+      <path d="M8 9h8M12 9v7" />
+    </Icon>
+  );
+}
+
+export function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+export function CloseIcon() {
+  return (
+    <Icon size={14}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Icon>
+  );
+}

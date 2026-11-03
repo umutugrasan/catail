@@ -13,8 +13,9 @@ use crate::i18n::{t, t_with};
 use crate::panel::{self, ItemView};
 use crate::settings::Settings;
 use crate::state::AppState;
+use crate::translate::{self, Translation};
 use crate::updater::{self, UpdateInfo};
-use crate::{clipboard, hotkeys, notify, overlay, paste, queue};
+use crate::{clipboard, export, hotkeys, notify, ocr, overlay, paste, queue};
 use tauri_plugin_autostart::ManagerExt;
 
 #[derive(Debug, Serialize)]
@@ -245,6 +246,128 @@ pub async fn update_check(app: AppHandle) -> Result<Option<UpdateInfo>, String> 
 #[tauri::command]
 pub async fn update_install(app: AppHandle) -> Result<(), String> {
     updater::install(&app).await.map_err(|e| format!("{e:#}"))
+}
+
+/// "Metni al" on the overlay: recognizes text in the selection. The overlay stays open.
+#[tauri::command]
+pub async fn capture_ocr(
+    app: AppHandle,
+    window: WebviewWindow,
+    rect: SelectionRect,
+) -> Result<String, String> {
+    let index = overlay::index_of(window.label()).ok_or("not an overlay window")?;
+    let image = region::crop_selection(&app.state::<AppState>(), index, rect)
+        .map_err(|e| format!("{e:#}"))?;
+    tauri::async_runtime::spawn_blocking(move || ocr::recognize(&image))
+        .await
+        .map_err(|e| e.to_string())?
+        .map_err(|e| format!("{e:#}"))
+}
+
+#[tauri::command]
+pub fn clipboard_write_text(text: String) -> Result<(), String> {
+    clipboard::write_text(&text).map_err(|e| format!("{e:#}"))
+}
+
+#[tauri::command]
+pub fn queue_add_text(app: AppHandle, text: String) {
+    queue::add_text(&app, text, None);
+}
+
+#[tauri::command]
+pub async fn translate_text(text: String) -> Result<Translation, String> {
+    translate::translate(&text)
+        .await
+        .map_err(|e| t_with("ocr.translate_failed", &[("error", &format!("{e:#}"))]))
+}
+
+#[derive(Debug, Clone, Copy, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ExportFormat {
+    Zip,
+    Pdf,
+}
+
+/// Panel "Dışa aktar". For PDF the panel renders text items into page images (it has the
+/// fonts) and passes them as base64 PNGs keyed by item id. Returns the saved path, or `None`
+/// when the user cancels the dialog.
+#[tauri::command]
+pub async fn queue_export(
+    app: AppHandle,
+    format: ExportFormat,
+    text_pages: std::collections::HashMap<uuid::Uuid, String>,
+) -> Result<Option<String>, String> {
+    use base64::Engine;
+
+    let items = app
+        .state::<AppState>()
+        .queue
+        .lock()
+        .unwrap()
+        .items()
+        .to_vec();
+    if items.is_empty() {
+        return Ok(None);
+    }
+    // The panel is always on top and would cover the dialog.
+    panel::hide(&app);
+
+    let (extension, filter) = match format {
+        ExportFormat::Zip => ("zip", t("export.zip_filter")),
+        ExportFormat::Pdf => ("pdf", t("export.pdf_filter")),
+    };
+    let mut dialog = app
+        .dialog()
+        .file()
+        .set_title(t("export.dialog_title"))
+        .set_file_name(format!(
+            "StackScreen_Kuyruk_{}.{extension}",
+            Local::now().format("%Y-%m-%d_%H-%M-%S")
+        ))
+        .add_filter(filter, &[extension]);
+    if let Ok(dir) = app.path().document_dir() {
+        dialog = dialog.set_directory(dir);
+    }
+    let picked = tauri::async_runtime::spawn_blocking(move || dialog.blocking_save_file())
+        .await
+        .map_err(|e| e.to_string())?;
+    let Some(path) = picked.and_then(|p| p.into_path().ok()) else {
+        return Ok(None);
+    };
+    let path = match path.extension() {
+        Some(ext) if ext.eq_ignore_ascii_case(extension) => path,
+        _ => path.with_extension(extension),
+    };
+
+    let target = path.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || match format {
+        ExportFormat::Zip => export::write_zip(&items, &target),
+        ExportFormat::Pdf => {
+            let mut pages = std::collections::HashMap::new();
+            for (id, encoded) in text_pages {
+                let png = base64::engine::general_purpose::STANDARD
+                    .decode(encoded)
+                    .map_err(|e| anyhow::anyhow!("bad text page: {e}"))?;
+                pages.insert(id, image::load_from_memory(&png)?.to_rgba8());
+            }
+            export::write_pdf(&items, &pages, &target)
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+
+    match result {
+        Ok(()) => {
+            let shown = path.display().to_string();
+            notify::show(
+                &app,
+                &t("app.name"),
+                &t_with("notify.export_done", &[("path", &shown)]),
+            );
+            Ok(Some(shown))
+        }
+        Err(e) => Err(report(&app, "notify.export_failed", e)),
+    }
 }
 
 /// Clears the queue from the overlay toolbar; the overlay stays open.

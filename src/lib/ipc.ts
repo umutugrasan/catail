@@ -20,6 +20,8 @@ export interface QueueItemView {
   kind: "image" | "text";
   /** Start of the text, for text items. */
   preview: string | null;
+  /** Whole text, for exporting. */
+  fullText: string | null;
   sourceApp: string | null;
 }
 
@@ -50,6 +52,13 @@ export interface Settings {
   clear_queue_after_paste: boolean;
   autostart: boolean;
   app_rules: AppPasteRule[];
+}
+
+export interface Translation {
+  text: string;
+  /** Detected source language, e.g. "en". */
+  source: string;
+  target: string;
 }
 
 export interface UpdateInfo {
@@ -109,6 +118,18 @@ export const updateCheck = () => invoke<UpdateInfo | null>("update_check");
 /** Downloads, installs and restarts the app. */
 export const updateInstall = () => invoke<void>("update_install");
 
+/** Recognizes text in the selection (offline, Windows OCR). */
+export const captureOcr = (rect: ImageRect) => invoke<string>("capture_ocr", { rect });
+/** Sends the text to Google Translate: into Turkish, or English if it's already Turkish. */
+export const translateText = (text: string) => invoke<Translation>("translate_text", { text });
+export const clipboardWriteText = (text: string) => invoke<void>("clipboard_write_text", { text });
+export const queueAddText = (text: string) => invoke<void>("queue_add_text", { text });
+
+export type ExportFormat = "zip" | "pdf";
+/** Resolves to the saved path, or null if the dialog was cancelled. */
+export const queueExport = (format: ExportFormat, textPages: Record<string, string>) =>
+  invoke<string | null>("queue_export", { format, textPages });
+
 /** URL of the frozen frame served by the Rust `capture` protocol. */
 export const frameUrl = (info: OverlayInfo) =>
   convertFileSrc(`${info.session}-${info.index}.png`, "capture");
@@ -131,4 +152,6 @@ export const BadgeEvents = {
 
 export const PanelEvents = {
   update: "panel:update",
+  opened: "panel:opened",
+  close: "panel:close",
 } as const;

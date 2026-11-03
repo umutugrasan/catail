@@ -1,16 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#3b82f6"/>
-      <stop offset="1" stop-color="#1d4ed8"/>
-    </linearGradient>
-  </defs>
-  <rect x="32" y="32" width="960" height="960" rx="220" fill="url(#bg)"/>
-  <!-- stacked captures: back to front -->
-  <rect x="352" y="196" width="480" height="340" rx="48" fill="#ffffff" opacity="0.45"/>
-  <rect x="272" y="306" width="480" height="340" rx="48" fill="#ffffff" opacity="0.7"/>
-  <rect x="192" y="416" width="480" height="340" rx="48" fill="#ffffff"/>
-  <!-- selection corners on the front card -->
-  <path d="M252 536v-60h60 M612 476h-60 M612 476v60 M252 636v60h60 M612 696h-60 M612 696v-60"
-        stroke="#1d4ed8" stroke-width="28" stroke-linecap="round" fill="none"/>
+  <!-- Pastel pink tile with two overlapping S strokes: "Stack Screen". -->
+  <rect x="32" y="32" width="960" height="960" rx="230" fill="#F7B3CF"/>
+  <rect x="32" y="32" width="960" height="960" rx="230" fill="none" stroke="#EE93BA" stroke-width="16"/>
+  <!-- Back S, offset up-right like a stacked card. -->
+  <path d="M 655 300 C 620 225 455 230 455 345 C 455 455 680 450 680 575 C 680 705 500 720 445 625"
+        fill="none" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="92" stroke-linecap="round"/>
+  <!-- Front S. -->
+  <path d="M 545 410 C 510 335 345 340 345 455 C 345 565 570 560 570 685 C 570 815 390 830 335 735"
+        fill="none" stroke="#5B2141" stroke-width="92" stroke-linecap="round"/>
 </svg>

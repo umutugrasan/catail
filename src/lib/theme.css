@@ -1,0 +1,87 @@
+/* Shared palette and motion for every Stack Screen window. Pastel pink surfaces, deep plum
+   text; motion is short and eased, never bouncy for its own sake. */
+:root {
+  --pink-50: #fff6fa;
+  --pink-100: #ffe8f1;
+  --pink-200: #fbd2e3;
+  --pink-300: #f7b3cf;
+  --pink-400: #ee93ba;
+  --pink-500: #e06d9f;
+  --plum-900: #3b1729;
+  --plum-700: #5b2141;
+  --plum-500: #8f5a75;
+  --plum-300: #c49aae;
+
+  --surface: var(--pink-50);
+  --surface-raised: #ffffff;
+  --surface-hover: var(--pink-100);
+  --border: var(--pink-200);
+  --text: var(--plum-900);
+  --text-muted: var(--plum-500);
+  --accent: var(--pink-300);
+  --accent-hover: var(--pink-400);
+  --accent-text: var(--plum-900);
+  --danger: #c8325f;
+  --danger-soft: #ffe1ea;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 10px 28px rgba(59, 23, 41, 0.18), 0 1px 3px rgba(59, 23, 41, 0.12);
+
+  --ease-out: cubic-bezier(0.22, 0.9, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Slight overshoot for things that pop open. */
+  --ease-pop: cubic-bezier(0.3, 1.35, 0.55, 1);
+  --fast: 140ms;
+  --normal: 220ms;
+
+  color-scheme: light;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

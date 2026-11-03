@@ -1,24 +1,16 @@
-:root {
-  --bg: #111827;
-  --row: #1f2937;
-  --row-hover: #273244;
-  --fg: #f9fafb;
-  --muted: #9ca3af;
-  --border: rgba(255, 255, 255, 0.1);
-  --accent: #3b82f6;
-  --danger: #f87171;
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-}
-
 html,
 body,
 #root {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--surface);
+  color: var(--text);
   user-select: none;
+}
+
+button {
+  font: inherit;
 }
 
 .panel {
@@ -26,8 +18,32 @@ body,
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
-  padding: 12px;
+  padding: 14px;
   gap: 8px;
+  animation: panel-in 260ms var(--ease-out) both;
+}
+
+.panel--closing {
+  animation: panel-out 160ms var(--ease-in-out) both;
+}
+
+/* Rises from the badge below it. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
 }
 
 .panel__header {
@@ -44,7 +60,13 @@ body,
 
 .panel__hint {
   margin: 0;
-  color: var(--muted);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.panel__error {
+  margin: 0;
+  color: var(--danger);
   font-size: 12px;
 }
 
@@ -52,6 +74,7 @@ body,
   flex: 1;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   list-style: none;
 }
@@ -60,35 +83,56 @@ body,
 .panel__row {
   display: grid;
   grid-template-columns: 16px 20px 1fr auto 28px;
-  grid-template-rows: 1fr;
   align-items: center;
   gap: 8px;
   box-sizing: border-box;
   height: 64px;
   margin-bottom: 4px;
   padding: 6px 8px;
-  border-radius: 10px;
-  background: var(--row);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
   cursor: grab;
+  animation: rise-in 240ms var(--ease-out) both;
+  transition: background var(--fast) var(--ease-out), box-shadow var(--fast) var(--ease-out),
+    transform var(--fast) var(--ease-out);
 }
 
 .panel__row:hover {
-  background: var(--row-hover);
+  background: var(--pink-100);
 }
 
 .panel__row--dragging {
-  outline: 2px solid var(--accent);
+  box-shadow: var(--shadow);
+  transform: scale(1.02);
   cursor: grabbing;
 }
 
+.panel__row--removing {
+  animation: row-out 200ms var(--ease-in-out) both;
+  pointer-events: none;
+}
+
+@keyframes row-out {
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+    height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+  }
+}
+
 .panel__grip {
-  color: var(--muted);
+  color: var(--plum-300);
   font-size: 12px;
   letter-spacing: -2px;
 }
 
 .panel__index {
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -99,8 +143,8 @@ body,
   max-width: 160px;
   height: 52px;
   object-fit: cover;
-  border-radius: 6px;
-  background: #000;
+  border-radius: var(--radius-sm);
+  background: var(--pink-100);
   pointer-events: none;
 }
 
@@ -116,7 +160,7 @@ body,
 }
 
 .panel__meta {
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 11px;
   white-space: nowrap;
 }
@@ -128,19 +172,33 @@ body,
   width: 28px;
   height: 28px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--muted);
+  color: var(--text-muted);
   cursor: pointer;
+  transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out);
 }
 
 .panel__icon-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--fg);
+  background: var(--surface-hover);
+  color: var(--text);
 }
 
 .panel__remove:hover {
+  background: var(--danger-soft);
   color: var(--danger);
+}
+
+/* Lid tips open on any trash button hover. */
+.trash__lid {
+  transform-box: fill-box;
+  transform-origin: 90% 100%;
+  transition: transform var(--normal) var(--ease-pop);
+}
+
+.panel__remove:hover .trash__lid,
+.panel__button--danger:hover .trash__lid {
+  transform: translateY(-1.5px) rotate(18deg);
 }
 
 .panel__footer {
@@ -149,27 +207,120 @@ body,
 }
 
 .panel__button {
+  display: inline-flex;
   flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   height: 36px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--fg);
-  font: inherit;
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
   font-size: 13px;
   cursor: pointer;
+  transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out),
+    transform var(--fast) var(--ease-out);
 }
 
-.panel__button:hover {
-  background: rgba(255, 255, 255, 0.06);
+.panel__button:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.panel__button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.panel__button:disabled {
+  cursor: default;
+}
+
+.panel__button--danger .trash {
+  width: 0;
+  opacity: 0;
+  margin-right: -6px;
+  transition: width var(--normal) var(--ease-out), opacity var(--normal) var(--ease-out),
+    margin var(--normal) var(--ease-out);
+}
+
+.panel__button--danger:hover {
+  border-color: #f4b9c9;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.panel__button--danger:hover .trash {
+  width: 16px;
+  opacity: 1;
+  margin-right: 0;
 }
 
 .panel__button--primary {
   border-color: var(--accent);
   background: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
-.panel__button--primary:hover {
-  background: #2563eb;
+.panel__button--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.panel__export {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+.panel__menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  animation: pop-in var(--normal) var(--ease-pop) both;
+  transform-origin: bottom center;
+}
+
+.panel__menu button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.panel__menu button:hover {
+  background: var(--surface-hover);
+}
+
+.panel__menu strong {
+  font-size: 13px;
+}
+
+.panel__menu span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--pink-200);
+  border-top-color: var(--pink-500);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
 }

@@ -5,9 +5,11 @@ mod badge;
 mod capture;
 mod clipboard;
 mod commands;
+mod export;
 mod hotkeys;
 mod i18n;
 mod notify;
+mod ocr;
 mod overlay;
 mod panel;
 mod paste;
@@ -16,6 +18,7 @@ mod process;
 mod queue;
 mod settings;
 mod state;
+mod translate;
 mod tray;
 mod updater;
 
@@ -77,6 +80,11 @@ fn main() {
             commands::hotkeys_resume,
             commands::update_check,
             commands::update_install,
+            commands::capture_ocr,
+            commands::translate_text,
+            commands::clipboard_write_text,
+            commands::queue_add_text,
+            commands::queue_export,
             commands::badge_state,
         ])
         .setup(move |app| {

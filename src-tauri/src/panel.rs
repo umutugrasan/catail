@@ -20,6 +20,10 @@ use crate::state::AppState;
 const LABEL: &str = "panel";
 const URL: &str = "src/windows/panel/index.html";
 pub const EVENT_UPDATE: &str = "panel:update";
+/// Sent on every open so the panel replays its entrance animation.
+pub const EVENT_OPENED: &str = "panel:opened";
+/// Asks the panel to play its exit animation and then call `panel_close`.
+pub const EVENT_CLOSE: &str = "panel:close";
 
 /// URI scheme for queued images: `queue://localhost/<item id>.png`.
 pub const PROTOCOL: &str = "queue";
@@ -39,6 +43,8 @@ pub struct ItemView {
     pub kind: QueueItemKind,
     /// Start of the text, for text items.
     pub preview: Option<String>,
+    /// Whole text, for exporting.
+    pub full_text: Option<String>,
     pub source_app: Option<String>,
 }
 
@@ -48,6 +54,7 @@ impl From<&QueueItem> for ItemView {
             id: item.id,
             kind: item.kind,
             preview: item.text.as_deref().map(preview),
+            full_text: item.text.clone(),
             source_app: item.source_app.clone(),
         }
     }
@@ -75,13 +82,14 @@ fn is_open<R: Runtime>(app: &AppHandle<R>) -> bool {
 /// Badge click. Must not run on the main thread (the window may be created here).
 pub fn toggle<R: Runtime>(app: &AppHandle<R>) {
     if is_open(app) {
-        hide(app);
+        let _ = app.emit_to(LABEL, EVENT_CLOSE, ());
         return;
     }
     match ensure_window(app) {
         Ok(window) => {
             place(app, &window);
             let _ = app.emit_to(LABEL, EVENT_UPDATE, items(app));
+            let _ = app.emit_to(LABEL, EVENT_OPENED, ());
             let _ = window.show();
         }
         Err(e) => eprintln!("{e:#}"),

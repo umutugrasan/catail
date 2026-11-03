@@ -3,6 +3,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerE
 import { t } from "../../lib/i18n";
 import {
   captureDeliver,
+  captureOcr,
   captureDeliverAnnotated,
   frameUrl,
   onWindowEvent,
@@ -40,7 +41,8 @@ import {
   type Rect,
   type Size,
 } from "./geometry";
-import { CameraIcon, TextModeIcon } from "./icons";
+import { CameraIcon, ScanTextIcon, TextModeIcon, TrashIcon } from "./icons";
+import { OcrCard, type OcrState } from "./OcrCard";
 import { Sidebar } from "./Sidebar";
 
 /** Selections smaller than this (CSS px) count as a stray click. */
@@ -80,6 +82,7 @@ export function Overlay() {
   // Read by commitText: blur and the next click can both fire for the same draft.
   const textDraftRef = useRef<TextDraft | null>(null);
   const [sidebarSize, setSidebarSize] = useState<Size>(SIDEBAR_FALLBACK);
+  const [ocr, setOcr] = useState<OcrState | null>(null);
   const busy = useRef(false);
   const frameRef = useRef<HTMLImageElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
@@ -98,6 +101,7 @@ export function Overlay() {
     setDraft(null);
     setTextDraft(null);
     setTool("select");
+    setOcr(null);
   }, [setTextDraft]);
 
   // Pull the current session: on startup (window may be created mid-capture) and on refresh.
@@ -194,6 +198,18 @@ export function Overlay() {
 
   const undo = useCallback(() => setShapes((current) => current.slice(0, -1)), []);
 
+  /** "Metni al": OCR on the frozen frame under the selection (drawings are ignored). */
+  const readText = useCallback(async () => {
+    if (!info || !selection) return;
+    setOcr({ status: "loading" });
+    try {
+      const text = await captureOcr(toImageRect(selection, info.width / window.innerWidth, info));
+      setOcr({ status: "done", text });
+    } catch (message) {
+      setOcr({ status: "error", message: String(message) });
+    }
+  }, [info, selection]);
+
   const commitText = useCallback(() => {
     const current = textDraftRef.current;
     setTextDraft(null);
@@ -206,6 +222,14 @@ export function Overlay() {
     const onKey = (e: KeyboardEvent) => {
       if (textDraft) return; // the text box handles its own keys
       const key = e.key.toLowerCase();
+      if (ocr) {
+        // The OCR card is open: its text box keeps Ctrl+C/Enter; Esc closes just the card.
+        if (key === "escape") {
+          e.preventDefault();
+          setOcr(null);
+        }
+        return;
+      }
       if (key === "escape") {
         e.preventDefault();
         void overlayCancel();
@@ -225,7 +249,7 @@ export function Overlay() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [finish, primary, undo, textDraft]);
+  }, [finish, primary, undo, textDraft, ocr]);
 
   // Focus a new text box once it's in the DOM (autoFocus alone loses to the click).
   const textOpen = textDraft !== null;
@@ -316,13 +340,14 @@ export function Overlay() {
   const scale = info.width / window.innerWidth;
   const imageRect = selection && toImageRect(selection, scale, info);
   const settled = selection !== null && (drag.kind === "none" || drag.kind === "draw");
-  const buttonCount = hasQueue ? 5 : 4;
+  const buttonCount = hasQueue ? 6 : 5;
   const toolbarSize = {
     width: buttonCount * TOOLBAR_BUTTON_WIDTH + (buttonCount - 1) * TOOLBAR_GAP + TOOLBAR_CHROME,
     height: TOOLBAR_HEIGHT,
   };
   const toolbar = settled && toolbarPosition(selection, toolbarSize, viewSize());
   const sidebar = settled && sidebarPosition(selection, sidebarSize, viewSize());
+  const flyoutSide = sidebar && sidebar.x < selection.x ? "left" : "right";
   const primaryClass = (action: Delivery) => (action === primary ? "primary" : undefined);
   const label = selection && sizeLabelPosition(selection, SIZE_LABEL_HEIGHT);
   const cursorClass = drag.kind === "move" ? " overlay--moving" : drawing ? " overlay--drawing" : "";
@@ -407,6 +432,14 @@ export function Overlay() {
         />
       )}
 
+      {ocr && (
+        <OcrCard
+          state={ocr}
+          onClose={() => setOcr(null)}
+          onQueued={() => setInfo((current) => current && { ...current, queueCount: current.queueCount + 1 })}
+        />
+      )}
+
       {label && imageRect && (
         <div className="overlay__size" style={{ left: label.x, top: label.y }}>
           {imageRect.width} × {imageRect.height}
@@ -421,6 +454,7 @@ export function Overlay() {
           color={color}
           width={width}
           canUndo={shapes.length > 0}
+          flyoutSide={flyoutSide}
           onTool={setTool}
           onColor={setColor}
           onWidth={setWidth}
@@ -445,6 +479,10 @@ export function Overlay() {
           <button type="button" title={t("overlay.save_title")} onClick={() => void finish("save")}>
             {t("overlay.save")}
           </button>
+          <button type="button" className="with-icon" title={t("overlay.read_text_title")} onClick={() => void readText()}>
+            <ScanTextIcon />
+            {t("overlay.read_text")}
+          </button>
           <button
             type="button"
             className={primaryClass("enqueue")}
@@ -460,10 +498,11 @@ export function Overlay() {
           {hasQueue && (
             <button
               type="button"
-              className="danger"
+              className="danger with-icon"
               title={t("overlay.clear_queue_title", { count: info.queueCount })}
               onClick={() => void clearQueue()}
             >
+              <TrashIcon />
               {t("overlay.clear_queue")}
             </button>
           )}

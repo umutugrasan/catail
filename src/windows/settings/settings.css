@@ -1,32 +1,13 @@
+/* Pastel pink theme from theme.css, mapped to this window's names. */
 :root {
-  --bg: #ffffff;
-  --fg: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --field-bg: #ffffff;
-  --kbd-bg: #f3f4f6;
-  --note-bg: #eff6ff;
-  --note-border: #bfdbfe;
-  --accent: #2563eb;
-  --accent-fg: #ffffff;
-  --danger: #dc2626;
-  color-scheme: light dark;
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1f2937;
-    --fg: #f9fafb;
-    --muted: #9ca3af;
-    --border: #374151;
-    --field-bg: #111827;
-    --kbd-bg: #111827;
-    --note-bg: #1e3a5f;
-    --note-border: #2563eb;
-    --accent: #3b82f6;
-    --danger: #f87171;
-  }
+  --bg: var(--surface);
+  --fg: var(--text);
+  --muted: var(--text-muted);
+  --field-bg: var(--surface-raised);
+  --kbd-bg: var(--surface-raised);
+  --note-bg: var(--pink-100);
+  --note-border: var(--pink-300);
+  --accent-fg: var(--accent-text);
 }
 
 body {
@@ -113,6 +94,20 @@ button.primary {
   background: var(--accent);
   color: var(--accent-fg);
   font-weight: 600;
+  transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
+}
+
+button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+button.primary:active:not(:disabled),
+button.secondary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+section {
+  animation: rise-in var(--normal) var(--ease-out) both;
 }
 
 button.secondary {
@@ -200,8 +195,9 @@ button:disabled {
 }
 
 .hotkey__button--recording {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--accent-hover);
+  background: var(--pink-100);
+  color: var(--plum-700);
 }
 
 .hotkey__error,
