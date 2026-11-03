@@ -137,7 +137,7 @@
   },
   "panel": {
     "title": "Kuyruk · {count} öğe",
-    "hint": "Sürükleyerek sırayı değiştir. Ctrl+V ya da Yapıştır bu sırayla yapıştırır.",
+    "hint": "Sürükleyerek sırayı değiştir",
     "kind_image": "Görsel",
     "kind_text": "Metin",
     "remove": "Kuyruktan sil",
@@ -148,7 +148,8 @@
     "export": "Kaydet",
     "export_zip": "Görseller PNG, metinler TXT olarak",
     "export_pdf": "Her öğe bir sayfa",
-    "zoom": "Büyüt"
+    "zoom": "Büyüt",
+    "title_short": "Kuyruk"
   },
   "ocr": {
     "no_language": "Windows'ta metin tanıma için dil paketi yok. Ayarlar → Zaman ve dil → Dil bölümünden Türkçe ya da İngilizce dil paketini ekle.",

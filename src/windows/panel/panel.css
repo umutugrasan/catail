@@ -18,10 +18,10 @@ button {
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
-  padding: 10px;
-  gap: 6px;
-  /* Grows out of the badge, which sits just below the panel's right edge. */
-  transform-origin: 85% 100%;
+  padding: 8px;
+  gap: 8px;
+  /* Grows out of the badge, which sits just below the panel. */
+  transform-origin: 70% 100%;
   animation: panel-in 380ms var(--ease-pop) both;
 }
 
@@ -32,7 +32,7 @@ button {
 @keyframes panel-in {
   0% {
     opacity: 0;
-    transform: translateY(26px) scale(0.86);
+    transform: translateY(26px) scale(0.82);
     filter: blur(2px);
   }
   60% {
@@ -48,12 +48,11 @@ button {
 @keyframes panel-out {
   to {
     opacity: 0;
-    transform: translateY(18px) scale(0.9);
+    transform: translateY(18px) scale(0.88);
   }
 }
 
 .panel__header,
-.panel__hint,
 .panel__footer {
   animation: fade-in 260ms var(--ease-out) both;
   animation-delay: 90ms;
@@ -63,39 +62,54 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-left: 4px;
 }
 
 .panel__header h1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
 }
 
-.panel__hint {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 12px;
+.panel__count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .panel__error {
   margin: 0;
   color: var(--danger);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .panel__list {
   flex: 1;
-  margin: 0;
-  padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  list-style: none;
+  scrollbar-width: none;
 }
 
-/* Rows sit at `translateY(index * ROW_HEIGHT)`, so reordering slides them into place. */
-.panel__track {
+.panel__list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tiles sit at `translate(x, y)` of their slot, so reordering slides them into place. */
+.panel__grid {
   position: relative;
-  margin: 0;
+  width: 150px;
+  margin: 0 auto;
   padding: 0;
   list-style: none;
 }
@@ -103,21 +117,20 @@ button {
 .panel__slot {
   position: absolute;
   top: 0;
-  right: 0;
   left: 0;
-  transition: transform 240ms var(--ease-out);
+  transition: transform 260ms var(--ease-out);
   will-change: transform;
 }
 
-/* The dragged row follows the pointer directly. */
+/* The dragged tile follows the pointer directly. */
 .panel__slot--dragging {
   z-index: 2;
   transition: none;
 }
 
-.panel__slot--dragging .panel__row {
+.panel__slot--dragging .panel__tile {
   box-shadow: var(--shadow);
-  transform: scale(1.03) rotate(-0.6deg);
+  transform: scale(1.08) rotate(-3deg);
   cursor: grabbing;
 }
 
@@ -125,33 +138,43 @@ button {
   pointer-events: none;
 }
 
-.panel__slot--removing .panel__row {
-  animation: row-out 200ms var(--ease-in-out) both;
+.panel__slot--removing .panel__tile {
+  animation: tile-out 200ms var(--ease-in-out) both;
 }
 
-/* Fixed pitch (height + margin): drag targets are computed from it (ROW_HEIGHT in Panel.tsx). */
-.panel__row {
-  display: grid;
-  grid-template-columns: 10px 14px 1fr auto;
-  align-items: center;
-  gap: 6px;
+@keyframes tile-out {
+  to {
+    opacity: 0;
+    transform: scale(0.6) rotate(6deg);
+  }
+}
+
+/* 72 px squares, 6 px apart (GRID.pitch = 78 in Panel.tsx). */
+.panel__tile {
+  position: relative;
+  width: 72px;
+  height: 72px;
   box-sizing: border-box;
-  height: 50px;
-  margin-bottom: 4px;
-  padding: 4px 4px 4px 6px;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-raised);
   cursor: grab;
-  animation: row-in 320ms var(--ease-pop) both;
-  transition: background var(--fast) var(--ease-out), box-shadow var(--fast) var(--ease-out),
-    transform var(--fast) var(--ease-out);
+  animation: tile-in 340ms var(--ease-pop) backwards;
+  transition: transform var(--fast) var(--ease-out), box-shadow var(--fast) var(--ease-out),
+    border-color var(--fast) var(--ease-out);
 }
 
-@keyframes row-in {
+.panel__tile:hover {
+  border-color: var(--pink-400);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(59, 23, 41, 0.14);
+}
+
+@keyframes tile-in {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.96);
+    transform: translateY(12px) scale(0.8);
   }
   to {
     opacity: 1;
@@ -159,95 +182,115 @@ button {
   }
 }
 
-.panel__row:hover {
-  background: var(--pink-100);
-}
-
-@keyframes row-out {
-  to {
-    opacity: 0;
-    transform: translateX(36px) scale(0.92);
-  }
-}
-
-.panel__grip {
-  color: var(--plum-300);
-  font-size: 12px;
-  letter-spacing: -2px;
-}
-
-.panel__index {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.panel__thumb {
+.panel__tile img {
   width: 100%;
-  max-width: 150px;
-  height: 40px;
+  height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
-  background: var(--pink-100);
   pointer-events: none;
+}
+
+.panel__tile--text {
+  background: var(--pink-100);
 }
 
 .panel__text {
   display: -webkit-box;
+  margin: 6px 6px 0;
   overflow: hidden;
-  font-size: 12px;
+  font-size: 10.5px;
   line-height: 1.3;
   white-space: pre-wrap;
   word-break: break-word;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
 }
 
-.panel__actions {
-  display: flex;
-  gap: 0;
+.panel__index {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: rgba(59, 23, 41, 0.72);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
-.panel__header h1 {
-  font-size: 14px;
+.panel__tile--text .panel__index {
+  display: none;
+}
+
+/* Zoom and delete slide up from the tile's bottom edge on hover. */
+.panel__actions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  background: linear-gradient(to top, rgba(59, 23, 41, 0.55), transparent);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--fast) var(--ease-out), transform var(--normal) var(--ease-out);
+}
+
+.panel__tile:hover .panel__actions {
+  opacity: 1;
+  transform: none;
+}
+
+.panel__tile-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--plum-700);
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease-pop), background var(--fast) var(--ease-out),
+    color var(--fast) var(--ease-out);
+}
+
+.panel__tile-button:hover {
+  transform: scale(1.12);
+}
+
+.panel__tile-button--danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .panel__icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out);
+  transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out),
+    transform var(--normal) var(--ease-out);
 }
 
 .panel__icon-button:hover {
   background: var(--surface-hover);
   color: var(--text);
-}
-
-.panel__zoom:hover {
-  background: var(--pink-100);
-  color: var(--plum-700);
-}
-
-.panel__zoom svg {
-  transition: transform var(--fast) var(--ease-pop);
-}
-
-.panel__zoom:hover svg {
-  transform: scale(1.15);
-}
-
-.panel__remove:hover {
-  background: var(--danger-soft);
-  color: var(--danger);
+  transform: rotate(90deg);
 }
 
 /* Lid tips open on any trash button hover. */
@@ -257,14 +300,15 @@ button {
   transition: transform var(--normal) var(--ease-pop);
 }
 
-.panel__remove:hover .trash__lid,
+.panel__tile-button--danger:hover .trash__lid,
 .panel__button--danger:hover .trash__lid {
   transform: translateY(-1.5px) rotate(18deg);
 }
 
 .panel__footer {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .panel__button {
@@ -273,12 +317,11 @@ button {
   flex: 0 0 38px;
   align-items: center;
   justify-content: center;
-  height: 36px;
+  height: 34px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-raised);
   color: var(--text);
-  font-size: 13px;
   cursor: pointer;
   transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out),
     transform var(--fast) var(--ease-out);
@@ -288,16 +331,16 @@ button {
   background: var(--surface-hover);
 }
 
-.panel__button:hover:not(:disabled) svg {
-  transform: translateY(-1px);
-}
-
 .panel__button svg {
   transition: transform var(--fast) var(--ease-pop);
 }
 
+.panel__button:hover:not(:disabled) svg {
+  transform: translateY(-1px);
+}
+
 .panel__button:active:not(:disabled) {
-  transform: scale(0.94);
+  transform: scale(0.92);
 }
 
 .panel__button:disabled {
@@ -311,10 +354,10 @@ button {
 }
 
 .panel__button--primary {
+  flex-basis: 54px;
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-text);
-  font-weight: 600;
 }
 
 .panel__button--primary:hover:not(:disabled) {
@@ -326,56 +369,35 @@ button {
   display: flex;
 }
 
-.panel__spacer {
-  flex: 1;
-}
-
-.panel__button--primary {
-  flex-basis: 64px;
-}
-
 .panel__menu {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 0;
-  width: 190px;
+  left: 50%;
   display: flex;
-  flex-direction: column;
   gap: 2px;
   padding: 4px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-raised);
   box-shadow: var(--shadow);
+  translate: -50% 0;
   animation: pop-in var(--normal) var(--ease-pop) both;
-  transform-origin: bottom left;
+  transform-origin: bottom center;
 }
 
 .panel__menu button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-  padding: 7px 10px;
+  padding: 6px 12px;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text);
-  text-align: left;
+  font-size: 12px;
   cursor: pointer;
+  transition: background var(--fast) var(--ease-out);
 }
 
 .panel__menu button:hover {
   background: var(--surface-hover);
-}
-
-.panel__menu strong {
-  font-size: 13px;
-}
-
-.panel__menu span {
-  color: var(--text-muted);
-  font-size: 11px;
 }
 
 .spinner {
@@ -398,7 +420,7 @@ button {
   border-radius: var(--radius-sm);
   background: var(--plum-900);
   color: #fff;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   white-space: nowrap;
   opacity: 0;

@@ -17,17 +17,17 @@ import {
   type QueueItemView,
 } from "../../lib/ipc";
 import { CloseIcon, PasteIcon, SaveIcon, TrashIcon, ZoomIcon } from "../overlay/icons";
-import { moveItem, rowAt } from "./reorder";
+import { cellAt, cellPosition, moveItem, type Grid } from "./reorder";
 import { renderTextPage } from "./textPage";
 
-/** Row height plus gap; keep in sync with `.panel__row` in panel.css. */
-const ROW_HEIGHT = 54;
+/** Two columns of square tiles; keep in sync with `.panel__tile` in panel.css and panel.rs. */
+const GRID: Grid = { columns: 2, pitch: 78 };
 /** Keep in sync with the exit animations in panel.css. */
 const EXIT_MS = 160;
 const REMOVE_MS = 200;
 
-/** `grab` is where in the row the pointer took hold; `y` is the row's top while dragged. */
-type Drag = { id: string; from: number; moved: boolean; grab: number; y: number };
+/** `grab` is where in the tile the pointer took hold; `x`/`y` is the tile's spot while dragged. */
+type Drag = { id: string; moved: boolean; grabX: number; grabY: number; x: number; y: number };
 type Export = { kind: "idle" } | { kind: "menu" } | { kind: "busy" } | { kind: "error"; message: string };
 
 export function Panel() {
@@ -73,7 +73,7 @@ export function Panel() {
   }, [close]);
 
   const remove = (id: string) => {
-    // Let the row collapse before it disappears from the list.
+    // Let the tile shrink away before it leaves the grid; the rest then slide up.
     setRemoving((current) => new Set(current).add(id));
     setTimeout(() => void queueRemove(id), REMOVE_MS);
   };
@@ -94,105 +94,115 @@ export function Panel() {
     }
   };
 
-  /** Pointer Y inside the list's scrolled content. */
-  const listY = (clientY: number) => {
+  /** Pointer position inside the grid's scrolled content. */
+  const gridPoint = (clientX: number, clientY: number) => {
     const list = listRef.current;
-    return list ? clientY - list.getBoundingClientRect().top + list.scrollTop : 0;
+    if (!list) return { x: 0, y: 0 };
+    const r = list.getBoundingClientRect();
+    return { x: clientX - r.left, y: clientY - r.top + list.scrollTop };
   };
 
-  const onRowPointerDown = (e: ReactPointerEvent<HTMLLIElement>, id: string, index: number) => {
+  const onTilePointerDown = (e: ReactPointerEvent<HTMLLIElement>, id: string, index: number) => {
     if (e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    const y = index * ROW_HEIGHT;
-    setDrag({ id, from: index, moved: false, grab: listY(e.clientY) - y, y });
+    const p = gridPoint(e.clientX, e.clientY);
+    const cell = cellPosition(index, GRID);
+    setDrag({ id, moved: false, grabX: p.x - cell.x, grabY: p.y - cell.y, x: cell.x, y: cell.y });
   };
 
-  // The dragged row follows the pointer; the others slide aside as its slot changes.
-  const onRowPointerMove = (e: ReactPointerEvent<HTMLLIElement>) => {
+  // The dragged tile follows the pointer; the others slide aside as its slot changes.
+  const onTilePointerMove = (e: ReactPointerEvent<HTMLLIElement>) => {
     if (!drag) return;
-    const maxY = (items.length - 1) * ROW_HEIGHT;
-    const y = Math.min(Math.max(listY(e.clientY) - drag.grab, 0), maxY);
-    const target = rowAt(y + ROW_HEIGHT / 2, ROW_HEIGHT, items.length);
+    const p = gridPoint(e.clientX, e.clientY);
+    const rows = Math.ceil(items.length / GRID.columns);
+    const x = Math.min(Math.max(p.x - drag.grabX, 0), (GRID.columns - 1) * GRID.pitch);
+    const y = Math.min(Math.max(p.y - drag.grabY, 0), (rows - 1) * GRID.pitch);
+    const target = cellAt(x + GRID.pitch / 2, y + GRID.pitch / 2, GRID, items.length);
     const current = items.findIndex((item) => item.id === drag.id);
-    if (target !== current && current >= 0) {
-      setItems(moveItem(items, current, target));
-      setDrag({ ...drag, moved: true, y });
-    } else {
-      setDrag({ ...drag, y, moved: drag.moved || Math.abs(y - drag.from * ROW_HEIGHT) > 3 });
-    }
+    const start = cellPosition(current, GRID);
+    const moved = drag.moved || Math.hypot(x - start.x, y - start.y) > 3;
+    if (target !== current && current >= 0) setItems(moveItem(items, current, target));
+    setDrag({ ...drag, x, y, moved });
   };
 
-  const onRowPointerUp = () => {
+  const onTilePointerUp = () => {
     if (drag?.moved) void queueReorder(items.map((item) => item.id));
     setDrag(null);
   };
 
+  const rows = Math.ceil(items.length / GRID.columns);
+
   return (
     <main key={openCount} className={`panel${closing ? " panel--closing" : ""}`}>
       <header className="panel__header">
-        <h1>{t("panel.title", { count: items.length })}</h1>
+        <h1>
+          {t("panel.title_short")}
+          <span className="panel__count">{items.length}</span>
+        </h1>
         <button type="button" className="panel__icon-button" title={t("panel.close")} onClick={close}>
           <CloseIcon />
         </button>
       </header>
 
-      <p className="panel__hint">{t("panel.hint")}</p>
-
-      <div className="panel__list" ref={listRef}>
-        <ol className="panel__track" style={{ height: items.length * ROW_HEIGHT }}>
-        {items.map((item, index) => (
-          <li
-            key={item.id}
-            className={[
-              "panel__slot",
-              drag?.id === item.id && "panel__slot--dragging",
-              removing.has(item.id) && "panel__slot--removing",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={{ transform: `translateY(${drag?.id === item.id ? drag.y : index * ROW_HEIGHT}px)` }}
-            onPointerDown={(e) => onRowPointerDown(e, item.id, index)}
-            onPointerMove={onRowPointerMove}
-            onPointerUp={onRowPointerUp}
-            onPointerCancel={onRowPointerUp}
-            title={item.sourceApp ?? undefined}
-          >
-            {/* Stagger the entrance a little; capped so long queues don't wait. */}
-            <div className="panel__row" style={{ animationDelay: `${Math.min(index, 8) * 32}ms` }}>
-            <span className="panel__grip" aria-hidden="true">
-              ⋮⋮
-            </span>
-            <span className="panel__index">{index + 1}</span>
-            {item.kind === "image" ? (
-              <img className="panel__thumb" src={queueImageUrl(item.id)} alt="" draggable={false} />
-            ) : (
-              <span className="panel__text">{item.preview}</span>
-            )}
-            <span className="panel__actions">
-              {item.kind === "image" && (
-                <button
-                  type="button"
-                  className="panel__icon-button panel__zoom"
-                  title={t("panel.zoom")}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => void previewOpen(item.id)}
-                >
-                  <ZoomIcon />
-                </button>
-              )}
-              <button
-                type="button"
-                className="panel__icon-button panel__remove"
-                title={t("panel.remove")}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => remove(item.id)}
+      <div className="panel__list" ref={listRef} title={t("panel.hint")}>
+        <ol className="panel__grid" style={{ height: rows * GRID.pitch }}>
+          {items.map((item, index) => {
+            const dragged = drag?.id === item.id;
+            const at = dragged ? { x: drag.x, y: drag.y } : cellPosition(index, GRID);
+            return (
+              <li
+                key={item.id}
+                className={[
+                  "panel__slot",
+                  dragged && "panel__slot--dragging",
+                  removing.has(item.id) && "panel__slot--removing",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={{ transform: `translate(${at.x}px, ${at.y}px)` }}
+                onPointerDown={(e) => onTilePointerDown(e, item.id, index)}
+                onPointerMove={onTilePointerMove}
+                onPointerUp={onTilePointerUp}
+                onPointerCancel={onTilePointerUp}
               >
-                <TrashIcon size={15} />
-              </button>
-            </span>
-            </div>
-          </li>
-        ))}
+                {/* Stagger the entrance a little; capped so long queues don't wait. */}
+                <div
+                  className={`panel__tile panel__tile--${item.kind}`}
+                  style={{ animationDelay: `${Math.min(index, 10) * 30}ms` }}
+                  title={item.sourceApp ?? undefined}
+                >
+                  {item.kind === "image" ? (
+                    <img src={queueImageUrl(item.id)} alt="" draggable={false} />
+                  ) : (
+                    <span className="panel__text">{item.preview}</span>
+                  )}
+                  <span className="panel__index">{index + 1}</span>
+                  <span className="panel__actions">
+                    {item.kind === "image" && (
+                      <button
+                        type="button"
+                        className="panel__tile-button"
+                        title={t("panel.zoom")}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={() => void previewOpen(item.id)}
+                      >
+                        <ZoomIcon />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="panel__tile-button panel__tile-button--danger"
+                      title={t("panel.remove")}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={() => remove(item.id)}
+                    >
+                      <TrashIcon size={14} />
+                    </button>
+                  </span>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       </div>
 
@@ -205,7 +215,7 @@ export function Panel() {
           data-label={t("panel.clear")}
           onClick={() => void queueClear()}
         >
-          <TrashIcon size={18} />
+          <TrashIcon size={17} />
         </button>
 
         <div className="panel__export">
@@ -222,22 +232,18 @@ export function Panel() {
             <div className="panel__menu">
               <button type="button" onClick={() => void exportAs("zip")}>
                 <strong>ZIP</strong>
-                <span>{t("panel.export_zip")}</span>
               </button>
               <button type="button" onClick={() => void exportAs("pdf")}>
                 <strong>PDF</strong>
-                <span>{t("panel.export_pdf")}</span>
               </button>
             </div>
           )}
         </div>
 
-        <span className="panel__spacer" />
-
         <button
           type="button"
           className="panel__button panel__button--primary"
-          data-label={t("panel.paste_title")}
+          data-label={t("panel.paste")}
           onClick={() => void panelPaste()}
         >
           <PasteIcon />

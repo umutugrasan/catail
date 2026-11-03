@@ -33,7 +33,7 @@ body,
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   cursor: pointer;
-  animation: pop-in var(--normal) var(--ease-pop) both;
+  animation: pop-in var(--normal) var(--ease-pop) backwards;
   transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
 }
 
@@ -67,7 +67,7 @@ body,
 
 /* An item landed: squash, then spring back. */
 .badge--bump {
-  animation: badge-catch 520ms var(--ease-out) both;
+  animation: badge-catch 520ms var(--ease-out) backwards;
 }
 
 .badge--bump .badge__dot {

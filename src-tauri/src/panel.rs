@@ -28,9 +28,14 @@ pub const EVENT_CLOSE: &str = "panel:close";
 /// URI scheme for queued images: `queue://localhost/<item id>.png`.
 pub const PROTOCOL: &str = "queue";
 
-/// Logical size; the panel sits above the badge (see `badge.rs` for its size and margin).
-const WIDTH: f64 = 300.0;
-const HEIGHT: f64 = 460.0;
+/// Logical size: two columns of 72 px tiles (pitch 78, see Panel.tsx). The height follows
+/// the number of rows, up to a cap. The panel sits above the badge (see `badge.rs`).
+const WIDTH: f64 = 168.0;
+const TILE_PITCH: f64 = 78.0;
+const COLUMNS: usize = 2;
+/// Header, footer, gaps and padding around the grid.
+const CHROME_HEIGHT: f64 = 96.0;
+const MAX_HEIGHT: f64 = 520.0;
 const MARGIN: f64 = 16.0;
 const BADGE_HEIGHT: f64 = 40.0;
 const GAP: f64 = 8.0;
@@ -110,9 +115,13 @@ pub fn refresh<R: Runtime>(app: &AppHandle<R>) {
     let items = items(app);
     if items.is_empty() {
         hide(app);
-    } else {
-        let _ = app.emit_to(LABEL, EVENT_UPDATE, items);
+        return;
     }
+    // Grow or shrink with the queue (the bottom edge stays put above the badge).
+    if let Some(window) = app.get_webview_window(LABEL) {
+        place(app, &window);
+    }
+    let _ = app.emit_to(LABEL, EVENT_UPDATE, items);
 }
 
 fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
@@ -121,7 +130,7 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
     }
     WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App(URL.into()))
         .title("Stack Screen")
-        .inner_size(WIDTH, HEIGHT)
+        .inner_size(WIDTH, height_for(0))
         .decorations(false)
         .resizable(false)
         .always_on_top(true)
@@ -142,13 +151,20 @@ fn place<R: Runtime>(app: &AppHandle<R>, window: &WebviewWindow<R>) {
     };
     let scale = monitor.scale_factor();
     let area = monitor.work_area();
-    let (w, h) = ((WIDTH * scale).round(), (HEIGHT * scale).round());
+    let count = app.state::<AppState>().queue.lock().unwrap().len();
+    let (w, h) = ((WIDTH * scale).round(), (height_for(count) * scale).round());
     let x = f64::from(area.position.x) + f64::from(area.size.width) - w - MARGIN * scale;
     let bottom = f64::from(area.position.y) + f64::from(area.size.height)
         - (MARGIN + BADGE_HEIGHT + GAP) * scale;
     let y = (bottom - h).max(f64::from(area.position.y));
     let _ = window.set_position(PhysicalPosition::new(x as i32, y as i32));
     let _ = window.set_size(PhysicalSize::new(w as u32, h as u32));
+}
+
+/// Fits the grid's rows, so a short queue gets a short panel.
+pub fn height_for(count: usize) -> f64 {
+    let rows = count.div_ceil(COLUMNS).max(1);
+    (CHROME_HEIGHT + rows as f64 * TILE_PITCH).min(MAX_HEIGHT)
 }
 
 /// Parses `/<uuid>.png`.
@@ -192,6 +208,14 @@ mod tests {
         let p = preview(&long);
         assert_eq!(p.chars().count(), TEXT_PREVIEW_CHARS + 1);
         assert!(p.ends_with('…'));
+    }
+
+    #[test]
+    fn height_follows_rows_up_to_a_cap() {
+        assert_eq!(height_for(0), CHROME_HEIGHT + TILE_PITCH);
+        assert_eq!(height_for(2), CHROME_HEIGHT + TILE_PITCH);
+        assert_eq!(height_for(3), CHROME_HEIGHT + 2.0 * TILE_PITCH);
+        assert_eq!(height_for(100), MAX_HEIGHT);
     }
 
     #[test]

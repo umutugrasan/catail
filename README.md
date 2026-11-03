@@ -73,7 +73,7 @@ Kuyrukta öğe olduğu sürece sağ altta "Kuyruk: N" rozeti görünür. Hedef u
 
 ### Kuyruk paneli
 
-Sağ alttaki rozete tıklayınca yukarı doğru bir panel açılır: kuyruktaki görseller ve metinler sırayla listelenir. Satırları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), büyüteçle görseli büyük gör, çöp kutusuyla tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
+Sağ alttaki rozete tıklayınca yukarı doğru dar bir panel açılır: kuyruktaki görseller ve metinler iki sütunlu kare kartlar halinde sırayla dizilir. Kartları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), büyüteçle görseli büyük gör, çöp kutusuyla tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
 
 ### Metin tanıma ve çeviri
 
