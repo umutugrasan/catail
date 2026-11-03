@@ -159,7 +159,7 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-raised);
-  cursor: grab;
+  cursor: var(--paw);
   animation: tile-in 340ms var(--ease-pop) backwards;
   transition: transform var(--fast) var(--ease-out), box-shadow var(--fast) var(--ease-out),
     border-color var(--fast) var(--ease-out);
@@ -258,7 +258,7 @@ button {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.92);
   color: var(--plum-700);
-  cursor: pointer;
+  cursor: var(--paw);
   transition: transform var(--fast) var(--ease-pop), background var(--fast) var(--ease-out),
     color var(--fast) var(--ease-out);
 }
@@ -282,7 +282,7 @@ button {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-muted);
-  cursor: pointer;
+  cursor: var(--paw);
   transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out),
     transform var(--normal) var(--ease-out);
 }
@@ -322,7 +322,7 @@ button {
   border-radius: var(--radius);
   background: var(--surface-raised);
   color: var(--text);
-  cursor: pointer;
+  cursor: var(--paw);
   transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out),
     transform var(--fast) var(--ease-out);
 }
@@ -345,6 +345,14 @@ button {
 
 .panel__button:disabled {
   cursor: default;
+}
+
+/* While the cat jumps, the button stays put and lets it leave the frame. */
+.panel__button--jumping,
+.panel__button--jumping:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+  overflow: visible;
 }
 
 .panel__button--danger:hover {
@@ -392,7 +400,7 @@ button {
   background: transparent;
   color: var(--text);
   font-size: 12px;
-  cursor: pointer;
+  cursor: var(--paw);
   transition: background var(--fast) var(--ease-out);
 }
 

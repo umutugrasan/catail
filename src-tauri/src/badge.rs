@@ -12,7 +12,7 @@ use tauri::{
     WebviewWindow, WebviewWindowBuilder,
 };
 
-use crate::state::AppState;
+use crate::state::{AppState, UndoKind};
 
 const LABEL: &str = "badge";
 const URL: &str = "src/windows/badge/index.html";
@@ -32,22 +32,45 @@ pub struct BadgeState {
     pub count: usize,
     pub text_mode: bool,
     pub pasting: bool,
+    pub undo: Option<UndoView>,
+}
+
+/// "Geri al" offer as the badge shows it.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UndoView {
+    pub kind: UndoKind,
+    pub count: usize,
+    /// For the countdown bar.
+    pub remaining_ms: u64,
+    pub total_ms: u64,
 }
 
 pub fn current<R: Runtime>(app: &AppHandle<R>) -> BadgeState {
     let state = app.state::<AppState>();
     let count = state.queue.lock().unwrap().len();
+    let undo = state.undo.lock().unwrap().map(|offer| UndoView {
+        kind: offer.kind,
+        count: offer.count,
+        remaining_ms: offer
+            .until
+            .saturating_duration_since(std::time::Instant::now())
+            .as_millis() as u64,
+        total_ms: crate::queue::UNDO_FOR.as_millis() as u64,
+    });
     BadgeState {
         count,
         text_mode: state.text_mode.load(Ordering::SeqCst),
         pasting: state.pasting.load(Ordering::SeqCst),
+        undo,
     }
 }
 
 fn should_show<R: Runtime>(app: &AppHandle<R>) -> bool {
     let state = app.state::<AppState>();
     let has_items = state.queue.lock().unwrap().len() > 0;
-    let active = has_items || state.text_mode.load(Ordering::SeqCst);
+    let undo = state.undo.lock().unwrap().is_some();
+    let active = has_items || undo || state.text_mode.load(Ordering::SeqCst);
     active && !state.overlay_active.load(Ordering::SeqCst)
 }
 

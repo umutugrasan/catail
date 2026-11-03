@@ -108,7 +108,7 @@ fn paste<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<Outcome> {
     if settings.clear_queue_after_paste {
         // Only the pasted items: anything captured meanwhile stays queued.
         let ids: Vec<Uuid> = items.iter().map(|i| i.id).collect();
-        state.queue.lock().unwrap().forget(&ids);
+        queue::set_aside_pasted(app, &ids);
         // Pasting finishes the job: Ctrl+C goes back to normal.
         state.text_mode.store(false, Ordering::SeqCst);
     }

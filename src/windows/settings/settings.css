@@ -79,7 +79,7 @@ select {
 
 button {
   font: inherit;
-  cursor: pointer;
+  cursor: var(--paw);
 }
 
 button.primary,

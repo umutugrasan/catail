@@ -16,6 +16,8 @@ pub struct QueueStore {
     /// Never reset within a session: files of already-pasted items may still be read
     /// by the target app (browsers upload lazily), so names must not be reused.
     next_seq: u32,
+    /// Items just pasted or cleared, kept (with their files) so "Geri al" can bring them back.
+    set_aside: Vec<QueueItem>,
 }
 
 impl QueueStore {
@@ -25,6 +27,7 @@ impl QueueStore {
             session_dir: root.join(session),
             items: Vec::new(),
             next_seq: 1,
+            set_aside: Vec::new(),
         }
     }
 
@@ -94,17 +97,36 @@ impl QueueStore {
         self.items.iter().find(|item| item.id == id)
     }
 
-    /// Removes every item and its file.
-    pub fn clear(&mut self) {
-        for item in self.items.drain(..) {
-            remove_file(&item);
-        }
+    /// Takes the given items out of the queue but keeps them (and their files, which a
+    /// target app may still be reading) for `restore`. Returns how many were set aside.
+    pub fn set_aside(&mut self, ids: &[Uuid]) -> usize {
+        let (aside, keep) = std::mem::take(&mut self.items)
+            .into_iter()
+            .partition(|item| ids.contains(&item.id));
+        self.items = keep;
+        self.set_aside = aside;
+        self.set_aside.len()
     }
 
-    /// Drops the given items but keeps their files, which a target app may still be reading.
-    /// The files are deleted on exit or at the next start.
-    pub fn forget(&mut self, ids: &[Uuid]) {
-        self.items.retain(|item| !ids.contains(&item.id));
+    /// Empties the queue into the set-aside items.
+    pub fn set_aside_all(&mut self) -> usize {
+        self.set_aside = std::mem::take(&mut self.items);
+        self.set_aside.len()
+    }
+
+    /// Puts the set-aside items back in front, in their old order, ahead of anything queued
+    /// since. Returns how many came back.
+    pub fn restore(&mut self) -> usize {
+        let restored = std::mem::take(&mut self.set_aside);
+        let count = restored.len();
+        let newer = std::mem::replace(&mut self.items, restored);
+        self.items.extend(newer);
+        count
+    }
+
+    /// Gives up on undo. The files stay until exit or the next start, like pasted files.
+    pub fn discard_set_aside(&mut self) {
+        self.set_aside.clear();
     }
 }
 
@@ -191,25 +213,43 @@ mod tests {
         store.push_image(&img).unwrap();
         assert_eq!(file_names(&store), ["001.png", "003.png"]);
 
-        store.clear();
+        store.set_aside_all();
         assert_eq!(store.len(), 0);
         assert!(!store.undo_last());
         std::fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]
-    fn forget_keeps_files_and_unlisted_items() {
-        let root = temp_root("forget");
+    fn set_aside_keeps_files_and_unlisted_items() {
+        let root = temp_root("aside");
         let mut store = QueueStore::new(&root, "s1");
         store.push_image(&RgbaImage::new(1, 1)).unwrap();
         let pasted = store.items()[0].clone();
         store.push(QueueItem::text("added during paste".into(), None));
 
-        store.forget(&[pasted.id]);
+        assert_eq!(store.set_aside(&[pasted.id]), 1);
         assert_eq!(store.len(), 1);
         assert_eq!(store.items()[0].text.as_deref(), Some("added during paste"));
-        assert!(pasted.image_path.unwrap().is_file());
+        assert!(pasted.image_path.as_ref().unwrap().is_file());
+
+        // Undo puts the pasted item back in front of what came later.
+        assert_eq!(store.restore(), 1);
+        assert_eq!(store.items()[0].id, pasted.id);
+        assert_eq!(store.len(), 2);
+        assert_eq!(store.restore(), 0);
         std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn clearing_can_be_undone_until_discarded() {
+        let mut store = QueueStore::new(&temp_root("clear"), "s1");
+        store.push(QueueItem::text("a".into(), None));
+        store.push(QueueItem::text("b".into(), None));
+        assert_eq!(store.set_aside_all(), 2);
+        assert_eq!(store.len(), 0);
+        store.discard_set_aside();
+        assert_eq!(store.restore(), 0);
+        assert_eq!(store.len(), 0);
     }
 
     #[test]

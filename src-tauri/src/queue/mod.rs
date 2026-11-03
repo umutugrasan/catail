@@ -8,7 +8,7 @@ pub mod store;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
@@ -18,9 +18,13 @@ use tauri::{AppHandle, Manager, Runtime};
 
 use crate::clipboard::{self, Clip, Copied};
 use crate::i18n::{t, t_with};
-use crate::state::AppState;
+use crate::state::{AppState, UndoKind, UndoOffer};
 use crate::{badge, hotkeys, notify, panel};
 use item::QueueItem;
+
+/// How long "Geri al" stays on the badge after a paste or a clear.
+pub const UNDO_FOR: Duration = Duration::from_secs(10);
+static UNDO_GENERATION: AtomicU64 = AtomicU64::new(0);
 
 /// Some apps announce one copy several times; identical content this soon is ignored.
 const DUPLICATE_WINDOW: Duration = Duration::from_millis(700);
@@ -68,12 +72,54 @@ pub fn reorder<R: Runtime>(app: &AppHandle<R>, order: &[uuid::Uuid]) {
     changed(app);
 }
 
-/// Empties the queue and leaves text mode: everything is back to normal.
+/// Empties the queue and leaves text mode: everything is back to normal, with "Geri al"
+/// offered for a while.
 pub fn clear<R: Runtime>(app: &AppHandle<R>) {
     let state = app.state::<AppState>();
-    state.queue.lock().unwrap().clear();
+    let count = state.queue.lock().unwrap().set_aside_all();
     state.text_mode.store(false, Ordering::SeqCst);
+    offer_undo(app, UndoKind::Clear, count);
     changed(app);
+}
+
+/// After a paste: the pasted items leave the queue (so Ctrl+V is normal again) but can be
+/// brought back with "Geri al".
+pub fn set_aside_pasted<R: Runtime>(app: &AppHandle<R>, ids: &[uuid::Uuid]) {
+    let count = app.state::<AppState>().queue.lock().unwrap().set_aside(ids);
+    offer_undo(app, UndoKind::Paste, count);
+}
+
+/// "Geri al": brings back what the last paste or clear took away.
+pub fn restore<R: Runtime>(app: &AppHandle<R>) {
+    let state = app.state::<AppState>();
+    state.undo.lock().unwrap().take();
+    state.queue.lock().unwrap().restore();
+    changed(app);
+}
+
+fn offer_undo<R: Runtime>(app: &AppHandle<R>, kind: UndoKind, count: usize) {
+    if count == 0 {
+        return;
+    }
+    let generation = UNDO_GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
+    *app.state::<AppState>().undo.lock().unwrap() = Some(UndoOffer {
+        kind,
+        count,
+        until: Instant::now() + UNDO_FOR,
+        generation,
+    });
+    let app = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(UNDO_FOR);
+        let state = app.state::<AppState>();
+        let mut undo = state.undo.lock().unwrap();
+        if undo.is_some_and(|u| u.generation == generation) {
+            undo.take();
+            drop(undo);
+            state.queue.lock().unwrap().discard_set_aside();
+            changed(&app);
+        }
+    });
 }
 
 pub fn set_text_mode<R: Runtime>(app: &AppHandle<R>, on: bool) {

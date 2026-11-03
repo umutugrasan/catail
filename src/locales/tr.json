@@ -133,7 +133,10 @@
     "count": "Kuyruk: {count}",
     "pasting": "Yapıştırılıyor… (Esc: durdur)",
     "text_mode": "Metin modu · Kuyruk: {count}",
-    "open_panel": "Kuyruğu göster"
+    "open_panel": "Kuyruğu göster",
+    "undo": "Geri al",
+    "undo_paste_title": "Yapıştırılan {count} öğeyi kuyruğa geri getir",
+    "undo_clear_title": "Silinen {count} öğeyi kuyruğa geri getir"
   },
   "panel": {
     "title": "Kuyruk · {count} öğe",

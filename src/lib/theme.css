@@ -37,6 +37,10 @@
   --normal: 220ms;
 
   color-scheme: light;
+
+  /* Cat-paw cursors for clickable things, and a precise crosshair with a paw for selecting. */
+  --paw: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><g fill='%235b2141' stroke='white' stroke-width='1.6'><ellipse cx='14' cy='18.5' rx='6.5' ry='5.5'/><ellipse cx='6.5' cy='11.5' rx='2.6' ry='3.2'/><ellipse cx='11' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='17' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='21.5' cy='11.5' rx='2.6' ry='3.2'/></g></svg>") 11 4, pointer;
+  --paw-cross: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M10 2v16M2 10h16' stroke='white' stroke-width='3.6' stroke-linecap='round'/><path d='M10 2v16M2 10h16' stroke='%235b2141' stroke-width='1.6' stroke-linecap='round'/><g transform='translate(15 15) scale(0.55)' fill='%23e06d9f' stroke='white' stroke-width='2'><ellipse cx='14' cy='18.5' rx='6.5' ry='5.5'/><ellipse cx='6.5' cy='11.5' rx='2.6' ry='3.2'/><ellipse cx='11' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='17' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='21.5' cy='11.5' rx='2.6' ry='3.2'/></g></svg>") 10 10, crosshair;
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
@@ -84,4 +88,13 @@
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
   }
+}
+
+body,
+button {
+  cursor: default;
+}
+
+button:not(:disabled) {
+  cursor: var(--paw);
 }

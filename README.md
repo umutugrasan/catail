@@ -69,6 +69,8 @@ PrintScreen ekranının en üstünde **Ekran görüntüsü · Metin modu** seçe
 
 Kuyrukta bir şey varken **Ctrl+V** normal yapıştırma yerine kuyruğun tamamını sırayla yapıştırır; ardından kuyruk boşalır, metin modu kapanır ve Ctrl+C / Ctrl+V yeniden normal çalışır. "Kuyruğu temizle" de metin modunu kapatır.
 
+Yapıştırdıktan ya da temizledikten sonra rozetin yerinde 10 saniye boyunca **Geri al** düğmesi durur; basınca kuyruk olduğu gibi geri gelir. Süre dolunca kuyruk gerçekten silinir.
+
 Kuyrukta öğe olduğu sürece sağ altta "Kuyruk: N" rozeti görünür. Hedef uygulamaya geçip Ctrl+V'ye basınca kuyruk sırasıyla yapıştırılır ve boşaltılır.
 
 ### Kuyruk paneli

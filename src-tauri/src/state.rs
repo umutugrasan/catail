@@ -1,9 +1,29 @@
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
+use std::time::Instant;
+
+use serde::Serialize;
 
 use crate::capture::MonitorShot;
 use crate::queue::store::QueueStore;
 use crate::settings::Settings;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum UndoKind {
+    Paste,
+    Clear,
+}
+
+/// "Geri al" on the badge after a paste or a clear, until `until`.
+#[derive(Debug, Clone, Copy)]
+pub struct UndoOffer {
+    pub kind: UndoKind,
+    pub count: usize,
+    pub until: Instant,
+    /// Identifies this offer, so a stale expiry timer leaves a newer one alone.
+    pub generation: u64,
+}
 
 /// Frozen screenshots of every monitor, taken when the region overlay opens.
 pub struct CaptureSession {
@@ -18,6 +38,7 @@ pub struct AppState {
     pub text_mode: AtomicBool,
     /// True while the paste engine owns the clipboard and keyboard.
     pub pasting: AtomicBool,
+    pub undo: Mutex<Option<UndoOffer>>,
     pub session: Mutex<Option<CaptureSession>>,
     /// True from the moment a region capture starts until its overlays close.
     pub overlay_active: AtomicBool,
@@ -31,6 +52,7 @@ impl AppState {
             settings: Mutex::new(settings),
             text_mode: AtomicBool::new(false),
             pasting: AtomicBool::new(false),
+            undo: Mutex::new(None),
             session: Mutex::new(None),
             overlay_active: AtomicBool::new(false),
             last_session_id: AtomicU64::new(0),

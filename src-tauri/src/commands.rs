@@ -391,6 +391,12 @@ pub fn preview_close(app: AppHandle) {
     crate::preview::close(&app);
 }
 
+/// Badge "Geri al": brings back what the last paste or clear removed.
+#[tauri::command]
+pub fn queue_restore(app: AppHandle) {
+    queue::restore(&app);
+}
+
 /// Clears the queue from the overlay toolbar; the overlay stays open.
 #[tauri::command]
 pub fn queue_clear(app: AppHandle) {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
+import { TRASH_JUMP_MS, TrashJump } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   onWindowEvent,
@@ -41,6 +42,7 @@ export function Panel() {
   const [closing, setClosing] = useState(false);
   const [removing, setRemoving] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState<Export>({ kind: "idle" });
+  const [clearing, setClearing] = useState(false);
 
   const setDrag = (next: Drag | null) => {
     dragRef.current = next;
@@ -71,6 +73,16 @@ export function Panel() {
     ];
     return () => subscriptions.forEach((s) => void s.then((u) => u()));
   }, [close]);
+
+  /** A cat jumps out of the bin first; then the queue is cleared (and the panel closes). */
+  const clearAll = () => {
+    if (clearing) return;
+    setClearing(true);
+    setTimeout(() => {
+      void queueClear();
+      setClearing(false);
+    }, TRASH_JUMP_MS);
+  };
 
   const remove = (id: string) => {
     // Let the tile shrink away before it leaves the grid; the rest then slide up.
@@ -211,11 +223,11 @@ export function Panel() {
       <footer className="panel__footer">
         <button
           type="button"
-          className="panel__button panel__button--danger"
-          data-label={t("panel.clear")}
-          onClick={() => void queueClear()}
+          className={`panel__button panel__button--danger${clearing ? " panel__button--jumping" : ""}`}
+          data-label={clearing ? undefined : t("panel.clear")}
+          onClick={clearAll}
         >
-          <TrashIcon size={17} />
+          {clearing ? <TrashJump size={17} /> : <TrashIcon size={17} />}
         </button>
 
         <div className="panel__export">

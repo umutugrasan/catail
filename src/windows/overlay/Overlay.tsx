@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
+import { TRASH_JUMP_MS, TrashJump } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   captureDeliver,
@@ -242,7 +243,12 @@ export function Overlay() {
   const hasQueue = (info?.queueCount ?? 0) > 0;
   const primary: Delivery = hasQueue ? "enqueue" : "copy";
 
+  const [clearing, setClearing] = useState(false);
   const clearQueue = useCallback(async () => {
+    // Let the cat jump out of the bin before the queue goes.
+    setClearing(true);
+    await new Promise((resolve) => setTimeout(resolve, TRASH_JUMP_MS));
+    setClearing(false);
     await queueClear();
     // Clearing also leaves text mode.
     setInfo((current) => current && { ...current, queueCount: 0, textMode: false });
@@ -622,7 +628,7 @@ export function Overlay() {
               data-label={t("overlay.clear_queue_title", { count: info.queueCount })}
               onClick={() => void clearQueue()}
             >
-              <TrashIcon size={18} />
+              {clearing ? <TrashJump size={18} /> : <TrashIcon size={18} />}
             </button>
           )}
         </div>

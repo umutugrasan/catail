@@ -21,7 +21,7 @@ button {
 .overlay {
   position: fixed;
   inset: 0;
-  cursor: crosshair;
+  cursor: var(--paw-cross);
 }
 
 .overlay--moving {
@@ -30,7 +30,7 @@ button {
 
 .overlay--drawing,
 .overlay--drawing .overlay__selection {
-  cursor: crosshair;
+  cursor: var(--paw-cross);
 }
 
 .overlay--erasing,
@@ -138,7 +138,7 @@ button {
   color: var(--text-muted);
   font-size: 13px;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: var(--paw);
   transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out);
 }
 
@@ -180,7 +180,7 @@ button {
   color: var(--text);
   font-size: 13px;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: var(--paw);
   transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out),
     transform var(--fast) var(--ease-out);
 }
@@ -244,7 +244,7 @@ button {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text);
-  cursor: pointer;
+  cursor: var(--paw);
   transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
 }
 
@@ -420,7 +420,7 @@ button {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-muted);
-  cursor: pointer;
+  cursor: var(--paw);
 }
 
 .ocr .icon-button:hover {
@@ -462,7 +462,7 @@ button {
   background: var(--surface-raised);
   color: var(--text);
   font-size: 13px;
-  cursor: pointer;
+  cursor: var(--paw);
   transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
 }
 
@@ -608,7 +608,7 @@ button {
   position: relative;
   height: 124px;
   border-radius: var(--radius-sm);
-  cursor: crosshair;
+  cursor: var(--paw-cross);
   touch-action: none;
 }
 

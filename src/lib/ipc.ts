@@ -69,10 +69,20 @@ export interface UpdateInfo {
   notes: string | null;
 }
 
+export interface UndoView {
+  kind: "paste" | "clear";
+  count: number;
+  /** For the countdown bar. */
+  remainingMs: number;
+  totalMs: number;
+}
+
 export interface BadgeState {
   count: number;
   textMode: boolean;
   pasting: boolean;
+  /** "Geri al" after a paste or clear, while it lasts. */
+  undo: UndoView | null;
 }
 
 /** Selection in physical pixels relative to the monitor's top-left corner. */
@@ -108,6 +118,8 @@ export const panelPaste = () => invoke<void>("panel_paste");
 export const queueItems = () => invoke<QueueItemView[]>("queue_items");
 export const queueRemove = (id: string) => invoke<void>("queue_remove", { id });
 export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { ids });
+/** Brings back what the last paste or clear removed. */
+export const queueRestore = () => invoke<void>("queue_restore");
 export const queueImageUrl = (id: string) => convertFileSrc(`${id}.png`, "queue");
 /** Shows a queued image large, over the whole screen. */
 export const previewOpen = (id: string) => invoke<void>("preview_open", { id });
