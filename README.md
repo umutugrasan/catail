@@ -1,4 +1,4 @@
-# ClipQueue
+# Stack Screen
 
 Sıralı ekran görüntüsü ve pano kuyruğu aracı (Windows 10/11, ardından macOS).
 
@@ -16,10 +16,20 @@ Tüm veriler yereldir, telemetri yoktur.
 | 2 | Görsel kuyruğu (seçim ekranından "Kuyruk oluştur"), rozet, toplu/sıralı yapıştırma | Tamam |
 | 3 | Metin modu (PrintScreen ekranının üstünden): her Ctrl+C kuyruğa eklenir; kuyruk doluyken Ctrl+V kuyruğu yapıştırır (MVP) | Tamam |
 | 4 | Rozete tıklayınca yukarı açılan kuyruk paneli (sıralı önizleme, sürükleyerek yer değiştirme, ✕ ile silme), çizim araçları | Tamam |
-| 5 | Ayarlar, kurulum, güncelleme (v1) | — |
+| 5 | Ayarlar penceresi, kurulum dosyası (NSIS), GitHub Releases ile otomatik güncelleme (v1) | Tamam |
 | 6 | macOS | — |
 | 7 | Dışa aktarma ve paylaşım (v2) | — |
 | 8 | Ekran görüntüsünden metin tanıma (OCR), metin seçme, çeviri | Planlandı |
+
+## Kurulum
+
+[Releases](https://github.com/umutugrasan/stack-screen/releases) sayfasından `Stack Screen_<sürüm>_x64-setup.exe` dosyasını indirip çalıştırın. Kurulum kullanıcı klasörüne yapılır, yönetici izni istemez. Uygulama sistem tepsisine yerleşir; ayarlar için tepsi simgesine sağ tıklayın → **Ayarlar** (ya da Başlat menüsünden Stack Screen'i tekrar açın).
+
+Kurulum dosyası henüz kod imzalı değildir; Windows "bilinmeyen yayımcı" uyarısı gösterirse **Ek bilgi → Yine de çalıştır**. Ayrıntılar ve sürüm çıkarma adımları: [docs/release.md](docs/release.md).
+
+## Ayarlar
+
+`%APPDATA%\Stack Screen\settings.json` dosyasında saklanır ve ayarlar penceresinden düzenlenir: kısayollar (tıklayıp yeni tuşlara basarak), yapıştırma yöntemi, bekleme süreleri, metin ayracı, metinler arası Enter, yapıştırdıktan sonra kuyruğu boşaltma, uygulama kuralları, Windows ile başlatma ve güncellemeler.
 
 ## Geliştirme
 
@@ -72,15 +82,15 @@ Alan seçince sağında araç çubuğu çıkar: seç/taşı, ok, dikdörtgen, ka
 ### Yapıştırma yöntemleri
 
 - **Toplu:** Kuyruktaki tüm görseller tek bir dosya listesi olarak panoya konur ve tek Ctrl+V gönderilir. Yalnız görsel içeren kuyruklarda varsayılandır.
-- **Sıralı:** Her öğe tek tek panoya konup yapıştırılır (öğeler arası bekleme varsayılan 250 ms). Toplu yapıştırmada yalnızca ilk görseli alan uygulamalar için `%APPDATA%\ClipQueue\settings.json` içindeki `app_rules` ile seçilebilir:
+- **Sıralı:** Her öğe tek tek panoya konup yapıştırılır (öğeler arası bekleme varsayılan 250 ms). Toplu yapıştırmada yalnızca ilk görseli alan uygulamalar için `%APPDATA%\Stack Screen\settings.json` içindeki `app_rules` ile seçilebilir:
 
 ```json
 { "app_rules": [{ "process": "whatsapp.exe", "mode": "sequential", "delay_ms": 400 }] }
 ```
 
-Kuyruktaki görseller `%TEMP%\clipqueue\<oturum>` altında tutulur ve uygulama kapanınca silinir.
+Kuyruktaki görseller `%TEMP%\stack-screen\<oturum>` altında tutulur ve uygulama kapanınca silinir.
 
-Windows 11'de PrintScreen varsayılan olarak Ekran Alıntısı Aracı'nı açar. ClipQueue'nun yakalayabilmesi için Ayarlar → Erişilebilirlik → Klavye → "Ekran alıntısı aracını açmak için Print Screen tuşunu kullan" seçeneğini kapatıp ClipQueue'yu yeniden başlatın. Lightshot gibi PrintScreen kullanan başka araçlar açıksa kısayollar çakışır.
+Windows 11'de PrintScreen varsayılan olarak Ekran Alıntısı Aracı'nı açar. Stack Screen'in yakalayabilmesi için Ayarlar → Erişilebilirlik → Klavye → "Ekran alıntısı aracını açmak için Print Screen tuşunu kullan" seçeneğini kapatıp Stack Screen'i yeniden başlatın. Lightshot gibi PrintScreen kullanan başka araçlar açıksa kısayollar çakışır.
 
 ## Faz 0 — paste-test
 

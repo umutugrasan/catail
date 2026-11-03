@@ -23,6 +23,40 @@ export interface QueueItemView {
   sourceApp: string | null;
 }
 
+/** Mirrors `settings.rs` (snake_case on purpose: passed through unchanged). */
+export interface HotkeyMap {
+  region: string;
+  fullscreen: string;
+  paste: string;
+  clear: string;
+  undo: string;
+}
+
+export type PasteMode = "auto" | "batch" | "sequential";
+
+export interface AppPasteRule {
+  process: string;
+  mode: PasteMode;
+  delay_ms: number | null;
+}
+
+export interface Settings {
+  hotkeys: HotkeyMap;
+  paste_mode: PasteMode;
+  sequential_delay_ms: number;
+  batch_restore_delay_ms: number;
+  text_separator: string;
+  send_enter_between_texts: boolean;
+  clear_queue_after_paste: boolean;
+  autostart: boolean;
+  app_rules: AppPasteRule[];
+}
+
+export interface UpdateInfo {
+  version: string;
+  notes: string | null;
+}
+
 export interface BadgeState {
   count: number;
   textMode: boolean;
@@ -63,6 +97,17 @@ export const queueItems = () => invoke<QueueItemView[]>("queue_items");
 export const queueRemove = (id: string) => invoke<void>("queue_remove", { id });
 export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { ids });
 export const queueImageUrl = (id: string) => convertFileSrc(`${id}.png`, "queue");
+
+export const settingsGet = () => invoke<{ settings: Settings; version: string }>("settings_get");
+/** Rejects with a readable message (e.g. a shortcut another app holds); nothing changes then. */
+export const settingsSave = (settings: Settings) => invoke<void>("settings_save", { settings });
+/** Resolves to the readable shortcut, or rejects with why it can't be used. */
+export const hotkeyCheck = (accelerator: string) => invoke<string>("hotkey_check", { accelerator });
+export const hotkeysSuspend = () => invoke<void>("hotkeys_suspend");
+export const hotkeysResume = () => invoke<void>("hotkeys_resume");
+export const updateCheck = () => invoke<UpdateInfo | null>("update_check");
+/** Downloads, installs and restarts the app. */
+export const updateInstall = () => invoke<void>("update_install");
 
 /** URL of the frozen frame served by the Rust `capture` protocol. */
 export const frameUrl = (info: OverlayInfo) =>

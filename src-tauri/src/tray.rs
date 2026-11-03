@@ -65,7 +65,7 @@ fn on_menu_event<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
 }
 
 /// Opens (or focuses) the settings window. Must not run on the main thread.
-fn open_settings<R: Runtime>(app: &AppHandle<R>) {
+pub fn open_settings<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window("settings") {
         let _ = window.unminimize();
         let _ = window.show();
@@ -78,8 +78,8 @@ fn open_settings<R: Runtime>(app: &AppHandle<R>) {
         WebviewUrl::App("src/windows/settings/index.html".into()),
     )
     .title(t("settings.title"))
-    .inner_size(560.0, 640.0)
-    .resizable(false)
+    .inner_size(640.0, 760.0)
+    .min_inner_size(520.0, 480.0)
     .maximizable(false)
     .center()
     .build();

@@ -43,7 +43,6 @@ mod tests {
         "tray.quit",
         "save.dialog_title",
         "save.filter_name",
-        "notify.already_running",
         "notify.hotkey_failed_title",
         "notify.hotkey_failed_body",
         "notify.snipping_title",
@@ -57,6 +56,16 @@ mod tests {
         "notify.paste_failed",
         "notify.release_keys",
         "settings.title",
+        "notify.update_available_title",
+        "notify.update_available_body",
+        "settings.hotkey_invalid",
+        "settings.hotkey_altgr",
+        "settings.hotkey_reserved",
+        "settings.hotkey_needs_modifier",
+        "settings.hotkey_duplicate",
+        "settings.hotkey_taken",
+        "settings.autostart_failed",
+        "settings.save_failed",
     ];
 
     #[test]

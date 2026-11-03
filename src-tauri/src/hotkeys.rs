@@ -1,18 +1,21 @@
-//! Global hotkey registration and dispatch.
+//! Global hotkey registration and dispatch. Bindings come from the settings
+//! (`HotkeyMap`); Ctrl+V while the queue has items is fixed.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_global_shortcut::{
     Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutEvent, ShortcutState,
 };
 
 use crate::capture::{fullscreen, region};
 use crate::i18n::{t, t_with};
+use crate::settings::HotkeyMap;
+use crate::state::AppState;
 use crate::{notify, paste, queue};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Action {
     CaptureRegion,
     CaptureFullScreen,
@@ -21,38 +24,92 @@ enum Action {
     UndoLast,
 }
 
-/// Default bindings. Never plain Ctrl+Alt (AltGr on Turkish keyboards) or Ctrl+Shift+V
-/// (paste-as-plain-text in many apps).
-fn bindings() -> [(Shortcut, &'static str, Action); 5] {
-    let csa = Modifiers::CONTROL | Modifiers::SHIFT | Modifiers::ALT;
-    [
-        (
-            Shortcut::new(None, Code::PrintScreen),
-            "PrintScreen",
-            Action::CaptureRegion,
-        ),
-        (
-            Shortcut::new(Some(Modifiers::SHIFT), Code::PrintScreen),
-            "Shift+PrintScreen",
-            Action::CaptureFullScreen,
-        ),
-        (
-            Shortcut::new(Some(csa), Code::KeyV),
-            "Ctrl+Shift+Alt+V",
-            Action::PasteQueue,
-        ),
-        (
-            Shortcut::new(Some(csa), Code::KeyX),
-            "Ctrl+Shift+Alt+X",
-            Action::ClearQueue,
-        ),
-        (
-            Shortcut::new(Some(csa), Code::KeyZ),
-            "Ctrl+Shift+Alt+Z",
-            Action::UndoLast,
-        ),
-    ]
+/// Why a shortcut can't be used; shown in the settings window.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HotkeyError {
+    Invalid(String),
+    /// Ctrl+Alt alone is AltGr on Turkish and many other keyboards.
+    AltGr(String),
+    /// Ctrl+C/V/X/Z/Y/A (also with Shift) belong to the apps.
+    Reserved(String),
+    /// A plain letter, digit or space would block typing it everywhere.
+    NeedsModifier(String),
+    Duplicate(String),
+    /// Another program already holds it.
+    Taken(String),
 }
+
+impl HotkeyError {
+    pub fn message(&self) -> String {
+        let (key, shortcut) = match self {
+            Self::Invalid(s) => ("settings.hotkey_invalid", s),
+            Self::AltGr(s) => ("settings.hotkey_altgr", s),
+            Self::Reserved(s) => ("settings.hotkey_reserved", s),
+            Self::NeedsModifier(s) => ("settings.hotkey_needs_modifier", s),
+            Self::Duplicate(s) => ("settings.hotkey_duplicate", s),
+            Self::Taken(s) => ("settings.hotkey_taken", s),
+        };
+        t_with(key, &[("shortcut", &pretty(shortcut))])
+    }
+}
+
+const RESERVED_WITH_CTRL: [Code; 6] = [
+    Code::KeyC,
+    Code::KeyV,
+    Code::KeyX,
+    Code::KeyZ,
+    Code::KeyY,
+    Code::KeyA,
+];
+
+fn is_typing_key(code: Code) -> bool {
+    let name = format!("{code:?}");
+    let letter_or_digit = (name.starts_with("Key") && name.len() == 4)
+        || (name.starts_with("Digit") && name.len() == 6);
+    letter_or_digit || code == Code::Space
+}
+
+/// Parses and vets one shortcut string such as `control+shift+alt+KeyV`.
+pub fn validate(accelerator: &str) -> Result<Shortcut, HotkeyError> {
+    let shortcut: Shortcut = accelerator
+        .parse()
+        .map_err(|_| HotkeyError::Invalid(accelerator.to_owned()))?;
+    let mods = shortcut.mods;
+    if mods == Modifiers::CONTROL | Modifiers::ALT {
+        return Err(HotkeyError::AltGr(accelerator.to_owned()));
+    }
+    let ctrl_like = mods == Modifiers::CONTROL || mods == Modifiers::CONTROL | Modifiers::SHIFT;
+    if ctrl_like && RESERVED_WITH_CTRL.contains(&shortcut.key) {
+        return Err(HotkeyError::Reserved(accelerator.to_owned()));
+    }
+    let plain = mods.is_empty() || mods == Modifiers::SHIFT;
+    if plain && is_typing_key(shortcut.key) {
+        return Err(HotkeyError::NeedsModifier(accelerator.to_owned()));
+    }
+    Ok(shortcut)
+}
+
+fn bindings(map: &HotkeyMap) -> Result<Vec<(Shortcut, Action, String)>, HotkeyError> {
+    let entries = [
+        (&map.region, Action::CaptureRegion),
+        (&map.fullscreen, Action::CaptureFullScreen),
+        (&map.paste, Action::PasteQueue),
+        (&map.clear, Action::ClearQueue),
+        (&map.undo, Action::UndoLast),
+    ];
+    let mut out: Vec<(Shortcut, Action, String)> = Vec::new();
+    for (accelerator, action) in entries {
+        let shortcut = validate(accelerator)?;
+        if out.iter().any(|(s, _, _)| *s == shortcut) {
+            return Err(HotkeyError::Duplicate(accelerator.clone()));
+        }
+        out.push((shortcut, action, accelerator.clone()));
+    }
+    Ok(out)
+}
+
+/// Shortcuts currently registered for our actions (Ctrl+V for the queue is separate).
+static ACTIVE: Mutex<Vec<(Shortcut, Action)>> = Mutex::new(Vec::new());
 
 /// Plain Ctrl+V, taken over only while the queue has items so it pastes the whole queue.
 fn queue_paste_shortcut() -> Shortcut {
@@ -67,12 +124,12 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
         return;
     }
     let action = if *shortcut == queue_paste_shortcut() {
-        Action::PasteQueue
-    } else if let Some((_, _, action)) = bindings().into_iter().find(|(s, _, _)| s == shortcut) {
-        action
+        Some(Action::PasteQueue)
     } else {
-        return;
+        let active = ACTIVE.lock().unwrap();
+        active.iter().find(|(s, _)| s == shortcut).map(|(_, a)| *a)
     };
+    let Some(action) = action else { return };
     let app = app.clone();
     std::thread::spawn(move || match action {
         Action::CaptureRegion => region::start(&app),
@@ -81,6 +138,95 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
         Action::ClearQueue => queue::clear(&app),
         Action::UndoLast => queue::undo_last(&app),
     });
+}
+
+fn unregister_active<R: Runtime>(app: &AppHandle<R>) {
+    let mut active = ACTIVE.lock().unwrap();
+    for (shortcut, _) in active.drain(..) {
+        let _ = app.global_shortcut().unregister(shortcut);
+    }
+}
+
+/// Switches to `map`, all or nothing: if any shortcut can't be registered, `previous` is
+/// restored and the error says which. Must not run on the main thread.
+pub fn apply<R: Runtime>(
+    app: &AppHandle<R>,
+    map: &HotkeyMap,
+    previous: &HotkeyMap,
+) -> Result<(), HotkeyError> {
+    let next = bindings(map)?;
+    unregister_active(app);
+    let mut registered = Vec::new();
+    for (shortcut, action, accelerator) in &next {
+        if app.global_shortcut().register(*shortcut).is_err() {
+            for (s, _) in &registered {
+                let _ = app.global_shortcut().unregister(*s);
+            }
+            register_best_effort(app, previous);
+            return Err(HotkeyError::Taken(accelerator.clone()));
+        }
+        registered.push((*shortcut, *action));
+    }
+    *ACTIVE.lock().unwrap() = registered;
+    Ok(())
+}
+
+/// Registers what it can (falling back to the defaults if `map` is invalid) and returns the
+/// accelerators that failed.
+fn register_best_effort<R: Runtime>(app: &AppHandle<R>, map: &HotkeyMap) -> Vec<String> {
+    let Ok(next) = bindings(map).or_else(|_| bindings(&HotkeyMap::default())) else {
+        return Vec::new();
+    };
+    let mut failed = Vec::new();
+    let mut active = ACTIVE.lock().unwrap();
+    for (shortcut, action, accelerator) in next {
+        let result = app.global_shortcut().register(shortcut);
+        #[cfg(debug_assertions)]
+        eprintln!("register {accelerator}: {result:?}");
+        match result {
+            Ok(()) => active.push((shortcut, action)),
+            Err(_) => failed.push(accelerator),
+        }
+    }
+    failed
+}
+
+/// Lets the settings window record a shortcut that is currently bound (e.g. PrintScreen):
+/// while suspended, no global shortcut swallows the keys. Must not run on the main thread.
+pub fn suspend<R: Runtime>(app: &AppHandle<R>) {
+    unregister_active(app);
+}
+
+pub fn resume<R: Runtime>(app: &AppHandle<R>) {
+    if ACTIVE.lock().unwrap().is_empty() {
+        let map = app
+            .state::<AppState>()
+            .settings
+            .lock()
+            .unwrap()
+            .hotkeys
+            .clone();
+        register_best_effort(app, &map);
+    }
+}
+
+/// `control+shift+alt+KeyV` → `Ctrl+Shift+Alt+V`, for messages.
+pub fn pretty(accelerator: &str) -> String {
+    accelerator
+        .split('+')
+        .map(|part| match part.to_ascii_lowercase().as_str() {
+            "control" | "ctrl" => "Ctrl".to_owned(),
+            "shift" => "Shift".to_owned(),
+            "alt" => "Alt".to_owned(),
+            "super" => "Win".to_owned(),
+            _ => part
+                .strip_prefix("Key")
+                .or_else(|| part.strip_prefix("Digit"))
+                .unwrap_or(part)
+                .to_owned(),
+        })
+        .collect::<Vec<_>>()
+        .join("+")
 }
 
 /// Whether Ctrl+V should paste the queue. Applied on a worker thread because the plugin
@@ -124,17 +270,23 @@ fn apply_queue_paste<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
-/// Registers the default shortcuts and tells the user (via toast) about any that failed.
-pub fn register_defaults<R: Runtime>(app: &AppHandle<R>) {
-    for (shortcut, name, _) in bindings() {
-        let result = app.global_shortcut().register(shortcut);
-        #[cfg(debug_assertions)]
-        eprintln!("register {name}: {result:?}");
-        if let Err(e) = result {
-            eprintln!("cannot register {name}: {e}");
-            let body = t_with("notify.hotkey_failed_body", &[("shortcut", name)]);
-            notify::show(app, &t("notify.hotkey_failed_title"), &body);
-        }
+/// Registers the saved shortcuts at startup and tells the user (via toast) about any that
+/// failed.
+pub fn register_saved<R: Runtime>(app: &AppHandle<R>) {
+    let map = app
+        .state::<AppState>()
+        .settings
+        .lock()
+        .unwrap()
+        .hotkeys
+        .clone();
+    for accelerator in register_best_effort(app, &map) {
+        eprintln!("cannot register {accelerator}");
+        let body = t_with(
+            "notify.hotkey_failed_body",
+            &[("shortcut", &pretty(&accelerator))],
+        );
+        notify::show(app, &t("notify.hotkey_failed_title"), &body);
     }
 
     #[cfg(windows)]
@@ -204,5 +356,72 @@ mod win {
         }
         let len = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
         String::from_utf16(&buf[..len]).ok()?.trim().parse().ok()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn defaults_are_valid_and_distinct() {
+        assert_eq!(bindings(&HotkeyMap::default()).unwrap().len(), 5);
+    }
+
+    #[test]
+    fn rejects_unsafe_shortcuts() {
+        assert!(matches!(
+            validate("control+alt+KeyQ"),
+            Err(HotkeyError::AltGr(_))
+        ));
+        assert!(matches!(
+            validate("control+KeyV"),
+            Err(HotkeyError::Reserved(_))
+        ));
+        assert!(matches!(
+            validate("control+shift+KeyV"),
+            Err(HotkeyError::Reserved(_))
+        ));
+        assert!(matches!(
+            validate("KeyQ"),
+            Err(HotkeyError::NeedsModifier(_))
+        ));
+        assert!(matches!(
+            validate("shift+Digit1"),
+            Err(HotkeyError::NeedsModifier(_))
+        ));
+        assert!(matches!(
+            validate("nonsense+++"),
+            Err(HotkeyError::Invalid(_))
+        ));
+    }
+
+    #[test]
+    fn accepts_sensible_shortcuts() {
+        for ok in [
+            "PrintScreen",
+            "F9",
+            "alt+KeyQ",
+            "control+shift+KeyQ",
+            "control+alt+shift+KeyV",
+            "Pause",
+        ] {
+            assert!(validate(ok).is_ok(), "{ok} should be accepted");
+        }
+    }
+
+    #[test]
+    fn duplicates_are_rejected() {
+        let map = HotkeyMap {
+            fullscreen: "PrintScreen".into(),
+            ..HotkeyMap::default()
+        };
+        assert!(matches!(bindings(&map), Err(HotkeyError::Duplicate(_))));
+    }
+
+    #[test]
+    fn pretty_names() {
+        assert_eq!(pretty("control+shift+alt+KeyV"), "Ctrl+Shift+Alt+V");
+        assert_eq!(pretty("shift+PrintScreen"), "Shift+PrintScreen");
     }
 }

@@ -60,7 +60,7 @@ fn run() -> windows::core::Result<()> {
         let class = WNDCLASSW {
             lpfnWndProc: Some(window_proc),
             hInstance: instance.into(),
-            lpszClassName: w!("ClipQueueClipboardWatcher"),
+            lpszClassName: w!("StackScreenClipboardWatcher"),
             ..Default::default()
         };
         RegisterClassW(&class);

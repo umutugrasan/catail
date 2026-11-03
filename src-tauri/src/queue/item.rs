@@ -16,7 +16,7 @@ pub struct QueueItem {
     pub id: Uuid,
     pub kind: QueueItemKind,
     pub created_at: DateTime<Utc>,
-    /// `%TEMP%/clipqueue/<session>/001.png` for images.
+    /// `%TEMP%/stack-screen/<session>/001.png` for images.
     pub image_path: Option<PathBuf>,
     pub text: Option<String>,
     /// Process the text was copied from; informational only.

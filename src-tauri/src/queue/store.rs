@@ -140,7 +140,7 @@ mod tests {
 
     fn temp_root(tag: &str) -> PathBuf {
         let root =
-            std::env::temp_dir().join(format!("clipqueue-test-{tag}-{}", std::process::id()));
+            std::env::temp_dir().join(format!("stack-screen-test-{tag}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         root
     }

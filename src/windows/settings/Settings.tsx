@@ -1,63 +1,323 @@
-import { useEffect, useState } from "react";
-import { getVersion } from "@tauri-apps/api/app";
+import { useCallback, useEffect, useState } from "react";
 import { t } from "../../lib/i18n";
+import {
+  settingsGet,
+  settingsSave,
+  updateCheck,
+  updateInstall,
+  type AppPasteRule,
+  type HotkeyMap,
+  type PasteMode,
+  type Settings as SettingsModel,
+  type UpdateInfo,
+} from "../../lib/ipc";
+import { HotkeyField } from "./HotkeyField";
 
-const SHORTCUTS: [keys: string, labelKey: string][] = [
-  ["PrintScreen", "settings.shortcut_region"],
-  ["Shift + PrintScreen", "settings.shortcut_fullscreen"],
-  ["Ctrl + Shift + Alt + V", "settings.shortcut_paste"],
-  ["Ctrl + Shift + Alt + X", "settings.shortcut_clear"],
-  ["Ctrl + Shift + Alt + Z", "settings.shortcut_undo"],
+const HOTKEYS: [keyof HotkeyMap, string][] = [
+  ["region", "settings.shortcut_region"],
+  ["fullscreen", "settings.shortcut_fullscreen"],
+  ["paste", "settings.shortcut_paste"],
+  ["clear", "settings.shortcut_clear"],
+  ["undo", "settings.shortcut_undo"],
 ];
 
-const OVERLAY_KEYS: [keys: string, labelKey: string][] = [
-  ["Ctrl + C / Enter", "settings.overlay_copy"],
-  ["Ctrl + S", "settings.overlay_save"],
-  ["Esc", "settings.overlay_cancel"],
+const PASTE_MODES: PasteMode[] = ["auto", "batch", "sequential"];
+
+const SEPARATORS: [string, string][] = [
+  ["\n\n", "settings.separator_blank_line"],
+  ["\n", "settings.separator_new_line"],
+  [" ", "settings.separator_space"],
+  ["", "settings.separator_none"],
 ];
 
-function KeyTable({ rows }: { rows: [string, string][] }) {
-  return (
-    <table>
-      <tbody>
-        {rows.map(([keys, labelKey]) => (
-          <tr key={keys}>
-            <td>
-              <kbd>{keys}</kbd>
-            </td>
-            <td>{t(labelKey)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
+type Status = { kind: "idle" } | { kind: "saved" } | { kind: "error"; message: string };
+
+type UpdateState =
+  | { kind: "idle" }
+  | { kind: "checking" }
+  | { kind: "none" }
+  | { kind: "available"; info: UpdateInfo }
+  | { kind: "installing" }
+  | { kind: "error"; message: string };
 
 export function Settings() {
-  const [version, setVersion] = useState<string | null>(null);
+  const [settings, setSettings] = useState<SettingsModel | null>(null);
+  const [version, setVersion] = useState("");
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [update, setUpdate] = useState<UpdateState>({ kind: "idle" });
 
   useEffect(() => {
-    getVersion().then(setVersion, () => setVersion(null));
+    void settingsGet().then((view) => {
+      setSettings(view.settings);
+      setVersion(view.version);
+    });
   }, []);
 
+  const change = useCallback((patch: Partial<SettingsModel>) => {
+    setSettings((current) => current && { ...current, ...patch });
+    setStatus({ kind: "idle" });
+  }, []);
+
+  const setHotkey = useCallback(
+    (key: keyof HotkeyMap) => (accelerator: string) => {
+      setSettings((current) => current && { ...current, hotkeys: { ...current.hotkeys, [key]: accelerator } });
+      setStatus({ kind: "idle" });
+    },
+    [],
+  );
+
+  const setRule = (index: number, patch: Partial<AppPasteRule>) => {
+    if (!settings) return;
+    change({ app_rules: settings.app_rules.map((rule, i) => (i === index ? { ...rule, ...patch } : rule)) });
+  };
+
+  const save = async () => {
+    if (!settings) return;
+    try {
+      await settingsSave(settings);
+      // Show what was actually stored (numbers clamped, rules tidied).
+      setSettings((await settingsGet()).settings);
+      setStatus({ kind: "saved" });
+    } catch (message) {
+      setStatus({ kind: "error", message: String(message) });
+    }
+  };
+
+  const check = async () => {
+    setUpdate({ kind: "checking" });
+    try {
+      const info = await updateCheck();
+      setUpdate(info ? { kind: "available", info } : { kind: "none" });
+    } catch (message) {
+      setUpdate({ kind: "error", message: String(message) });
+    }
+  };
+
+  const install = async () => {
+    setUpdate({ kind: "installing" });
+    try {
+      await updateInstall(); // restarts the app on success
+    } catch (message) {
+      setUpdate({ kind: "error", message: String(message) });
+    }
+  };
+
+  if (!settings) return <main className="settings" />;
+
   return (
-    <main>
+    <main className="settings">
       <h1>{t("settings.title")}</h1>
 
       <section>
         <h2>{t("settings.shortcuts")}</h2>
-        <KeyTable rows={SHORTCUTS} />
+        <table>
+          <tbody>
+            {HOTKEYS.map(([key, label]) => (
+              <tr key={key}>
+                <td>{t(label)}</td>
+                <td>
+                  <HotkeyField value={settings.hotkeys[key]} onChange={setHotkey(key)} />
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>{t("settings.shortcut_ctrl_v")}</td>
+              <td>
+                <kbd>Ctrl + V</kbd> <span className="muted">{t("settings.fixed")}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="muted">{t("settings.hotkey_help")}</p>
       </section>
 
       <section>
-        <h2>{t("settings.overlay_keys")}</h2>
-        <KeyTable rows={OVERLAY_KEYS} />
+        <h2>{t("settings.paste")}</h2>
+        <label className="field">
+          <span>{t("settings.paste_mode")}</span>
+          <select
+            value={settings.paste_mode}
+            onChange={(e) => change({ paste_mode: e.target.value as PasteMode })}
+          >
+            {PASTE_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {t(`settings.paste_mode_${mode}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="muted">{t(`settings.paste_mode_${settings.paste_mode}_help`)}</p>
+
+        <label className="field">
+          <span>{t("settings.sequential_delay")}</span>
+          <input
+            type="number"
+            min={50}
+            max={5000}
+            step={50}
+            value={settings.sequential_delay_ms}
+            onChange={(e) => change({ sequential_delay_ms: Number(e.target.value) })}
+          />
+        </label>
+        <label className="field">
+          <span>{t("settings.batch_restore_delay")}</span>
+          <input
+            type="number"
+            min={50}
+            max={5000}
+            step={50}
+            value={settings.batch_restore_delay_ms}
+            onChange={(e) => change({ batch_restore_delay_ms: Number(e.target.value) })}
+          />
+        </label>
+        <label className="field">
+          <span>{t("settings.text_separator")}</span>
+          <select value={settings.text_separator} onChange={(e) => change({ text_separator: e.target.value })}>
+            {SEPARATORS.map(([value, label]) => (
+              <option key={label} value={value}>
+                {t(label)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={settings.send_enter_between_texts}
+            onChange={(e) => change({ send_enter_between_texts: e.target.checked })}
+          />
+          {t("settings.send_enter")}
+        </label>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={settings.clear_queue_after_paste}
+            onChange={(e) => change({ clear_queue_after_paste: e.target.checked })}
+          />
+          {t("settings.clear_after_paste")}
+        </label>
       </section>
 
-      <p className="note">{t("settings.queue_note")}</p>
-      <p className="note">{t("settings.printscreen_note")}</p>
-      <p className="muted">{t("settings.coming_soon")}</p>
-      {version && <p className="muted">{t("settings.version", { version })}</p>}
+      <section>
+        <h2>{t("settings.app_rules")}</h2>
+        <p className="muted">{t("settings.app_rules_help")}</p>
+        {settings.app_rules.length > 0 && (
+          <table className="rules">
+            <thead>
+              <tr>
+                <th>{t("settings.rule_process")}</th>
+                <th>{t("settings.rule_mode")}</th>
+                <th>{t("settings.rule_delay")}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {settings.app_rules.map((rule, index) => (
+                <tr key={index}>
+                  <td>
+                    <input
+                      value={rule.process}
+                      placeholder="whatsapp.exe"
+                      onChange={(e) => setRule(index, { process: e.target.value })}
+                    />
+                  </td>
+                  <td>
+                    <select
+                      value={rule.mode}
+                      onChange={(e) => setRule(index, { mode: e.target.value as PasteMode })}
+                    >
+                      <option value="sequential">{t("settings.paste_mode_sequential")}</option>
+                      <option value="batch">{t("settings.paste_mode_batch")}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min={50}
+                      max={5000}
+                      step={50}
+                      value={rule.delay_ms ?? ""}
+                      placeholder={String(settings.sequential_delay_ms)}
+                      onChange={(e) =>
+                        setRule(index, { delay_ms: e.target.value === "" ? null : Number(e.target.value) })
+                      }
+                    />
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="icon-button"
+                      title={t("settings.rule_remove")}
+                      onClick={() => change({ app_rules: settings.app_rules.filter((_, i) => i !== index) })}
+                    >
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <button
+          type="button"
+          className="secondary"
+          onClick={() =>
+            change({ app_rules: [...settings.app_rules, { process: "", mode: "sequential", delay_ms: null }] })
+          }
+        >
+          {t("settings.rule_add")}
+        </button>
+      </section>
+
+      <section>
+        <h2>{t("settings.general")}</h2>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={settings.autostart}
+            onChange={(e) => change({ autostart: e.target.checked })}
+          />
+          {t("settings.autostart")}
+        </label>
+        <p className="note">{t("settings.printscreen_note")}</p>
+      </section>
+
+      <section>
+        <h2>{t("settings.updates")}</h2>
+        <p className="muted">{t("settings.version", { version })}</p>
+        <div className="update">
+          {update.kind === "available" ? (
+            <button type="button" className="primary" onClick={() => void install()}>
+              {t("settings.update_install", { version: update.info.version })}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="secondary"
+              disabled={update.kind === "checking" || update.kind === "installing"}
+              onClick={() => void check()}
+            >
+              {t("settings.update_check")}
+            </button>
+          )}
+          <span className="muted">
+            {update.kind === "checking" && t("settings.update_checking")}
+            {update.kind === "none" && t("settings.update_none")}
+            {update.kind === "installing" && t("settings.update_installing")}
+            {update.kind === "error" && t("settings.update_error")}
+          </span>
+        </div>
+      </section>
+
+      <footer className="settings__footer">
+        <span className={status.kind === "error" ? "error" : "muted"}>
+          {status.kind === "saved" && t("settings.saved")}
+          {status.kind === "error" && status.message}
+        </span>
+        <button type="button" className="primary" onClick={() => void save()}>
+          {t("settings.save")}
+        </button>
+      </footer>
     </main>
   );
 }

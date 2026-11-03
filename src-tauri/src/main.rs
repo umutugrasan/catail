@@ -17,10 +17,10 @@ mod queue;
 mod settings;
 mod state;
 mod tray;
+mod updater;
 
 use tauri::{Manager, RunEvent};
 
-use i18n::t;
 use queue::store::{remove_stale_sessions, session_name, QueueStore};
 use settings::Settings;
 use state::AppState;
@@ -31,8 +31,10 @@ fn main() {
 
     tauri::Builder::default()
         // Must be registered first so a second launch exits before doing anything else.
+        // Launching again (e.g. from the Start menu) opens the settings of the running copy.
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            notify::show(app, &t("app.name"), &t("notify.already_running"));
+            let app = app.clone();
+            std::thread::spawn(move || tray::open_settings(&app));
         }))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
@@ -41,6 +43,12 @@ fn main() {
         )
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(updater::PendingUpdate::default())
         .manage(AppState::new(
             QueueStore::new(&temp_root, &session),
             Settings::load(),
@@ -62,18 +70,26 @@ fn main() {
             commands::queue_items,
             commands::queue_remove,
             commands::queue_reorder,
+            commands::settings_get,
+            commands::settings_save,
+            commands::hotkey_check,
+            commands::hotkeys_suspend,
+            commands::hotkeys_resume,
+            commands::update_check,
+            commands::update_install,
             commands::badge_state,
         ])
         .setup(move |app| {
             // Single-instance has already exited any second copy, so older folders are stale.
             remove_stale_sessions(&temp_root, &session);
             tray::build(app.handle())?;
-            hotkeys::register_defaults(app.handle());
+            hotkeys::register_saved(app.handle());
             #[cfg(windows)]
             {
                 let handle = app.handle().clone();
                 clipboard::watcher::start(move || queue::on_clipboard_changed(&handle));
             }
+            updater::check_in_background(app.handle());
             let handle = app.handle().clone();
             std::thread::spawn(move || {
                 overlay::prewarm(&handle);
@@ -82,7 +98,7 @@ fn main() {
             Ok(())
         })
         .build(tauri::generate_context!())
-        .expect("failed to build ClipQueue")
+        .expect("failed to build Stack Screen")
         .run(|app, event| match event {
             // Tray app: closing the settings window must not quit. Only "Çıkış" (exit code set) does.
             RunEvent::ExitRequested { api, code, .. } if code.is_none() => api.prevent_exit(),

@@ -45,7 +45,7 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>, index: usize) -> Result<Webview
         return Ok(window);
     }
     WebviewWindowBuilder::new(app, &label, WebviewUrl::App(URL.into()))
-        .title("ClipQueue")
+        .title("Stack Screen")
         .decorations(false)
         .resizable(false)
         .always_on_top(true)

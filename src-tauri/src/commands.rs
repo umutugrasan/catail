@@ -11,8 +11,11 @@ use crate::badge::{self, BadgeState};
 use crate::capture::region::{self, SelectionRect};
 use crate::i18n::{t, t_with};
 use crate::panel::{self, ItemView};
+use crate::settings::Settings;
 use crate::state::AppState;
-use crate::{clipboard, notify, overlay, paste, queue};
+use crate::updater::{self, UpdateInfo};
+use crate::{clipboard, hotkeys, notify, overlay, paste, queue};
+use tauri_plugin_autostart::ManagerExt;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -172,6 +175,78 @@ pub fn queue_reorder(app: AppHandle, ids: Vec<uuid::Uuid>) {
     queue::reorder(&app, &ids);
 }
 
+#[derive(Debug, Serialize)]
+pub struct SettingsView {
+    settings: Settings,
+    version: String,
+}
+
+#[tauri::command]
+pub fn settings_get(app: AppHandle, state: State<'_, AppState>) -> SettingsView {
+    let mut settings = state.settings.lock().unwrap().clone();
+    // The registry is the source of truth for autostart.
+    if let Ok(enabled) = app.autolaunch().is_enabled() {
+        settings.autostart = enabled;
+    }
+    SettingsView {
+        settings,
+        version: app.package_info().version.to_string(),
+    }
+}
+
+/// Validates, applies (hotkeys, autostart) and saves. Async: hotkey changes wait for the
+/// main thread. On a hotkey error nothing is changed.
+#[tauri::command]
+pub async fn settings_save(app: AppHandle, settings: Settings) -> Result<(), String> {
+    let next = settings.sanitized();
+    let previous = app.state::<AppState>().settings.lock().unwrap().clone();
+    if next.hotkeys != previous.hotkeys {
+        hotkeys::apply(&app, &next.hotkeys, &previous.hotkeys).map_err(|e| e.message())?;
+    }
+    let autolaunch = app.autolaunch();
+    if autolaunch.is_enabled().ok() != Some(next.autostart) {
+        let result = if next.autostart {
+            autolaunch.enable()
+        } else {
+            autolaunch.disable()
+        };
+        result.map_err(|e| t_with("settings.autostart_failed", &[("error", &e.to_string())]))?;
+    }
+    next.save()
+        .map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))?;
+    *app.state::<AppState>().settings.lock().unwrap() = next;
+    Ok(())
+}
+
+/// Recorder feedback: the readable form of a valid shortcut, or why it can't be used.
+#[tauri::command]
+pub fn hotkey_check(accelerator: String) -> Result<String, String> {
+    hotkeys::validate(&accelerator)
+        .map(|_| hotkeys::pretty(&accelerator))
+        .map_err(|e| e.message())
+}
+
+/// While recording a shortcut, our own global shortcuts must not swallow the keys.
+#[tauri::command]
+pub async fn hotkeys_suspend(app: AppHandle) {
+    hotkeys::suspend(&app);
+}
+
+#[tauri::command]
+pub async fn hotkeys_resume(app: AppHandle) {
+    hotkeys::resume(&app);
+}
+
+#[tauri::command]
+pub async fn update_check(app: AppHandle) -> Result<Option<UpdateInfo>, String> {
+    updater::check(&app).await.map_err(|e| format!("{e:#}"))
+}
+
+#[tauri::command]
+pub async fn update_install(app: AppHandle) -> Result<(), String> {
+    updater::install(&app).await.map_err(|e| format!("{e:#}"))
+}
+
 /// Clears the queue from the overlay toolbar; the overlay stays open.
 #[tauri::command]
 pub fn queue_clear(app: AppHandle) {
@@ -229,7 +304,7 @@ fn take_selection(
 }
 
 pub fn default_file_name(now: DateTime<Local>) -> String {
-    format!("ClipQueue_{}.png", now.format("%Y-%m-%d_%H-%M-%S"))
+    format!("StackScreen_{}.png", now.format("%Y-%m-%d_%H-%M-%S"))
 }
 
 pub fn with_png_extension(path: PathBuf) -> PathBuf {
@@ -253,7 +328,10 @@ mod tests {
     #[test]
     fn file_name_has_timestamp() {
         let now = Local.with_ymd_and_hms(2026, 11, 3, 9, 5, 7).unwrap();
-        assert_eq!(default_file_name(now), "ClipQueue_2026-11-03_09-05-07.png");
+        assert_eq!(
+            default_file_name(now),
+            "StackScreen_2026-11-03_09-05-07.png"
+        );
     }
 
     #[test]

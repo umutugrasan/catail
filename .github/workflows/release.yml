@@ -1,0 +1,48 @@
+name: Release
+
+# Builds the Windows installer and publishes it, with the updater manifest (latest.json),
+# as a draft GitHub release whenever a version tag such as v0.2.0 is pushed.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - name: Test
+        run: |
+          npm test
+          cargo test --manifest-path src-tauri/Cargo.toml
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Updater signature key; see docs/release.md.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Stack Screen ${{ github.ref_name }}
+          releaseBody: Kurulum için `Stack Screen_..._x64-setup.exe` dosyasını indirip çalıştırın.
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: true

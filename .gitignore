@@ -14,3 +14,6 @@ spikes/paste-test/samples/
 Thumbs.db
 .vscode/
 .idea/
+
+# TypeScript build cache
+*.tsbuildinfo
