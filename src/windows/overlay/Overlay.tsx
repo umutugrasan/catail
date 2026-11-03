@@ -18,9 +18,10 @@ import {
   type OverlayInfo,
 } from "../../lib/ipc";
 import {
-  COLORS,
+  DEFAULT_COLOR,
   drawShapes,
   extendShape,
+  hitTest,
   isMeaningful,
   startShape,
   textSize,
@@ -41,18 +42,21 @@ import {
   type Rect,
   type Size,
 } from "./geometry";
-import { CameraIcon, ScanTextIcon, TextModeIcon, TrashIcon } from "./icons";
+import { CameraIcon, CopyIcon, QueueAddIcon, SaveIcon, ScanTextIcon, TextModeIcon, TrashIcon } from "./icons";
 import { OcrCard, type OcrState } from "./OcrCard";
 import { Sidebar } from "./Sidebar";
 
 /** Selections smaller than this (CSS px) count as a stray click. */
 const MIN_SELECTION = 3;
 const TOOLBAR_HEIGHT = 40;
-const TOOLBAR_BUTTON_WIDTH = 112;
+/** Icon-only buttons; names show as tooltips on hover. */
+const TOOLBAR_BUTTON_WIDTH = 36;
 const TOOLBAR_GAP = 4;
 /** Padding plus border on both sides. */
 const TOOLBAR_CHROME = 10;
 const SIZE_LABEL_HEIGHT = 22;
+/** Eraser reach around the pointer, CSS px. */
+const ERASER_TOLERANCE = 6;
 /** First-render guess; replaced by the measured size. */
 const SIDEBAR_FALLBACK: Size = { width: 46, height: 560 };
 
@@ -60,7 +64,8 @@ type Drag =
   | { kind: "none" }
   | { kind: "select"; anchor: Point }
   | { kind: "move"; offset: Point }
-  | { kind: "draw" };
+  | { kind: "draw" }
+  | { kind: "erase" };
 
 interface TextDraft {
   at: Point;
@@ -74,15 +79,28 @@ export function Overlay() {
   const [selection, setSelection] = useState<Rect | null>(null);
   const [drag, setDrag] = useState<Drag>({ kind: "none" });
   const [tool, setTool] = useState<Tool>("select");
-  const [color, setColor] = useState<string>(COLORS[0]);
+  const [color, setColor] = useState<string>(DEFAULT_COLOR);
   const [width, setWidth] = useState<number>(WIDTHS[1]);
-  const [shapes, setShapes] = useState<Shape[]>([]);
+  const [shapes, setShapesState] = useState<Shape[]>([]);
+  // Every earlier version of `shapes`, so undo also brings back erased shapes.
+  const history = useRef<Shape[][]>([]);
+  const shapesRef = useRef<Shape[]>([]);
+  const setShapes = useCallback((update: (current: Shape[]) => Shape[]) => {
+    const next = update(shapesRef.current);
+    if (next === shapesRef.current) return;
+    history.current.push(shapesRef.current);
+    shapesRef.current = next;
+    setShapesState(next);
+  }, []);
   const [draft, setDraft] = useState<Shape | null>(null);
   const [textDraft, setTextDraftState] = useState<TextDraft | null>(null);
   // Read by commitText: blur and the next click can both fire for the same draft.
   const textDraftRef = useRef<TextDraft | null>(null);
   const [sidebarSize, setSidebarSize] = useState<Size>(SIDEBAR_FALLBACK);
   const [ocr, setOcr] = useState<OcrState | null>(null);
+  /** Snapshot flying into the badge after "Kuyruğa ekle"; hides the rest of the UI. */
+  const [flying, setFlying] = useState<{ rect: Rect; drawings: string | null } | null>(null);
+  const flyRef = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
   const frameRef = useRef<HTMLImageElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
@@ -97,11 +115,14 @@ export function Overlay() {
   const resetSelection = useCallback(() => {
     setSelection(null);
     setDrag({ kind: "none" });
-    setShapes([]);
+    history.current = [];
+    shapesRef.current = [];
+    setShapesState([]);
     setDraft(null);
     setTextDraft(null);
     setTool("select");
     setOcr(null);
+    setFlying(null);
   }, [setTextDraft]);
 
   // Pull the current session: on startup (window may be created mid-capture) and on refresh.
@@ -165,10 +186,46 @@ export function Overlay() {
     return blob && new Uint8Array(await blob.arrayBuffer());
   }, [info, selection, shapes]);
 
+  /** Throws the selection into the badge: lifts, arcs and shrinks into the bottom-right. */
+  const flyToBadge = useCallback(async () => {
+    if (!info || !selection || info.flyX == null || info.flyY == null) return;
+    const scale = info.width / window.innerWidth;
+    setFlying({ rect: selection, drawings: shapes.length > 0 ? (canvasRef.current?.toDataURL() ?? null) : null });
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    const el = flyRef.current;
+    if (!el) return;
+    const from = { x: selection.x + selection.width / 2, y: selection.y + selection.height / 2 };
+    const dx = info.flyX / scale - from.x;
+    const dy = info.flyY / scale - from.y;
+    const end = Math.min(1, 36 / Math.max(selection.width, selection.height));
+    const mid = (1 + end) / 2;
+    const animation = el.animate(
+      [
+        { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1, borderRadius: "4px" },
+        // A short lift first, so it reads as picked up rather than shrinking.
+        { transform: "translate(0, -14px) scale(1.03) rotate(-1.5deg)", opacity: 1, offset: 0.18 },
+        {
+          transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 90}px) scale(${mid}) rotate(-6deg)`,
+          opacity: 1,
+          offset: 0.55,
+        },
+        {
+          transform: `translate(${dx}px, ${dy}px) scale(${end}) rotate(-10deg)`,
+          opacity: 0.15,
+          borderRadius: "30%",
+        },
+      ],
+      { duration: 620, easing: "cubic-bezier(0.45, 0, 0.7, 0.4)", fill: "forwards" },
+    );
+    await animation.finished.catch(() => undefined);
+  }, [info, selection, shapes.length]);
+
   const finish = useCallback(
     async (action: Delivery) => {
       if (!info || !selection || busy.current) return;
       busy.current = true;
+      if (action === "enqueue") await flyToBadge();
       if (shapes.length > 0) {
         const png = await compose();
         if (png) await captureDeliverAnnotated(png, action);
@@ -178,7 +235,7 @@ export function Overlay() {
         await captureDeliver(rect, action);
       }
     },
-    [info, selection, shapes, compose],
+    [info, selection, shapes, compose, flyToBadge],
   );
 
   // Once a queue exists, adding to it becomes the main action (Enter).
@@ -196,7 +253,23 @@ export function Overlay() {
     setInfo((current) => current && { ...current, textMode: enabled });
   }, []);
 
-  const undo = useCallback(() => setShapes((current) => current.slice(0, -1)), []);
+  const undo = useCallback(() => {
+    const previous = history.current.pop();
+    if (!previous) return;
+    shapesRef.current = previous;
+    setShapesState(previous);
+  }, []);
+
+  /** Removes the shapes under the eraser; one undo step per drag. */
+  const eraseAt = useCallback((p: Point, newStroke: boolean) => {
+    const current = shapesRef.current;
+    const kept = current.filter((shape) => !hitTest(shape, p, ERASER_TOLERANCE));
+    if (kept.length === current.length) return;
+    if (newStroke || history.current.length === 0) history.current.push(current);
+    shapesRef.current = kept;
+    setShapesState(kept);
+  }, []);
+  const erasedThisDrag = useRef(false);
 
   /** "Metni al": OCR on the frozen frame under the selection (drawings are ignored). */
   const readText = useCallback(async () => {
@@ -216,7 +289,7 @@ export function Overlay() {
     if (!current) return;
     const shape: Shape = { kind: "text", at: current.at, text: current.value, style: { color, width } };
     if (isMeaningful(shape)) setShapes((list) => [...list, shape]);
-  }, [color, width, setTextDraft]);
+  }, [color, width, setTextDraft, setShapes]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -283,6 +356,15 @@ export function Overlay() {
         setTextDraft({ at: p, value: "" });
         return;
       }
+      if (tool === "eraser") {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setDrag({ kind: "erase" });
+        erasedThisDrag.current = false;
+        const before = shapesRef.current;
+        eraseAt(p, true);
+        erasedThisDrag.current = shapesRef.current !== before;
+        return;
+      }
       const shape = startShape(tool, p, { color, width });
       if (!shape) return;
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -309,6 +391,10 @@ export function Overlay() {
       setSelection(moveRect(selection, { x: p.x - drag.offset.x, y: p.y - drag.offset.y }, viewSize()));
     } else if (drag.kind === "draw" && draft) {
       setDraft(extendShape(draft, p));
+    } else if (drag.kind === "erase") {
+      const before = shapesRef.current;
+      eraseAt(p, !erasedThisDrag.current);
+      if (shapesRef.current !== before) erasedThisDrag.current = true;
     }
   };
 
@@ -339,8 +425,9 @@ export function Overlay() {
 
   const scale = info.width / window.innerWidth;
   const imageRect = selection && toImageRect(selection, scale, info);
-  const settled = selection !== null && (drag.kind === "none" || drag.kind === "draw");
-  const buttonCount = hasQueue ? 6 : 5;
+  const settled =
+    selection !== null && flying === null && (drag.kind === "none" || drag.kind === "draw" || drag.kind === "erase");
+  const buttonCount = hasQueue ? 5 : 4;
   const toolbarSize = {
     width: buttonCount * TOOLBAR_BUTTON_WIDTH + (buttonCount - 1) * TOOLBAR_GAP + TOOLBAR_CHROME,
     height: TOOLBAR_HEIGHT,
@@ -350,7 +437,14 @@ export function Overlay() {
   const flyoutSide = sidebar && sidebar.x < selection.x ? "left" : "right";
   const primaryClass = (action: Delivery) => (action === primary ? "primary" : undefined);
   const label = selection && sizeLabelPosition(selection, SIZE_LABEL_HEIGHT);
-  const cursorClass = drag.kind === "move" ? " overlay--moving" : drawing ? " overlay--drawing" : "";
+  const cursorClass =
+    drag.kind === "move"
+      ? " overlay--moving"
+      : tool === "eraser" && drawing
+        ? " overlay--erasing"
+        : drawing
+          ? " overlay--drawing"
+          : "";
 
   return (
     <div
@@ -371,7 +465,30 @@ export function Overlay() {
         onLoad={() => void overlayReady()}
       />
 
-      {selection ? (
+      {flying && (
+        <div
+          ref={flyRef}
+          className="overlay__fly"
+          style={{ left: flying.rect.x, top: flying.rect.y, width: flying.rect.width, height: flying.rect.height }}
+        >
+          <img
+            src={frameUrl(info)}
+            alt=""
+            style={{ left: -flying.rect.x, top: -flying.rect.y, width: window.innerWidth, height: window.innerHeight }}
+          />
+          {flying.drawings && (
+            <img
+              src={flying.drawings}
+              alt=""
+              style={{ left: -flying.rect.x, top: -flying.rect.y, width: window.innerWidth, height: window.innerHeight }}
+            />
+          )}
+        </div>
+      )}
+
+      {flying ? (
+        <div className="overlay__dim overlay__dim--fly" />
+      ) : selection ? (
         <div
           className="overlay__selection"
           style={{
@@ -388,9 +505,12 @@ export function Overlay() {
         </>
       )}
 
-      <canvas ref={canvasRef} className="overlay__canvas" />
+      <canvas ref={canvasRef} className={`overlay__canvas${flying ? " overlay__canvas--hidden" : ""}`} />
 
-      <div className="overlay__modes" onPointerDown={(e) => e.stopPropagation()}>
+      <div
+        className={`overlay__modes${flying ? " overlay__modes--hidden" : ""}`}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           className={info.textMode ? undefined : "active"}
@@ -440,7 +560,7 @@ export function Overlay() {
         />
       )}
 
-      {label && imageRect && (
+      {label && imageRect && !flying && (
         <div className="overlay__size" style={{ left: label.x, top: label.y }}>
           {imageRect.width} × {imageRect.height}
         </div>
@@ -453,12 +573,13 @@ export function Overlay() {
           tool={tool}
           color={color}
           width={width}
-          canUndo={shapes.length > 0}
+          canUndo={history.current.length > 0}
           flyoutSide={flyoutSide}
           onTool={setTool}
           onColor={setColor}
           onWidth={setWidth}
           onUndo={undo}
+          onCancel={() => void overlayCancel()}
         />
       )}
 
@@ -471,44 +592,39 @@ export function Overlay() {
           <button
             type="button"
             className={primaryClass("copy")}
-            title={t(hasQueue ? "overlay.copy_title_queue" : "overlay.copy_title")}
+            data-label={t(hasQueue ? "overlay.copy_title_queue" : "overlay.copy_title")}
             onClick={() => void finish("copy")}
           >
-            {t("overlay.copy")}
+            <CopyIcon />
           </button>
-          <button type="button" title={t("overlay.save_title")} onClick={() => void finish("save")}>
-            {t("overlay.save")}
+          <button type="button" data-label={t("overlay.save_title")} onClick={() => void finish("save")}>
+            <SaveIcon />
           </button>
-          <button type="button" className="with-icon" title={t("overlay.read_text_title")} onClick={() => void readText()}>
+          <button type="button" data-label={t("overlay.read_text_title")} onClick={() => void readText()}>
             <ScanTextIcon />
-            {t("overlay.read_text")}
           </button>
           <button
             type="button"
             className={primaryClass("enqueue")}
-            title={
+            data-label={
               hasQueue
                 ? t("overlay.add_to_queue_title", { count: info.queueCount })
                 : t("overlay.create_queue_title")
             }
             onClick={() => void finish("enqueue")}
           >
-            {t(hasQueue ? "overlay.add_to_queue" : "overlay.create_queue")}
+            <QueueAddIcon />
           </button>
           {hasQueue && (
             <button
               type="button"
-              className="danger with-icon"
-              title={t("overlay.clear_queue_title", { count: info.queueCount })}
+              className="danger"
+              data-label={t("overlay.clear_queue_title", { count: info.queueCount })}
               onClick={() => void clearQueue()}
             >
-              <TrashIcon />
-              {t("overlay.clear_queue")}
+              <TrashIcon size={18} />
             </button>
           )}
-          <button type="button" title={t("overlay.cancel_title")} onClick={() => void overlayCancel()}>
-            {t("overlay.cancel")}
-          </button>
         </div>
       )}
     </div>

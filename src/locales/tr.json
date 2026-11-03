@@ -42,7 +42,12 @@
     "read_text": "Metni al",
     "read_text_title": "Seçili alandaki yazıyı tanı (internetsiz)",
     "tool_pens": "Kalemler",
-    "style": "Renk ve kalınlık"
+    "style": "Renk ve kalınlık",
+    "tool_shapes": "Şekiller",
+    "tool_ellipse": "Elips",
+    "tool_line": "Çizgi",
+    "tool_eraser": "Silgi",
+    "color_hex": "Renk kodu"
   },
   "save": {
     "dialog_title": "Ekran görüntüsünü kaydet",
@@ -137,12 +142,13 @@
     "kind_text": "Metin",
     "remove": "Kuyruktan sil",
     "close": "Kapat",
-    "clear": "Temizle",
+    "clear": "Kuyruğu temizle",
     "paste": "Yapıştır",
     "paste_title": "Kuyruğu az önce kullandığın uygulamaya yapıştır",
     "export": "Kaydet",
     "export_zip": "Görseller PNG, metinler TXT olarak",
-    "export_pdf": "Her öğe bir sayfa"
+    "export_pdf": "Her öğe bir sayfa",
+    "zoom": "Büyüt"
   },
   "ocr": {
     "no_language": "Windows'ta metin tanıma için dil paketi yok. Ayarlar → Zaman ve dil → Dil bölümünden Türkçe ya da İngilizce dil paketini ekle.",
@@ -163,5 +169,8 @@
     "dialog_title": "Kuyruğu dışa aktar",
     "zip_filter": "ZIP arşivi",
     "pdf_filter": "PDF belgesi"
+  },
+  "preview": {
+    "close": "Kapat (Esc)"
   }
 }

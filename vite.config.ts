@@ -21,6 +21,7 @@ export default defineConfig({
         settings: page("src/windows/settings/index.html"),
         badge: page("src/windows/badge/index.html"),
         panel: page("src/windows/panel/index.html"),
+        preview: page("src/windows/preview/index.html"),
       },
     },
   },

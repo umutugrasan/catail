@@ -73,7 +73,7 @@ Kuyrukta öğe olduğu sürece sağ altta "Kuyruk: N" rozeti görünür. Hedef u
 
 ### Kuyruk paneli
 
-Sağ alttaki rozete tıklayınca yukarı doğru bir panel açılır: kuyruktaki görseller ve metinler sırayla listelenir. Satırları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), ✕ ile tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
+Sağ alttaki rozete tıklayınca yukarı doğru bir panel açılır: kuyruktaki görseller ve metinler sırayla listelenir. Satırları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), büyüteçle görseli büyük gör, çöp kutusuyla tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
 
 ### Metin tanıma ve çeviri
 
@@ -85,7 +85,7 @@ Kuyruk panelindeki **Kaydet** menüsü kuyruğu **ZIP** (görseller PNG, metinle
 
 ### Çizim araçları
 
-Alan seçince sağında araç çubuğu çıkar: seç/taşı, ok, dikdörtgen, kalemler (kalem, fosforlu kalem), metin, bulanıklaştırma (pikselleştirme), renk ve kalınlık, geri al (Ctrl+Z). Kalemler ile renk/kalınlık tek düğmede toplanır; tıklayınca açılır. Çizimler kopyalanan, kaydedilen ve kuyruğa eklenen görüntüye tam çözünürlükte işlenir.
+Alan seçince sağında araç çubuğu çıkar: seç/taşı, şekiller (dikdörtgen, elips, çizgi, ok), kalemler (kalem, fosforlu kalem, silgi), metin, bulanıklaştırma (pikselleştirme), renk seçici (istenen her renk, hex kodu ve hazır renkler) ve kalınlık, geri al (Ctrl+Z) ve kapat (✕). Gruplar tek düğmede durur, tıklayınca açılır. Alttaki işlem düğmeleri (kopyala, kaydet, metni al, kuyruğa ekle, temizle) yalnızca ikondur; adları üzerine gelince görünür. Kuyruğa eklenen görüntü animasyonla rozete uçar. Çizimler kopyalanan, kaydedilen ve kuyruğa eklenen görüntüye tam çözünürlükte işlenir.
 
 ### Yapıştırma yöntemleri
 

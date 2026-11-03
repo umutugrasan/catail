@@ -64,3 +64,40 @@ body,
     transform: scale(0.7);
   }
 }
+
+/* An item landed: squash, then spring back. */
+.badge--bump {
+  animation: badge-catch 520ms var(--ease-out) both;
+}
+
+.badge--bump .badge__dot {
+  animation: dot-catch 520ms var(--ease-out) both;
+}
+
+@keyframes badge-catch {
+  0% {
+    transform: scale(1);
+  }
+  18% {
+    transform: scale(1.16, 0.86);
+  }
+  42% {
+    transform: scale(0.94, 1.08);
+  }
+  64% {
+    transform: scale(1.04, 0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes dot-catch {
+  20% {
+    background: #fff;
+    transform: scale(1.6);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

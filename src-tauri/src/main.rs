@@ -13,6 +13,7 @@ mod ocr;
 mod overlay;
 mod panel;
 mod paste;
+mod preview;
 #[cfg(windows)]
 mod process;
 mod queue;
@@ -85,6 +86,8 @@ fn main() {
             commands::clipboard_write_text,
             commands::queue_add_text,
             commands::queue_export,
+            commands::preview_open,
+            commands::preview_close,
             commands::badge_state,
         ])
         .setup(move |app| {

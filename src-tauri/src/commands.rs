@@ -29,14 +29,22 @@ pub struct OverlayInfo {
     /// Items already queued; decides between "create queue" and "add to queue".
     queue_count: usize,
     text_mode: bool,
+    /// Where queued captures fly to (the badge), in physical px relative to this monitor.
+    fly_x: Option<f64>,
+    fly_y: Option<f64>,
 }
 
 #[tauri::command]
-pub fn overlay_session(window: WebviewWindow, state: State<'_, AppState>) -> Option<OverlayInfo> {
+pub fn overlay_session(
+    app: AppHandle,
+    window: WebviewWindow,
+    state: State<'_, AppState>,
+) -> Option<OverlayInfo> {
     let index = overlay::index_of(window.label())?;
     let session = state.session.lock().unwrap();
     let session = session.as_ref()?;
     let shot = session.shots.get(index)?;
+    let fly = badge::fly_target(&app);
     Some(OverlayInfo {
         session: session.id,
         index,
@@ -44,6 +52,8 @@ pub fn overlay_session(window: WebviewWindow, state: State<'_, AppState>) -> Opt
         height: shot.image.height(),
         queue_count: state.queue.lock().unwrap().len(),
         text_mode: state.text_mode.load(std::sync::atomic::Ordering::SeqCst),
+        fly_x: fly.map(|(x, _)| x - f64::from(shot.x)),
+        fly_y: fly.map(|(_, y)| y - f64::from(shot.y)),
     })
 }
 
@@ -368,6 +378,17 @@ pub async fn queue_export(
         }
         Err(e) => Err(report(&app, "notify.export_failed", e)),
     }
+}
+
+/// Panel zoom button. Async: the preview window may be created here.
+#[tauri::command]
+pub async fn preview_open(app: AppHandle, id: uuid::Uuid) -> Result<(), String> {
+    crate::preview::open(&app, id).map_err(|e| format!("{e:#}"))
+}
+
+#[tauri::command]
+pub fn preview_close(app: AppHandle) {
+    crate::preview::close(&app);
 }
 
 /// Clears the queue from the overlay toolbar; the overlay stays open.

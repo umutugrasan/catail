@@ -76,6 +76,17 @@ pub fn refresh<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
+/// Where captures "fly" to when queued: the badge pill's center, in physical screen pixels.
+/// The pill is right-aligned in its window, roughly 120 logical px wide.
+pub fn fly_target<R: Runtime>(app: &AppHandle<R>) -> Option<(f64, f64)> {
+    let monitor = app.primary_monitor().ok()??;
+    let scale = monitor.scale_factor();
+    let area = monitor.work_area();
+    let right = f64::from(area.position.x) + f64::from(area.size.width) - MARGIN * scale;
+    let bottom = f64::from(area.position.y) + f64::from(area.size.height) - MARGIN * scale;
+    Some((right - 60.0 * scale, bottom - HEIGHT / 2.0 * scale))
+}
+
 /// Hides the badge so it doesn't end up in a screenshot. `refresh` brings it back.
 pub fn hide_for_capture<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window(LABEL) {

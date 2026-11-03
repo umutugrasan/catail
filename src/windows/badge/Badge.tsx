@@ -1,9 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { t } from "../../lib/i18n";
 import { BadgeEvents, badgeState, onWindowEvent, panelToggle, type BadgeState } from "../../lib/ipc";
 
 export function Badge() {
   const [state, setState] = useState<BadgeState>({ count: 0, textMode: false, pasting: false });
+  // Bumped whenever an item arrives, restarting the "caught it" bounce.
+  const [bump, setBump] = useState(0);
+  const lastCount = useRef(0);
+
+  useEffect(() => {
+    if (state.count > lastCount.current) setBump((n) => n + 1);
+    lastCount.current = state.count;
+  }, [state.count]);
 
   useEffect(() => {
     void badgeState().then(setState);
@@ -14,7 +22,8 @@ export function Badge() {
   return (
     <button
       type="button"
-      className={`badge${state.pasting ? " badge--pasting" : ""}`}
+      key={bump}
+      className={`badge${state.pasting ? " badge--pasting" : ""}${bump > 0 ? " badge--bump" : ""}`}
       title={t("badge.open_panel")}
       // Act on press: the window never takes focus, so there may be no click event.
       onMouseDown={(e) => {

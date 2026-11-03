@@ -84,6 +84,26 @@ export function ToolIcon({ tool }: { tool: Tool }) {
           <path d="M5 6h14M12 6v13" />
         </Icon>
       );
+    case "ellipse":
+      return (
+        <Icon>
+          <ellipse cx="12" cy="12" rx="8.5" ry="6.5" />
+        </Icon>
+      );
+    case "line":
+      return (
+        <Icon>
+          <path d="M5 19 19 5" />
+        </Icon>
+      );
+    case "eraser":
+      return (
+        <Icon>
+          <path d="M7 20h12" />
+          <path d="M4.5 14.5 13 6a2 2 0 0 1 2.8 0l3.2 3.2a2 2 0 0 1 0 2.8L12 19H8.5z" />
+          <path d="M9 10l6 6" />
+        </Icon>
+      );
     case "blur":
       return (
         <Icon>
@@ -143,6 +163,54 @@ export function CloseIcon() {
   return (
     <Icon size={14}>
       <path d="M6 6l12 12M18 6L6 18" />
+    </Icon>
+  );
+}
+
+export function CopyIcon() {
+  return (
+    <Icon>
+      <rect x="8" y="8" width="12" height="12" rx="2" />
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+    </Icon>
+  );
+}
+
+export function SaveIcon() {
+  return (
+    <Icon>
+      <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" />
+      <path d="M5 19h14" />
+    </Icon>
+  );
+}
+
+/** A stack with a plus: start or grow the queue. */
+export function QueueAddIcon() {
+  return (
+    <Icon>
+      <rect x="4" y="9" width="12" height="11" rx="2" />
+      <path d="M8 5h10a2 2 0 0 1 2 2v9" />
+      <path d="M10 12v5M7.5 14.5h5" />
+    </Icon>
+  );
+}
+
+export function ZoomIcon() {
+  return (
+    <Icon size={15}>
+      <circle cx="11" cy="11" r="6" />
+      <path d="m20 20-4.2-4.2M11 8.5v5M8.5 11h5" />
+    </Icon>
+  );
+}
+
+export function PasteIcon() {
+  return (
+    <Icon>
+      <rect x="6" y="5" width="12" height="16" rx="2" />
+      <path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" />
+      <path d="M9 12h6M9 16h4" />
     </Icon>
   );
 }

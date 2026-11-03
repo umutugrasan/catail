@@ -13,6 +13,9 @@ export interface OverlayInfo {
   queueCount: number;
   /** Every Ctrl+C goes into the queue while on. */
   textMode: boolean;
+  /** Where queued captures fly to (the badge), physical px relative to this monitor. */
+  flyX: number | null;
+  flyY: number | null;
 }
 
 export interface QueueItemView {
@@ -106,6 +109,9 @@ export const queueItems = () => invoke<QueueItemView[]>("queue_items");
 export const queueRemove = (id: string) => invoke<void>("queue_remove", { id });
 export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { ids });
 export const queueImageUrl = (id: string) => convertFileSrc(`${id}.png`, "queue");
+/** Shows a queued image large, over the whole screen. */
+export const previewOpen = (id: string) => invoke<void>("preview_open", { id });
+export const previewClose = () => invoke<void>("preview_close");
 
 export const settingsGet = () => invoke<{ settings: Settings; version: string }>("settings_get");
 /** Rejects with a readable message (e.g. a shortcut another app holds); nothing changes then. */
@@ -148,6 +154,10 @@ export const OverlayEvents = {
 
 export const BadgeEvents = {
   update: "badge:update",
+} as const;
+
+export const PreviewEvents = {
+  show: "preview:show",
 } as const;
 
 export const PanelEvents = {

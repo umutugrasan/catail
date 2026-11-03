@@ -1,12 +1,13 @@
-// Vertical drawing palette next to a settled selection. Pens and the color/width choices
-// live in small flyouts so only one button each is visible until it's clicked.
+// Vertical drawing palette next to a settled selection. Shapes, pens and the color/width
+// choices each sit behind one button and open in a small flyout.
 import { forwardRef, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { t } from "../../lib/i18n";
-import { COLORS, WIDTHS, type Tool } from "./draw";
-import { ChevronIcon, ToolIcon, UndoIcon } from "./icons";
+import { ColorPicker } from "./ColorPicker";
+import { PEN_TOOLS, SHAPE_TOOLS, WIDTHS, type Tool } from "./draw";
+import { ChevronIcon, CloseIcon, ToolIcon, UndoIcon } from "./icons";
 
-type Flyout = "pens" | "style";
+type Flyout = "shapes" | "pens" | "style";
 
 interface Props {
   tool: Tool;
@@ -20,14 +21,16 @@ interface Props {
   onColor: (color: string) => void;
   onWidth: (width: number) => void;
   onUndo: () => void;
+  onCancel: () => void;
 }
 
-const PENS: Tool[] = ["pen", "highlighter"];
+const inGroup = (group: readonly Tool[], tool: Tool) => group.includes(tool);
 
 export const Sidebar = forwardRef<HTMLDivElement, Props>(function Sidebar(props, ref) {
   const { tool, color, width, canUndo, style, flyoutSide } = props;
   const [open, setOpen] = useState<Flyout | null>(null);
-  // The last pen used is the one the group button shows and picks.
+  // The last tool used in each group is the one its button shows.
+  const [shape, setShape] = useState<Tool>("rect");
   const [pen, setPen] = useState<Tool>("pen");
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,20 +46,38 @@ export const Sidebar = forwardRef<HTMLDivElement, Props>(function Sidebar(props,
 
   const pick = (next: Tool) => {
     props.onTool(next);
-    if (PENS.includes(next)) setPen(next);
+    if (inGroup(SHAPE_TOOLS, next)) setShape(next);
+    if (inGroup(PEN_TOOLS, next)) setPen(next);
     setOpen(null);
   };
+  const toggle = (flyout: Flyout) => setOpen(open === flyout ? null : flyout);
 
   const toolButton = (item: Tool) => (
     <button
       key={item}
       type="button"
       className={item === tool ? "active" : undefined}
-      title={t(`overlay.tool_${item}`)}
+      data-label={t(`overlay.tool_${item}`)}
       onClick={() => pick(item)}
     >
       <ToolIcon tool={item} />
     </button>
+  );
+
+  const groupList = (group: readonly Tool[]) => (
+    <div className="flyout__row">
+      {group.map((item) => (
+        <button
+          key={item}
+          type="button"
+          className={`flyout__tool${item === tool ? " active" : ""}`}
+          onClick={() => pick(item)}
+        >
+          <ToolIcon tool={item} />
+          <span>{t(`overlay.tool_${item}`)}</span>
+        </button>
+      ))}
+    </div>
   );
 
   return (
@@ -66,35 +87,32 @@ export const Sidebar = forwardRef<HTMLDivElement, Props>(function Sidebar(props,
         if (typeof ref === "function") ref(el);
         else if (ref) ref.current = el;
       }}
-      className="overlay__sidebar"
+      className={`overlay__sidebar overlay__sidebar--${flyoutSide}`}
       style={style}
       onPointerDown={(e) => e.stopPropagation()}
     >
       {toolButton("select")}
-      {toolButton("arrow")}
-      {toolButton("rect")}
+
+      <FlyoutButton
+        open={open === "shapes"}
+        side={flyoutSide}
+        active={inGroup(SHAPE_TOOLS, tool)}
+        label={t("overlay.tool_shapes")}
+        onToggle={() => toggle("shapes")}
+        face={<ToolIcon tool={inGroup(SHAPE_TOOLS, tool) ? tool : shape} />}
+      >
+        {groupList(SHAPE_TOOLS)}
+      </FlyoutButton>
 
       <FlyoutButton
         open={open === "pens"}
         side={flyoutSide}
-        active={PENS.includes(tool)}
-        title={t("overlay.tool_pens")}
-        onToggle={() => setOpen(open === "pens" ? null : "pens")}
-        face={<ToolIcon tool={PENS.includes(tool) ? tool : pen} />}
+        active={inGroup(PEN_TOOLS, tool)}
+        label={t("overlay.tool_pens")}
+        onToggle={() => toggle("pens")}
+        face={<ToolIcon tool={inGroup(PEN_TOOLS, tool) ? tool : pen} />}
       >
-        <div className="flyout__row">
-          {PENS.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={`flyout__tool${item === tool ? " active" : ""}`}
-              onClick={() => pick(item)}
-            >
-              <ToolIcon tool={item} />
-              <span>{t(`overlay.tool_${item}`)}</span>
-            </button>
-          ))}
-        </div>
+        {groupList(PEN_TOOLS)}
       </FlyoutButton>
 
       {toolButton("text")}
@@ -105,23 +123,11 @@ export const Sidebar = forwardRef<HTMLDivElement, Props>(function Sidebar(props,
       <FlyoutButton
         open={open === "style"}
         side={flyoutSide}
-        title={t("overlay.style")}
-        onToggle={() => setOpen(open === "style" ? null : "style")}
-        face={<span className="style-face" style={{ background: color, boxShadow: `0 0 0 ${width / 2}px rgba(255,255,255,.9) inset` }} />}
+        label={t("overlay.style")}
+        onToggle={() => toggle("style")}
+        face={<span className="style-face" style={{ background: color }} />}
       >
-        <div className="flyout__label">{t("overlay.color")}</div>
-        <div className="flyout__swatches">
-          {COLORS.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={`flyout__swatch${item === color ? " active" : ""}`}
-              style={{ background: item }}
-              title={t("overlay.color")}
-              onClick={() => props.onColor(item)}
-            />
-          ))}
-        </div>
+        <ColorPicker color={color} onChange={props.onColor} />
         <div className="flyout__label">{t("overlay.width")}</div>
         <div className="flyout__widths">
           {WIDTHS.map((item) => (
@@ -138,8 +144,11 @@ export const Sidebar = forwardRef<HTMLDivElement, Props>(function Sidebar(props,
       </FlyoutButton>
 
       <span className="overlay__sidebar-sep" />
-      <button type="button" title={t("overlay.undo")} disabled={!canUndo} onClick={props.onUndo}>
+      <button type="button" data-label={t("overlay.undo")} disabled={!canUndo} onClick={props.onUndo}>
         <UndoIcon />
+      </button>
+      <button type="button" className="overlay__close" data-label={t("overlay.cancel_title")} onClick={props.onCancel}>
+        <CloseIcon />
       </button>
     </div>
   );
@@ -149,7 +158,7 @@ function FlyoutButton(props: {
   open: boolean;
   side: "left" | "right";
   active?: boolean;
-  title: string;
+  label: string;
   face: ReactNode;
   onToggle: () => void;
   children: ReactNode;
@@ -159,7 +168,7 @@ function FlyoutButton(props: {
       <button
         type="button"
         className={`flyout-button${props.active ? " active" : ""}${props.open ? " open" : ""}`}
-        title={props.title}
+        data-label={props.open ? undefined : props.label}
         onClick={props.onToggle}
       >
         {props.face}

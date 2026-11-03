@@ -2,18 +2,25 @@
 // window; a Transform maps them onto the preview canvas or the full-resolution export.
 import type { Point } from "./geometry";
 
-export type Tool = "select" | "pen" | "highlighter" | "arrow" | "rect" | "text" | "blur";
+export type Tool =
+  | "select"
+  | "pen"
+  | "highlighter"
+  | "eraser"
+  | "rect"
+  | "ellipse"
+  | "line"
+  | "arrow"
+  | "text"
+  | "blur";
 
-export const DRAWING_TOOLS: Exclude<Tool, "select">[] = [
-  "arrow",
-  "rect",
-  "pen",
-  "highlighter",
-  "text",
-  "blur",
-];
+/** Grouped in the sidebar behind one button each. */
+export const SHAPE_TOOLS = ["rect", "ellipse", "line", "arrow"] as const satisfies readonly Tool[];
+export const PEN_TOOLS = ["pen", "highlighter", "eraser"] as const satisfies readonly Tool[];
 
-export const COLORS = ["#ef4444", "#facc15", "#22c55e", "#3b82f6", "#ffffff", "#111827"] as const;
+/** Starting color and quick picks under the color picker. */
+export const DEFAULT_COLOR = "#e0457b";
+export const PRESET_COLORS = ["#e0457b", "#ef4444", "#facc15", "#22c55e", "#3b82f6", "#111827", "#ffffff"] as const;
 /** Stroke widths in CSS px; text size is derived from them. */
 export const WIDTHS = [2, 4, 8] as const;
 
@@ -24,7 +31,7 @@ export interface Style {
 
 export type Shape =
   | { kind: "pen" | "highlighter"; points: Point[]; style: Style }
-  | { kind: "arrow" | "rect" | "blur"; from: Point; to: Point; style: Style }
+  | { kind: "arrow" | "line" | "rect" | "ellipse" | "blur"; from: Point; to: Point; style: Style }
   | { kind: "text"; at: Point; text: string; style: Style };
 
 /** Maps a CSS point to target pixels: `(p - origin) * k`. */
@@ -57,10 +64,13 @@ export function startShape(tool: Tool, p: Point, style: Style): Shape | null {
     case "highlighter":
       return { kind: tool, points: [p], style };
     case "arrow":
+    case "line":
     case "rect":
+    case "ellipse":
     case "blur":
       return { kind: tool, from: p, to: p, style };
     case "select":
+    case "eraser":
     case "text":
       return null;
   }
@@ -76,6 +86,63 @@ export function extendShape(shape: Shape, p: Point): Shape {
       return shape;
     default:
       return { ...shape, to: p };
+  }
+}
+
+const distanceToSegment = (p: Point, a: Point, b: Point) => {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const length2 = dx * dx + dy * dy;
+  const t = length2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / length2));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+};
+
+/** Whether the eraser at `p` touches `shape` (outlines count, not empty interiors). */
+export function hitTest(shape: Shape, p: Point, tolerance: number): boolean {
+  const reach = tolerance + shape.style.width / 2;
+  switch (shape.kind) {
+    case "pen":
+    case "highlighter": {
+      const width = shape.kind === "highlighter" ? shape.style.width * 4 : shape.style.width;
+      const pts = shape.points;
+      if (pts.length === 1) return Math.hypot(p.x - pts[0].x, p.y - pts[0].y) <= tolerance + width / 2;
+      return pts.some((a, i) => i > 0 && distanceToSegment(p, pts[i - 1], a) <= tolerance + width / 2);
+    }
+    case "line":
+    case "arrow":
+      return distanceToSegment(p, shape.from, shape.to) <= reach;
+    case "rect": {
+      const [a, b] = [shape.from, shape.to];
+      const corners = [a, { x: b.x, y: a.y }, b, { x: a.x, y: b.y }];
+      return corners.some((c, i) => distanceToSegment(p, c, corners[(i + 1) % 4]) <= reach);
+    }
+    case "ellipse": {
+      const cx = (shape.from.x + shape.to.x) / 2;
+      const cy = (shape.from.y + shape.to.y) / 2;
+      const rx = Math.abs(shape.to.x - shape.from.x) / 2;
+      const ry = Math.abs(shape.to.y - shape.from.y) / 2;
+      if (rx < 1 || ry < 1) return Math.hypot(p.x - cx, p.y - cy) <= reach;
+      // Distance from the outline, approximated by scaling the radial error.
+      const r = Math.hypot((p.x - cx) / rx, (p.y - cy) / ry);
+      return Math.abs(r - 1) * Math.min(rx, ry) <= reach;
+    }
+    case "blur": {
+      const [x1, x2] = [Math.min(shape.from.x, shape.to.x), Math.max(shape.from.x, shape.to.x)];
+      const [y1, y2] = [Math.min(shape.from.y, shape.to.y), Math.max(shape.from.y, shape.to.y)];
+      return p.x >= x1 - tolerance && p.x <= x2 + tolerance && p.y >= y1 - tolerance && p.y <= y2 + tolerance;
+    }
+    case "text": {
+      const size = textSize(shape.style.width);
+      const lines = shape.text.split("\n");
+      const width = Math.max(...lines.map((l) => l.length)) * size * 0.6;
+      const height = lines.length * size * 1.25;
+      return (
+        p.x >= shape.at.x - tolerance &&
+        p.x <= shape.at.x + width + tolerance &&
+        p.y >= shape.at.y - tolerance &&
+        p.y <= shape.at.y + height + tolerance
+      );
+    }
   }
 }
 
@@ -119,6 +186,23 @@ export function drawShapes(ctx: CanvasRenderingContext2D, shapes: readonly Shape
         const a = map(shape.from);
         const b = map(shape.to);
         ctx.strokeRect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+        break;
+      }
+      case "ellipse": {
+        const a = map(shape.from);
+        const b = map(shape.to);
+        ctx.beginPath();
+        ctx.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(b.x - a.x) / 2, Math.abs(b.y - a.y) / 2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      }
+      case "line": {
+        const a = map(shape.from);
+        const b = map(shape.to);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
         break;
       }
       case "arrow": {

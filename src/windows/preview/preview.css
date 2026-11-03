@@ -1,0 +1,76 @@
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}
+
+.preview {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 10, 20, 0.62);
+  cursor: zoom-out;
+  animation: fade-in var(--normal) var(--ease-out) both;
+}
+
+.preview__image {
+  max-width: 86vw;
+  max-height: 86vh;
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: zoom-in 260ms var(--ease-pop) both;
+}
+
+@keyframes zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.preview--closing {
+  animation: preview-out 150ms var(--ease-in-out) both;
+}
+
+.preview--closing .preview__image {
+  animation: none;
+}
+
+@keyframes preview-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.preview__close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease-out), background var(--fast) var(--ease-out);
+}
+
+.preview__close:hover {
+  background: var(--pink-100);
+  transform: rotate(90deg);
+}

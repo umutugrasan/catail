@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { arrowHead, extendShape, isMeaningful, startShape, type Shape } from "./draw";
+import { arrowHead, extendShape, hitTest, isMeaningful, startShape, type Shape } from "./draw";
 
 const style = { color: "#ef4444", width: 4 };
 
@@ -36,5 +36,27 @@ describe("startShape / extendShape", () => {
   it("returns null for tools that don't drag", () => {
     expect(startShape("select", { x: 0, y: 0 }, style)).toBeNull();
     expect(startShape("text", { x: 0, y: 0 }, style)).toBeNull();
+    expect(startShape("eraser", { x: 0, y: 0 }, style)).toBeNull();
+  });
+});
+
+describe("hitTest", () => {
+  const rect: Shape = { kind: "rect", from: { x: 0, y: 0 }, to: { x: 100, y: 50 }, style };
+  const ellipse: Shape = { kind: "ellipse", from: { x: 0, y: 0 }, to: { x: 100, y: 50 }, style };
+  const line: Shape = { kind: "line", from: { x: 0, y: 0 }, to: { x: 100, y: 0 }, style };
+  const pen: Shape = { kind: "pen", points: [{ x: 0, y: 0 }, { x: 10, y: 10 }, { x: 20, y: 0 }], style };
+
+  it("touches outlines, not empty interiors", () => {
+    expect(hitTest(rect, { x: 50, y: 1 }, 4)).toBe(true);
+    expect(hitTest(rect, { x: 50, y: 25 }, 4)).toBe(false);
+    expect(hitTest(ellipse, { x: 50, y: 1 }, 4)).toBe(true);
+    expect(hitTest(ellipse, { x: 50, y: 25 }, 4)).toBe(false);
+  });
+
+  it("follows lines and strokes", () => {
+    expect(hitTest(line, { x: 60, y: 5 }, 4)).toBe(true);
+    expect(hitTest(line, { x: 60, y: 12 }, 4)).toBe(false);
+    expect(hitTest(pen, { x: 15, y: 5 }, 4)).toBe(true);
+    expect(hitTest(pen, { x: 10, y: 30 }, 4)).toBe(false);
   });
 });

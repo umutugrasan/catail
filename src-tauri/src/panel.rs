@@ -29,8 +29,8 @@ pub const EVENT_CLOSE: &str = "panel:close";
 pub const PROTOCOL: &str = "queue";
 
 /// Logical size; the panel sits above the badge (see `badge.rs` for its size and margin).
-const WIDTH: f64 = 380.0;
-const HEIGHT: f64 = 480.0;
+const WIDTH: f64 = 300.0;
+const HEIGHT: f64 = 460.0;
 const MARGIN: f64 = 16.0;
 const BADGE_HEIGHT: f64 = 40.0;
 const GAP: f64 = 8.0;

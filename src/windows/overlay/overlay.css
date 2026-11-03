@@ -33,6 +33,11 @@ button {
   cursor: crosshair;
 }
 
+.overlay--erasing,
+.overlay--erasing .overlay__selection {
+  cursor: cell;
+}
+
 .overlay__frame {
   position: absolute;
   inset: 0;
@@ -165,7 +170,7 @@ button {
 
 .overlay__toolbar button {
   display: inline-flex;
-  flex: 1;
+  flex: 0 0 36px;
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -203,21 +208,7 @@ button {
   color: var(--danger);
 }
 
-/* Trash icon: hidden until hover, then it slides in and the lid tips open. */
-.danger.with-icon .trash {
-  width: 0;
-  opacity: 0;
-  margin-right: -6px;
-  transition: width var(--normal) var(--ease-out), opacity var(--normal) var(--ease-out),
-    margin var(--normal) var(--ease-out);
-}
-
-.danger.with-icon:hover .trash {
-  width: 16px;
-  opacity: 1;
-  margin-right: 0;
-}
-
+/* Trash lid tips open on hover. */
 .trash__lid {
   transform-box: fill-box;
   transform-origin: 90% 100%;
@@ -348,31 +339,6 @@ button {
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-}
-
-.flyout__swatches {
-  display: grid;
-  grid-template-columns: repeat(3, 28px);
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.overlay__sidebar .flyout__swatch {
-  width: 28px;
-  height: 28px;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(59, 23, 41, 0.18);
-  transition: transform var(--fast) var(--ease-pop), box-shadow var(--fast) var(--ease-out);
-}
-
-.overlay__sidebar .flyout__swatch:hover:not(:disabled) {
-  background-color: inherit;
-  transform: scale(1.12);
-}
-
-.overlay__sidebar .flyout__swatch.active {
-  box-shadow: 0 0 0 2px var(--plum-700);
 }
 
 .flyout__widths {
@@ -567,4 +533,216 @@ button {
   border-top-color: var(--pink-500);
   border-radius: 50%;
   animation: spin 700ms linear infinite;
+}
+
+/* Names appear on hover instead of taking space. Above by default; beside the sidebar. */
+[data-label] {
+  position: relative;
+}
+
+[data-label]::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 10;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--plum-900);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  translate: -50% 4px;
+  pointer-events: none;
+  transition: opacity var(--fast) var(--ease-out), translate var(--fast) var(--ease-out);
+}
+
+[data-label]:hover::after {
+  opacity: 1;
+  translate: -50% 0;
+  transition-delay: 220ms;
+}
+
+.overlay__sidebar--right [data-label]::after,
+.overlay__sidebar--left [data-label]::after {
+  top: 50%;
+  bottom: auto;
+}
+
+.overlay__sidebar--right [data-label]::after {
+  left: calc(100% + 10px);
+  translate: -4px -50%;
+}
+
+.overlay__sidebar--right [data-label]:hover::after {
+  translate: 0 -50%;
+}
+
+.overlay__sidebar--left [data-label]::after {
+  right: calc(100% + 10px);
+  left: auto;
+  translate: 4px -50%;
+}
+
+.overlay__sidebar--left [data-label]:hover::after {
+  translate: 0 -50%;
+}
+
+.overlay__sidebar .overlay__close:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Color picker in the style flyout. */
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 184px;
+  margin-bottom: 10px;
+}
+
+.picker__square {
+  position: relative;
+  height: 124px;
+  border-radius: var(--radius-sm);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.picker__thumb {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.picker__hue {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.picker__hue-thumb {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.picker__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.picker__preview {
+  flex: 0 0 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px rgba(59, 23, 41, 0.2);
+}
+
+.picker__hex {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  user-select: text;
+}
+
+.picker__hex:focus {
+  border-color: var(--accent-hover);
+}
+
+.picker__presets {
+  display: flex;
+  gap: 5px;
+}
+
+.overlay__sidebar .picker__preset {
+  width: 21px;
+  height: 21px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(59, 23, 41, 0.2);
+  transition: transform var(--fast) var(--ease-pop);
+}
+
+.overlay__sidebar .picker__preset:hover:not(:disabled) {
+  background-color: inherit;
+  transform: scale(1.15);
+}
+
+.overlay__sidebar .picker__preset.active {
+  box-shadow: 0 0 0 2px var(--plum-700);
+}
+
+/* "Kuyruğa ekle": the snapshot lifts off and drops into the badge. */
+.overlay__fly {
+  position: absolute;
+  z-index: 6;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 18px 40px rgba(28, 10, 20, 0.45), 0 0 0 2px var(--pink-300);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.overlay__fly img {
+  position: absolute;
+  max-width: none;
+}
+
+.overlay__dim--fly {
+  background: rgba(28, 10, 20, 0.55);
+  animation: fade-in 200ms var(--ease-out) both;
+}
+
+.overlay__canvas--hidden {
+  opacity: 0;
+}
+
+.overlay__modes {
+  transition: opacity var(--fast) var(--ease-out), translate var(--normal) var(--ease-out);
+}
+
+.overlay__modes--hidden {
+  opacity: 0;
+  translate: -50% -12px;
+  pointer-events: none;
+}
+
+/* Buttons lift a touch on hover and press in on click. */
+.overlay__toolbar button:hover:not(:disabled) svg,
+.overlay__sidebar button:hover:not(:disabled) svg {
+  transform: translateY(-1px);
+}
+
+.overlay__toolbar button svg,
+.overlay__sidebar button svg {
+  transition: transform var(--fast) var(--ease-pop);
 }
