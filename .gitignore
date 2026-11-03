@@ -1,0 +1,15 @@
+# Rust
+target/
+
+# Node
+node_modules/
+dist/
+
+# Generated test images
+spikes/paste-test/samples/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

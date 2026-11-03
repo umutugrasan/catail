@@ -1,0 +1,20 @@
+[package]
+name = "paste-test"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Phase 0 spike: verify batch (CF_HDROP) and sequential image pasting into real apps"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+enigo = "0.3"
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_System_DataExchange",
+    "Win32_System_Memory",
+    "Win32_UI_Input_KeyboardAndMouse",
+] }
