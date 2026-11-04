@@ -17,11 +17,17 @@ use crate::state::{AppState, UndoKind};
 const LABEL: &str = "badge";
 const URL: &str = "src/windows/badge/index.html";
 pub const EVENT_UPDATE: &str = "badge:update";
+/// The panel's bin was clicked: a cat is on its way from there into the box.
+pub const EVENT_LEAP: &str = "badge:leap";
 
 /// Logical size and distance from the work-area corner.
 const WIDTH: f64 = 260.0;
 const HEIGHT: f64 = 40.0;
 const MARGIN: f64 = 16.0;
+/// While the cat leaps from the panel's bin into the box, the (transparent) window reaches
+/// up to where the bin was, so the cat isn't cut off.
+const LEAP_HEIGHT: f64 = 170.0;
+const LEAP_FOR: Duration = Duration::from_millis(1500);
 
 /// Gives the compositor time to remove the badge before a screenshot is taken.
 const HIDE_SETTLE: Duration = Duration::from_millis(80);
@@ -147,8 +153,29 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
         .context("cannot create badge window")
 }
 
+/// Tells the badge a cat leaps over from the panel's bin, and makes room for it for a moment.
+pub fn leap<R: Runtime>(app: &AppHandle<R>) {
+    let Some(window) = app.get_webview_window(LABEL) else {
+        return;
+    };
+    place_sized(app, &window, LEAP_HEIGHT);
+    let _ = app.emit_to(LABEL, EVENT_LEAP, ());
+    let app = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(LEAP_FOR);
+        if let Some(window) = app.get_webview_window(LABEL) {
+            place(&app, &window);
+        }
+    });
+}
+
 /// Bottom-right of the primary monitor's work area (above the taskbar).
 fn place<R: Runtime>(app: &AppHandle<R>, window: &WebviewWindow<R>) {
+    place_sized(app, window, HEIGHT);
+}
+
+/// Like `place`, `height` logical px tall; the bottom edge stays where the badge sits.
+fn place_sized<R: Runtime>(app: &AppHandle<R>, window: &WebviewWindow<R>, height: f64) {
     let Ok(Some(monitor)) = app.primary_monitor() else {
         return;
     };
@@ -156,7 +183,7 @@ fn place<R: Runtime>(app: &AppHandle<R>, window: &WebviewWindow<R>) {
     let area = monitor.work_area();
     let (w, h, margin) = (
         (WIDTH * scale).round(),
-        (HEIGHT * scale).round(),
+        (height * scale).round(),
         (MARGIN * scale).round(),
     );
     let x = f64::from(area.position.x) + f64::from(area.size.width) - w - margin;

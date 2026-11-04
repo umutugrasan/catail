@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { TRASH_JUMP_MS, TrashJump } from "../../lib/cats";
+import { TRASH_HANDOFF_MS, TrashJump } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   onWindowEvent,
@@ -74,14 +74,16 @@ export function Panel() {
     return () => subscriptions.forEach((s) => void s.then((u) => u()));
   }, [close]);
 
-  /** A cat jumps out of the bin first; then the queue is cleared (and the panel closes). */
+  /**
+   * A cat climbs onto the bin first; then the queue is cleared, the panel closes and the
+   * badge shows the cat leaping from the bin into its box.
+   */
   const clearAll = () => {
     if (clearing) return;
     setClearing(true);
     setTimeout(() => {
-      void queueClear();
-      setClearing(false);
-    }, TRASH_JUMP_MS);
+      void queueClear(true).finally(() => setClearing(false));
+    }, TRASH_HANDOFF_MS);
   };
 
   const remove = (id: string) => {
@@ -227,7 +229,7 @@ export function Panel() {
           data-label={clearing ? undefined : t("panel.clear")}
           onClick={clearAll}
         >
-          {clearing ? <TrashJump size={17} /> : <TrashIcon size={17} />}
+          {clearing ? <TrashJump size={17} handoff /> : <TrashIcon size={17} />}
         </button>
 
         <div className="panel__export">

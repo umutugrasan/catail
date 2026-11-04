@@ -214,3 +214,13 @@ export function PasteIcon() {
     </Icon>
   );
 }
+
+/** Corners of the whole screen: select everything. */
+export function SelectAllIcon() {
+  return (
+    <Icon>
+      <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
+      <rect x="8" y="8" width="8" height="8" rx="1.5" />
+    </Icon>
+  );
+}

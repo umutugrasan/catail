@@ -1,7 +1,12 @@
-// The Catail cats: a small SVG face, and two drawn cats as images. Motion lives in cats.css.
+// The Catail cats: a small SVG face, and two drawn cats cut into parts so they can move.
+// Motion lives in cats.css.
+import type { CSSProperties } from "react";
 import { TrashIcon } from "../windows/overlay/icons";
-import boxCat from "./cats/box.png";
-import standingCat from "./cats/standing.png";
+import boxFront from "./cats/box-front.png";
+import boxHead from "./cats/box-head.png";
+import footLeft from "./cats/foot-left.png";
+import footRight from "./cats/foot-right.png";
+import standingBody from "./cats/standing-body.png";
 import "./cats.css";
 
 const PLUM = "#5b2141";
@@ -24,31 +29,59 @@ export function CatFace({ size = 18 }: { size?: number }) {
   );
 }
 
-/** Waits in a box beside "Geri al", bored: heavy eyelids, a slow blink, the box shuffles. */
-export function BoxCat() {
+/** Size of the leaping cat in the panel's bin and in the badge; they must match for the handoff. */
+export const LEAP_CAT_SIZE = 41;
+
+/** The standing cat with its feet as separate parts, so they can kick while it flies. */
+export function LeapingCat({ size = LEAP_CAT_SIZE, className = "", style }: { size?: number; className?: string; style?: CSSProperties }) {
   return (
-    <span className="box-cat" aria-hidden="true">
-      <img src={boxCat} alt="" draggable={false} />
-      <span className="box-cat__lid box-cat__lid--left" />
-      <span className="box-cat__lid box-cat__lid--right" />
+    <span className={`leaping-cat ${className}`} style={{ width: size, height: Math.round((size * 335) / 332), ...style }} aria-hidden="true">
+      <img className="leaping-cat__foot leaping-cat__foot--left" src={footLeft} alt="" draggable={false} />
+      <img className="leaping-cat__foot leaping-cat__foot--right" src={footRight} alt="" draggable={false} />
+      <img className="leaping-cat__body" src={standingBody} alt="" draggable={false} />
     </span>
   );
 }
 
-/** Springs out of the bin. */
-export function LeapingCat({ size = 44 }: { size?: number }) {
-  return <img className="leaping-cat" src={standingCat} alt="" width={size} height={size} draggable={false} />;
+/**
+ * Waits in a box beside "Geri al", bored: heavy eyelids, a slow blink, the box shuffles.
+ * The head rises out of the box when it arrives. With `leapFrom` (offset in px from the
+ * box's landing spot to where the cat starts), a cat first leaps in from there.
+ */
+export function BoxCat({ leapFrom }: { leapFrom?: { x: number; y: number } | null }) {
+  const leaping = leapFrom != null;
+  return (
+    <span className={`box-cat${leaping ? " box-cat--leap" : ""}`} aria-hidden="true">
+      <span className="box-cat__head">
+        <img src={boxHead} alt="" draggable={false} />
+        <span className="box-cat__lid box-cat__lid--left" />
+        <span className="box-cat__lid box-cat__lid--right" />
+      </span>
+      {leaping && (
+        <LeapingCat
+          className="box-cat__leaper"
+          style={{ "--dx": `${leapFrom.x}px`, "--dy": `${leapFrom.y}px` } as CSSProperties}
+        />
+      )}
+      <img className="box-cat__front" src={boxFront} alt="" draggable={false} />
+    </span>
+  );
 }
 
-/** How long the bin-and-cat moment plays before the queue is actually cleared. */
+/** How long the overlay's bin-and-cat moment plays before the queue is actually cleared. */
 export const TRASH_JUMP_MS = 760;
+/** The panel's version: the cat climbs onto the bin, then the badge takes over the leap. */
+export const TRASH_HANDOFF_MS = 430;
 
-/** The bin's lid flips and a cat springs out of it. */
-export function TrashJump({ size = 17 }: { size?: number }) {
+/**
+ * The bin's lid flips and a cat climbs out of it, facing left. `handoff`: it stops crouched on
+ * the bin, ready to jump (the badge window plays the jump); otherwise it leaps off to the left.
+ */
+export function TrashJump({ size = 17, handoff = false }: { size?: number; handoff?: boolean }) {
   return (
-    <span className="trash-jump">
+    <span className={`trash-jump${handoff ? " trash-jump--handoff" : ""}`}>
+      <LeapingCat size={handoff ? LEAP_CAT_SIZE : Math.round(size * 2.4)} />
       <TrashIcon size={size} />
-      <LeapingCat size={Math.round(size * 2.4)} />
     </span>
   );
 }

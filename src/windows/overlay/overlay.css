@@ -28,6 +28,28 @@ button {
   cursor: var(--paw-move);
 }
 
+/* Over a selection edge or corner, and while dragging it; the pressed fist yields here. */
+.overlay--resize-ns,
+.overlay--resize-ns .overlay__selection,
+html.pressing .overlay--resize-ns,
+html.pressing .overlay--resize-ns * {
+  cursor: var(--paw-ns) !important;
+}
+
+.overlay--resize-ew,
+.overlay--resize-ew .overlay__selection,
+html.pressing .overlay--resize-ew,
+html.pressing .overlay--resize-ew * {
+  cursor: var(--paw-ew) !important;
+}
+
+.overlay--resize-corner,
+.overlay--resize-corner .overlay__selection,
+html.pressing .overlay--resize-corner,
+html.pressing .overlay--resize-corner * {
+  cursor: var(--paw-nwse) !important;
+}
+
 .overlay--drawing,
 .overlay--drawing .overlay__selection {
   cursor: var(--paw-cross);
@@ -61,6 +83,35 @@ button {
   border-radius: 2px;
   box-shadow: 0 0 0 100vmax var(--dim);
   cursor: var(--paw-move);
+}
+
+/* Grab dots on the selection's corners and edge middles. */
+.overlay__handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--selection);
+  border-radius: 50%;
+  background: #fff;
+  box-sizing: border-box;
+  translate: -50% -50%;
+  pointer-events: none;
+  animation: handle-in var(--normal) var(--ease-pop) both;
+}
+
+.overlay__handle--nw { left: 0; top: 0; }
+.overlay__handle--n { left: 50%; top: 0; }
+.overlay__handle--ne { left: 100%; top: 0; }
+.overlay__handle--e { left: 100%; top: 50%; }
+.overlay__handle--se { left: 100%; top: 100%; }
+.overlay__handle--s { left: 50%; top: 100%; }
+.overlay__handle--sw { left: 0; top: 100%; }
+.overlay__handle--w { left: 0; top: 50%; }
+
+@keyframes handle-in {
+  from {
+    scale: 0;
+  }
 }
 
 /* Drawings preview; sized to device pixels in Overlay.tsx. */
@@ -746,4 +797,100 @@ button {
 .overlay__toolbar button svg,
 .overlay__sidebar button svg {
   transition: transform var(--fast) var(--ease-pop);
+}
+
+/* Right-click menu. */
+.menu {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 196px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  cursor: var(--paw-default);
+  visibility: hidden;
+}
+
+.menu--open {
+  visibility: visible;
+  animation: pop-in var(--normal) var(--ease-pop) both;
+}
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out),
+    transform var(--fast) var(--ease-out);
+}
+
+.menu__item svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.menu__item:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.menu__item:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.menu__item:disabled {
+  opacity: 0.45;
+}
+
+.menu__item--danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.menu__label {
+  flex: 1;
+}
+
+.menu__hint {
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 11px;
+}
+
+.menu__separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}
+
+/* Items arrive one after another. */
+.menu--open > * {
+  animation: menu-item-in var(--normal) var(--ease-out) both;
+}
+
+.menu--open > :nth-child(2) { animation-delay: 20ms; }
+.menu--open > :nth-child(3) { animation-delay: 40ms; }
+.menu--open > :nth-child(4) { animation-delay: 60ms; }
+.menu--open > :nth-child(5) { animation-delay: 70ms; }
+.menu--open > :nth-child(6) { animation-delay: 80ms; }
+
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    translate: 0 -3px;
+  }
 }

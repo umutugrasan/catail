@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   clampPoint,
   containsPoint,
+  handleAt,
+  handleCursor,
   moveRect,
   rectFromPoints,
+  resizeRect,
   sidebarPosition,
   sizeLabelPosition,
   toImageRect,
@@ -117,5 +120,46 @@ describe("sidebarPosition", () => {
   it("goes inside for full-width selections and stays on screen vertically", () => {
     const p = sidebarPosition({ x: 0, y: 900, width: 1707, height: 100 }, bar, view);
     expect(p).toEqual({ x: 1707 - 48 - 8, y: 1067 - 400 - 8 });
+  });
+});
+
+describe("handleAt", () => {
+  const r = { x: 100, y: 100, width: 200, height: 100 };
+  it("finds edges and corners just inside or outside the border", () => {
+    expect(handleAt(r, { x: 200, y: 96 })).toBe("n");
+    expect(handleAt(r, { x: 200, y: 204 })).toBe("s");
+    expect(handleAt(r, { x: 95, y: 150 })).toBe("w");
+    expect(handleAt(r, { x: 303, y: 150 })).toBe("e");
+    expect(handleAt(r, { x: 102, y: 102 })).toBe("nw");
+    expect(handleAt(r, { x: 298, y: 203 })).toBe("se");
+    expect(handleAt(r, { x: 305, y: 95 })).toBe("ne");
+    expect(handleAt(r, { x: 96, y: 199 })).toBe("sw");
+  });
+  it("ignores the middle and far away points", () => {
+    expect(handleAt(r, { x: 200, y: 150 })).toBeNull();
+    expect(handleAt(r, { x: 50, y: 150 })).toBeNull();
+    expect(handleAt(r, { x: 200, y: 250 })).toBeNull();
+  });
+  it("picks the nearer edge on a tiny selection", () => {
+    const tiny = { x: 100, y: 100, width: 6, height: 6 };
+    expect(handleAt(tiny, { x: 105, y: 105 })).toBe("se");
+    expect(handleAt(tiny, { x: 101, y: 101 })).toBe("nw");
+  });
+});
+
+describe("resizeRect", () => {
+  const r = { x: 100, y: 100, width: 200, height: 100 };
+  it("moves only the dragged edges", () => {
+    expect(resizeRect(r, "e", { x: 350, y: 0 })).toEqual({ x: 100, y: 100, width: 250, height: 100 });
+    expect(resizeRect(r, "n", { x: 0, y: 50 })).toEqual({ x: 100, y: 50, width: 200, height: 150 });
+    expect(resizeRect(r, "sw", { x: 80, y: 260 })).toEqual({ x: 80, y: 100, width: 220, height: 160 });
+  });
+  it("flips past the opposite edge", () => {
+    expect(resizeRect(r, "w", { x: 340, y: 0 })).toEqual({ x: 300, y: 100, width: 40, height: 100 });
+  });
+  it("maps handles to cursors", () => {
+    expect(handleCursor("n")).toBe("ns");
+    expect(handleCursor("w")).toBe("ew");
+    expect(handleCursor("se")).toBe("corner");
   });
 });

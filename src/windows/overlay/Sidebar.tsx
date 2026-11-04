@@ -1,6 +1,6 @@
 // Vertical drawing palette next to a settled selection. Shapes, pens and the color/width
 // choices each sit behind one button and open in a small flyout.
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { t } from "../../lib/i18n";
 import { ColorPicker } from "./ColorPicker";
@@ -23,6 +23,10 @@ interface Props {
   onUndo: () => void;
   onCancel: () => void;
 }
+
+/** Gap between a flyout and its button (matches overlay.css), and the screen margin. */
+const FLYOUT_GAP = 10;
+const EDGE = 8;
 
 const inGroup = (group: readonly Tool[], tool: Tool) => group.includes(tool);
 
@@ -163,6 +167,32 @@ function FlyoutButton(props: {
   onToggle: () => void;
   children: ReactNode;
 }) {
+  const flyoutRef = useRef<HTMLDivElement>(null);
+  // Opens on the preferred side, flips when that would run off the screen, and slides up
+  // or down to stay on it. Measured before paint, so it never shows in the wrong place.
+  const [fit, setFit] = useState<{ side: "left" | "right"; shift: number } | null>(null);
+  useLayoutEffect(() => {
+    if (!props.open) {
+      setFit(null);
+      return;
+    }
+    const el = flyoutRef.current;
+    const anchor = el?.parentElement;
+    if (!el || !anchor) return;
+    const a = anchor.getBoundingClientRect();
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const roomRight = window.innerWidth - EDGE - (a.right + FLYOUT_GAP);
+    const roomLeft = a.left - FLYOUT_GAP - EDGE;
+    let side = props.side;
+    if (side === "right" && w > roomRight && roomLeft > roomRight) side = "left";
+    else if (side === "left" && w > roomLeft && roomRight > roomLeft) side = "right";
+    const top = a.top - 4;
+    const shift = Math.min(0, window.innerHeight - EDGE - (top + h)) + Math.max(0, EDGE - top);
+    setFit((current) => (current?.side === side && current.shift === shift ? current : { side, shift }));
+  }, [props.open, props.side]);
+
+  const side = fit?.side ?? props.side;
   return (
     <div className="flyout-anchor">
       <button
@@ -176,7 +206,15 @@ function FlyoutButton(props: {
           <ChevronIcon />
         </span>
       </button>
-      {props.open && <div className={`flyout flyout--${props.side}`}>{props.children}</div>}
+      {props.open && (
+        <div
+          ref={flyoutRef}
+          className={`flyout flyout--${side}`}
+          style={fit?.shift ? { top: -4 + fit.shift } : undefined}
+        >
+          {props.children}
+        </div>
+      )}
     </div>
   );
 }

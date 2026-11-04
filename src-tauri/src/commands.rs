@@ -399,7 +399,11 @@ pub fn queue_restore(app: AppHandle) {
 
 /// Clears the queue from the overlay toolbar; the overlay stays open.
 #[tauri::command]
-pub fn queue_clear(app: AppHandle) {
+pub fn queue_clear(app: AppHandle, leap: Option<bool>) {
+    // From the panel's bin: the cat jumps from there into the badge's box.
+    if leap == Some(true) {
+        badge::leap(&app);
+    }
     queue::clear(&app);
 }
 

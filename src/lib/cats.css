@@ -31,10 +31,103 @@
   animation: box-shuffle 7s var(--ease-in-out) infinite 2s;
 }
 
-.box-cat img {
+/* Head and box are two layers of the same picture; the head can sink behind the box. */
+.box-cat__head,
+.box-cat__front {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.box-cat__head img {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.box-cat__front {
+  z-index: 2;
+}
+
+/* The head pops up out of the box: a peek, a little overshoot, then it settles. */
+.box-cat__head {
+  animation: head-pop 560ms var(--ease-out) both 260ms;
+}
+
+.box-cat--leap .box-cat__head {
+  animation-delay: 820ms;
+}
+
+@keyframes head-pop {
+  0% {
+    transform: translateY(42%);
+  }
+  35% {
+    transform: translateY(30%);
+  }
+  70% {
+    transform: translateY(-8%);
+  }
+  85% {
+    transform: translateY(2%);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* The cat from the bin: crouched where the bin was, it springs up, arcs left and drops in. */
+.box-cat__leaper {
+  position: absolute;
+  z-index: 1;
+  bottom: 28%;
+  left: 50%;
+  transform-origin: 50% 100%;
+  animation: box-leap 820ms linear both;
+}
+
+@keyframes box-leap {
+  0% {
+    transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(1.08, 0.84);
+    animation-timing-function: ease-out;
+  }
+  12% {
+    transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(0.9, 1.14);
+    animation-timing-function: ease-out;
+  }
+  48% {
+    transform: translate(calc(-50% + var(--dx) * 0.45), calc(var(--dy) - 26px)) rotate(-14deg) scale(1);
+    animation-timing-function: ease-in;
+  }
+  82% {
+    transform: translate(-50%, -48%) rotate(4deg) scale(0.9);
+    opacity: 1;
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: translate(-50%, 30%) scale(0.72, 0.6);
+    opacity: 0;
+  }
+}
+
+/* It lands: the box squashes and wobbles. */
+@keyframes box-land {
+  0% {
+    transform: none;
+  }
+  30% {
+    transform: scale(1.12, 0.84);
+  }
+  60% {
+    transform: scale(0.95, 1.06) rotate(-2deg);
+  }
+  80% {
+    transform: scale(1.02, 0.98) rotate(1deg);
+  }
+  100% {
+    transform: none;
+  }
 }
 
 /* Every so often the cat shifts about and the box rocks. */
@@ -98,13 +191,66 @@
   }
 }
 
-/* Bin with a cat springing out of it: lid flips, cat arcs up and away. */
+/* The standing cat; its feet are separate parts that kick while it is in the air. */
+.leaping-cat {
+  position: relative;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.leaping-cat__body,
+.leaping-cat__foot {
+  position: absolute;
+  display: block;
+}
+
+.leaping-cat__body {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.leaping-cat__foot {
+  transform-origin: 50% 15%;
+  animation: kick 170ms var(--ease-in-out) infinite alternate;
+}
+
+.leaping-cat__foot--left {
+  top: 89.55%;
+  left: 25.9%;
+  width: 11.45%;
+  height: 10.45%;
+}
+
+.leaping-cat__foot--right {
+  top: 90.15%;
+  left: 54.22%;
+  width: 12.65%;
+  height: 9.85%;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes kick {
+  from {
+    transform: rotate(-30deg);
+  }
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+/* Bin with a cat climbing out of it: the lid flips, the cat comes up facing left. */
 .trash-jump {
   position: relative;
   display: inline-flex;
   align-items: flex-end;
   justify-content: center;
   pointer-events: none;
+}
+
+.trash-jump svg {
+  position: relative;
+  z-index: 1;
 }
 
 .trash-jump .trash__lid {
@@ -126,29 +272,72 @@
   }
 }
 
+/* Standing on the bin's top edge. */
 .trash-jump .leaping-cat {
   position: absolute;
-  object-fit: contain;
-  bottom: 40%;
+  bottom: 100%;
   left: 50%;
-  animation: cat-leap 760ms cubic-bezier(0.3, 0.6, 0.4, 1) both;
-  animation-delay: 90ms;
+  transform-origin: 50% 100%;
+  animation: cat-leap-left 760ms linear both;
+  animation-delay: 60ms;
 }
 
-@keyframes cat-leap {
+/* In the panel it stops crouched on the bin; the badge window carries on with the jump. */
+.trash-jump--handoff .leaping-cat {
+  animation: cat-climb 370ms linear both;
+}
+
+.trash-jump--handoff .leaping-cat__foot {
+  animation: none;
+}
+
+@keyframes cat-climb {
   0% {
     opacity: 0;
-    transform: translate(-50%, 30%) scale(0.4) rotate(10deg);
+    transform: translate(-50%, 90%) scale(0.5);
+    animation-timing-function: ease-out;
+  }
+  25% {
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-50%, -14%) scale(1.02, 1.05);
+    animation-timing-function: ease-in-out;
+  }
+  80% {
+    transform: translate(-50%, 0) scale(1);
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1.08, 0.84);
+  }
+}
+
+@keyframes cat-leap-left {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 90%) scale(0.5);
+    animation-timing-function: ease-out;
   }
   18% {
     opacity: 1;
+    transform: translate(-50%, -10%) scale(1);
   }
-  55% {
+  30% {
+    transform: translate(-50%, 0) scale(1.08, 0.84);
+    animation-timing-function: ease-out;
+  }
+  38% {
+    transform: translate(-50%, 0) scale(0.9, 1.14);
+    animation-timing-function: ease-out;
+  }
+  70% {
     opacity: 1;
-    transform: translate(-10%, -120%) scale(1) rotate(-12deg);
+    transform: translate(-160%, -80%) rotate(-14deg) scale(1);
+    animation-timing-function: ease-in;
   }
   100% {
     opacity: 0;
-    transform: translate(60%, -60%) scale(0.9) rotate(18deg);
+    transform: translate(-290%, -10%) rotate(-24deg) scale(0.9);
   }
 }

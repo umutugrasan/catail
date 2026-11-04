@@ -10,9 +10,10 @@ body,
   user-select: none;
 }
 
+/* Content sits at the bottom: the window grows upward for a moment while a cat leaps in. */
 #root {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-end;
 }
 
@@ -32,6 +33,7 @@ body,
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  margin-bottom: 4px;
   cursor: var(--paw);
   animation: pop-in var(--normal) var(--ease-pop) backwards;
   transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
@@ -98,8 +100,14 @@ body,
 .undo {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
-  height: 100%;
+  /* Keeps the box a little left of the panel's bin, so the cat leaps left into it. */
+  gap: 18px;
+  height: 40px;
+}
+
+.undo__cat {
+  display: flex;
+  justify-content: center;
 }
 
 .undo .box-cat {
@@ -107,6 +115,26 @@ body,
   animation:
     cat-arrive 420ms var(--ease-out) backwards,
     box-shuffle 7s var(--ease-in-out) infinite 2s;
+}
+
+/* The box pops up first (the cat is already in the air, so the box itself must not slide or
+   fade); the cat drops in and the box gives under it. */
+.undo .box-cat--leap {
+  animation:
+    box-land 420ms var(--ease-out) 640ms,
+    box-shuffle 7s var(--ease-in-out) infinite 3s;
+}
+
+.undo .box-cat--leap .box-cat__front {
+  transform-origin: 50% 100%;
+  animation: box-pop 300ms var(--ease-pop) backwards;
+}
+
+@keyframes box-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
 }
 
 @keyframes cat-arrive {

@@ -30,15 +30,20 @@ import {
   type Shape,
   type Tool,
 } from "./draw";
+import { ContextMenu } from "./ContextMenu";
 import {
   clampPoint,
   containsPoint,
+  handleAt,
+  handleCursor,
   moveRect,
   rectFromPoints,
+  resizeRect,
   sidebarPosition,
   sizeLabelPosition,
   toImageRect,
   toolbarPosition,
+  type Handle,
   type Point,
   type Rect,
   type Size,
@@ -61,10 +66,13 @@ const ERASER_TOLERANCE = 6;
 /** First-render guess; replaced by the measured size. */
 const SIDEBAR_FALLBACK: Size = { width: 46, height: 560 };
 
+const HANDLES: Handle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+
 type Drag =
   | { kind: "none" }
   | { kind: "select"; anchor: Point }
   | { kind: "move"; offset: Point }
+  | { kind: "resize"; handle: Handle; start: Rect }
   | { kind: "draw" }
   | { kind: "erase" };
 
@@ -79,6 +87,10 @@ export function Overlay() {
   const [info, setInfo] = useState<OverlayInfo | null>(null);
   const [selection, setSelection] = useState<Rect | null>(null);
   const [drag, setDrag] = useState<Drag>({ kind: "none" });
+  /** Selection edge under the pointer, for the resize cursor. */
+  const [hover, setHover] = useState<Handle | null>(null);
+  /** Where the right-click menu is open, if it is. */
+  const [menu, setMenu] = useState<Point | null>(null);
   const [tool, setTool] = useState<Tool>("select");
   const [color, setColor] = useState<string>(DEFAULT_COLOR);
   const [width, setWidth] = useState<number>(WIDTHS[1]);
@@ -116,6 +128,8 @@ export function Overlay() {
   const resetSelection = useCallback(() => {
     setSelection(null);
     setDrag({ kind: "none" });
+    setHover(null);
+    setMenu(null);
     history.current = [];
     shapesRef.current = [];
     setShapesState([]);
@@ -301,6 +315,11 @@ export function Overlay() {
     const onKey = (e: KeyboardEvent) => {
       if (textDraft) return; // the text box handles its own keys
       const key = e.key.toLowerCase();
+      if (menu && key === "escape") {
+        e.preventDefault();
+        setMenu(null);
+        return;
+      }
       if (ocr) {
         // The OCR card is open: its text box keeps Ctrl+C/Enter; Esc closes just the card.
         if (key === "escape") {
@@ -328,7 +347,7 @@ export function Overlay() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [finish, primary, undo, textDraft, ocr]);
+  }, [finish, primary, undo, textDraft, ocr, menu]);
 
   // Focus a new text box once it's in the DOM (autoFocus alone loses to the click).
   const textOpen = textDraft !== null;
@@ -346,9 +365,21 @@ export function Overlay() {
   const pointFrom = (e: ReactPointerEvent) => clampPoint({ x: e.clientX, y: e.clientY }, viewSize());
   const drawing = tool !== "select" && selection !== null;
 
+  /** Selects this whole monitor. */
+  const selectAll = useCallback(() => {
+    if (!selection) void overlaySelectionStarted();
+    setSelection({ x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
+  }, [selection]);
+
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (menu) {
+      // A click outside the menu only closes it; a right click opens it again there.
+      setMenu(null);
+      if (e.button !== 2) return;
+    }
     if (e.button === 2) {
-      void overlayCancel();
+      if (textDraft) commitText();
+      if (drag.kind === "none" && !flying) setMenu(pointFrom(e));
       return;
     }
     if (e.button !== 0) return;
@@ -380,6 +411,11 @@ export function Overlay() {
     }
 
     e.currentTarget.setPointerCapture(e.pointerId);
+    const handle = selection && handleAt(selection, p);
+    if (selection && handle) {
+      setDrag({ kind: "resize", handle, start: selection });
+      return;
+    }
     if (selection && containsPoint(selection, p)) {
       setDrag({ kind: "move", offset: { x: p.x - selection.x, y: p.y - selection.y } });
       return;
@@ -395,6 +431,14 @@ export function Overlay() {
       setSelection(rectFromPoints(drag.anchor, p));
     } else if (drag.kind === "move" && selection) {
       setSelection(moveRect(selection, { x: p.x - drag.offset.x, y: p.y - drag.offset.y }, viewSize()));
+    } else if (drag.kind === "resize") {
+      setSelection(resizeRect(drag.start, drag.handle, p));
+    } else if (drag.kind === "none") {
+      // Only over the bare screen or the selection; the bars keep their own cursors.
+      const target = e.target as HTMLElement;
+      const onSurface = target === e.currentTarget || target.classList.contains("overlay__selection");
+      const next = onSurface && selection && !drawing && !flying && !menu ? handleAt(selection, p) : null;
+      if (next !== hover) setHover(next);
     } else if (drag.kind === "draw" && draft) {
       setDraft(extendShape(draft, p));
     } else if (drag.kind === "erase") {
@@ -409,6 +453,9 @@ export function Overlay() {
       if (selection.width < MIN_SELECTION || selection.height < MIN_SELECTION) {
         setSelection(null);
       }
+    } else if (drag.kind === "resize" && selection) {
+      // Squashed flat: keep the selection it was before.
+      if (selection.width < MIN_SELECTION || selection.height < MIN_SELECTION) setSelection(drag.start);
     } else if (drag.kind === "draw" && draft) {
       if (isMeaningful(draft)) setShapes((list) => [...list, draft]);
       setDraft(null);
@@ -443,8 +490,10 @@ export function Overlay() {
   const flyoutSide = sidebar && sidebar.x < selection.x ? "left" : "right";
   const primaryClass = (action: Delivery) => (action === primary ? "primary" : undefined);
   const label = selection && sizeLabelPosition(selection, SIZE_LABEL_HEIGHT);
-  const cursorClass =
-    drag.kind === "move"
+  const resizing = drag.kind === "resize" ? drag.handle : drag.kind === "none" && !drawing ? hover : null;
+  const cursorClass = resizing
+    ? ` overlay--resize-${handleCursor(resizing)}`
+    : drag.kind === "move"
       ? " overlay--moving"
       : tool === "eraser" && drawing
         ? " overlay--erasing"
@@ -503,7 +552,9 @@ export function Overlay() {
             width: selection.width,
             height: selection.height,
           }}
-        />
+        >
+          {settled && !drawing && HANDLES.map((h) => <span key={h} className={`overlay__handle overlay__handle--${h}`} />)}
+        </div>
       ) : (
         <>
           <div className="overlay__dim" />
@@ -632,6 +683,19 @@ export function Overlay() {
             </button>
           )}
         </div>
+      )}
+
+      {menu && (
+        <ContextMenu
+          at={menu}
+          hasSelection={selection !== null}
+          hasQueue={hasQueue}
+          primary={primary}
+          onClose={() => setMenu(null)}
+          onDeliver={(action) => void finish(action)}
+          onSelectAll={selectAll}
+          onCancel={() => void overlayCancel()}
+        />
       )}
     </div>
   );

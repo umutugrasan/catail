@@ -106,7 +106,8 @@ export const captureDeliver = (rect: ImageRect, action: Delivery) =>
 /** Selection with drawings, already composed into a PNG; sent as a raw body. */
 export const captureDeliverAnnotated = (png: Uint8Array, action: Delivery) =>
   invoke<void>("capture_deliver_annotated", png, { headers: { "x-action": action } });
-export const queueClear = () => invoke<void>("queue_clear");
+/** `leap`: cleared with the panel's bin, so the badge plays the cat's jump into its box. */
+export const queueClear = (leap = false) => invoke<void>("queue_clear", { leap });
 /** Turning it on also closes the overlay. */
 export const textModeSet = (enabled: boolean) => invoke<void>("text_mode_set", { enabled });
 export const badgeState = () => invoke<BadgeState>("badge_state");
@@ -166,6 +167,8 @@ export const OverlayEvents = {
 
 export const BadgeEvents = {
   update: "badge:update",
+  /** The panel's bin was clicked; a cat leaps from there into the box. */
+  leap: "badge:leap",
 } as const;
 
 export const PreviewEvents = {

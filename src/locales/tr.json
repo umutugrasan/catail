@@ -47,7 +47,9 @@
     "tool_ellipse": "Elips",
     "tool_line": "Çizgi",
     "tool_eraser": "Silgi",
-    "color_hex": "Renk kodu"
+    "color_hex": "Renk kodu",
+    "select_all": "Tüm ekranı seç",
+    "menu": "Seçim menüsü"
   },
   "save": {
     "dialog_title": "Ekran görüntüsünü kaydet",

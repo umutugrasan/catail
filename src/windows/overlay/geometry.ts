@@ -59,6 +59,48 @@ export function toImageRect(r: Rect, scale: number, image: Size): ImageRect {
   return { x: left, y: top, width: right - left, height: bottom - top };
 }
 
+/** A selection edge or corner that can be dragged to resize: n, s, e, w or a pair. */
+export type Handle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
+/** How close (CSS px, either side of the border) the pointer must be to grab an edge. */
+export const HANDLE_REACH = 7;
+
+/** The edge or corner of `r` under `p`, if any. Corners win over edges. */
+export function handleAt(r: Rect, p: Point, reach = HANDLE_REACH): Handle | null {
+  const inX = p.x >= r.x - reach && p.x <= r.x + r.width + reach;
+  const inY = p.y >= r.y - reach && p.y <= r.y + r.height + reach;
+  if (!inX || !inY) return null;
+  const near = (a: number, b: number) => Math.abs(a - b) <= reach;
+  // On a tiny selection the edges overlap; pick the nearer one.
+  const left = near(p.x, r.x) && Math.abs(p.x - r.x) <= Math.abs(p.x - (r.x + r.width));
+  const right = !left && near(p.x, r.x + r.width);
+  const top = near(p.y, r.y) && Math.abs(p.y - r.y) <= Math.abs(p.y - (r.y + r.height));
+  const bottom = !top && near(p.y, r.y + r.height);
+  const v = top ? "n" : bottom ? "s" : "";
+  const h = left ? "w" : right ? "e" : "";
+  return (v + h || null) as Handle | null;
+}
+
+/**
+ * Drags `handle` of `start` to `p`; the opposite edges stay put. Dragging past the
+ * opposite edge flips the rectangle instead of giving it a negative size.
+ */
+export function resizeRect(start: Rect, handle: Handle, p: Point): Rect {
+  let left = start.x;
+  let top = start.y;
+  let right = start.x + start.width;
+  let bottom = start.y + start.height;
+  if (handle.includes("w")) left = p.x;
+  if (handle.includes("e")) right = p.x;
+  if (handle.includes("n")) top = p.y;
+  if (handle.includes("s")) bottom = p.y;
+  return rectFromPoints({ x: left, y: top }, { x: right, y: bottom });
+}
+
+/** CSS cursor class suffix for a handle; the corner paw serves all four corners. */
+export const handleCursor = (handle: Handle) =>
+  handle === "n" || handle === "s" ? "ns" : handle === "e" || handle === "w" ? "ew" : "corner";
+
 const GAP = 8;
 
 /**
