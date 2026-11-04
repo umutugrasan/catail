@@ -894,3 +894,216 @@ html.pressing .overlay--resize-corner * {
     translate: 0 -3px;
   }
 }
+
+/* QR codes: scanner corners around each code and its link beside it, like a phone camera. */
+.qr-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity var(--fast) var(--ease-out);
+}
+
+.qr-layer--hidden {
+  opacity: 0;
+}
+
+.qr-layer--hidden .qr__chip {
+  pointer-events: none;
+}
+
+.qr__frame {
+  position: absolute;
+  animation: qr-found 420ms var(--ease-pop) both;
+}
+
+@keyframes qr-found {
+  from {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+.qr__corner {
+  position: absolute;
+  width: 22%;
+  height: 22%;
+  max-width: 26px;
+  max-height: 26px;
+  border: 3px solid var(--pink-400);
+  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 3px rgba(91, 33, 65, 0.45));
+  animation: qr-breathe 1.8s var(--ease-in-out) infinite 420ms;
+}
+
+.qr__corner--tl {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 8px;
+}
+
+.qr__corner--tr {
+  top: 0;
+  right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-top-right-radius: 8px;
+}
+
+.qr__corner--br {
+  right: 0;
+  bottom: 0;
+  border-top: 0;
+  border-left: 0;
+  border-bottom-right-radius: 8px;
+}
+
+.qr__corner--bl {
+  bottom: 0;
+  left: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom-left-radius: 8px;
+}
+
+/* The corners draw in a little and back, as if still focusing. */
+@keyframes qr-breathe {
+  50% {
+    translate: var(--in-x, 0) var(--in-y, 0);
+  }
+}
+
+.qr__corner--tl { --in-x: 2px; --in-y: 2px; }
+.qr__corner--tr { --in-x: -2px; --in-y: 2px; }
+.qr__corner--br { --in-x: -2px; --in-y: -2px; }
+.qr__corner--bl { --in-x: 2px; --in-y: -2px; }
+
+.qr__chip {
+  position: absolute;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  max-width: 320px;
+  padding: 3px;
+  border: 1px solid var(--pink-400);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  cursor: var(--paw-default);
+  visibility: hidden;
+}
+
+.qr__chip--placed {
+  visibility: visible;
+  animation: qr-chip-in 380ms var(--ease-pop) both 120ms;
+}
+
+.qr__chip--right {
+  transform-origin: left center;
+}
+
+.qr__chip--left {
+  transform-origin: right center;
+}
+
+@keyframes qr-chip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+.qr__open,
+.qr__copy,
+.qr__text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+}
+
+.qr__open {
+  min-width: 0;
+  padding: 0 10px 0 9px;
+  background: var(--accent);
+  color: var(--accent-text);
+  transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
+}
+
+.qr__open:hover {
+  background: var(--accent-hover);
+}
+
+.qr__open:active {
+  transform: scale(0.97);
+}
+
+.qr__open svg:last-child {
+  flex: none;
+  transition: transform var(--normal) var(--ease-pop);
+}
+
+.qr__open:hover svg:last-child {
+  transform: translate(2px, -2px);
+}
+
+.qr__open svg:first-child,
+.qr__text svg {
+  flex: none;
+}
+
+.qr__url {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.qr__url strong {
+  flex: none;
+  font-weight: 650;
+}
+
+.qr__url span {
+  overflow: hidden;
+  opacity: 0.75;
+  text-overflow: ellipsis;
+}
+
+.qr__text {
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.qr__text span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qr__copy {
+  position: relative;
+  flex: none;
+  justify-content: center;
+  width: 34px;
+  color: var(--text-muted);
+  transition: background var(--fast) var(--ease-out), color var(--fast) var(--ease-out);
+}
+
+.qr__copy:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.qr__copy--done {
+  color: var(--accent-hover);
+}

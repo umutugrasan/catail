@@ -134,3 +134,21 @@ export function sizeLabelPosition(sel: Rect, labelHeight: number): Point {
   const above = sel.y - labelHeight - 4;
   return { x: sel.x, y: above >= 0 ? above : sel.y + 4 };
 }
+
+/**
+ * Places a QR code's link chip beside the code, like a phone camera: to its right, vertically
+ * centred; to its left when the right side has no room; below (or above) it when neither
+ * side has. Always kept on screen.
+ */
+export function chipPosition(code: Rect, chip: Size, view: Size): Point {
+  const gap = 10;
+  const centredY = clamp(code.y + code.height / 2 - chip.height / 2, GAP, view.height - chip.height - GAP);
+  const right = code.x + code.width + gap;
+  if (right + chip.width <= view.width - GAP) return { x: right, y: centredY };
+  const left = code.x - gap - chip.width;
+  if (left >= GAP) return { x: left, y: centredY };
+  const x = clamp(code.x + code.width / 2 - chip.width / 2, GAP, view.width - chip.width - GAP);
+  const below = code.y + code.height + gap;
+  if (below + chip.height <= view.height - GAP) return { x, y: below };
+  return { x, y: Math.max(GAP, code.y - gap - chip.height) };
+}

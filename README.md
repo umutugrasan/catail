@@ -4,7 +4,7 @@ Kedi temalı, sıralı ekran görüntüsü ve pano kuyruğu aracı (Windows 10/1
 
 Ekran görüntülerini ve kopyaladığın metinleri sıraya diz, sonra tek Ctrl+V ile hepsini alındıkları sırayla yapıştır.
 
-- **Yakalama:** bölge / tam ekran, çizim araçları, panoya kopyalama, PNG kaydetme, metin tanıma (OCR) ve çeviri.
+- **Yakalama:** bölge / tam ekran, çizim araçları, panoya kopyalama, PNG kaydetme, metin tanıma (OCR) ve çeviri, ekrandaki QR kodları okuyup bağlantıyı açma.
 - **Kuyruk:** seçim ekranından ekran görüntüleri, **Metin modu**nda her Ctrl+C sıraya eklenir. Kuyruk doluyken Ctrl+V hepsini sırayla yapıştırır; 10 saniye içinde geri alınabilir.
 - **Kedi teması:** pastel pembe arayüz, pati imleçleri (basılı tutunca pati yumruk olur), geri al düğmesinin yanında kutuda bekleyen kedi, temizleyince çöpten atlayan kedi.
 
@@ -62,6 +62,10 @@ Sağ alttaki rozete tıklayınca yukarı doğru dar bir panel açılır: kuyrukt
 ## Metin tanıma ve çeviri
 
 Alan seçince araç çubuğundaki **Metni al**, seçili alandaki yazıyı Windows'un kendi OCR motoruyla (internetsiz, Türkçe dahil) okur. Çıkan metni düzenleyebilir, kopyalayabilir, kuyruğa ekleyebilir ya da **Çevir** ile uygulamanın içinde çevirebilirsin: Türkçe olmayan metin Türkçeye, Türkçe metin İngilizceye çevrilir. Çeviri için metin yalnızca **Çevir**'e basınca Google Çeviri'ye gönderilir (resmi olmayan ücretsiz uç nokta; Google değiştirirse çeviri hata verebilir).
+
+## QR kodlar
+
+PrintScreen ile seçim ekranı açılınca ekrandaki QR kodlar telefon kamerasındaki gibi kendiliğinden okunur (internetsiz, cihazda). Her kodun etrafında bir çerçeve, yanında da bağlantısı çıkar: tıklayınca bağlantı tarayıcıda açılır, yanındaki düğmeyle kopyalanır. Adresin alan adı kalın yazılır, böylece benzer görünen sahte adresler kolay fark edilir. Yalnızca http ve https bağlantıları açılır; QR kod yazı ya da başka bir şey içeriyorsa (ör. Wi-Fi bilgisi) içeriği gösterilir ve kopyalanabilir.
 
 ## Kuyruğu kaydetme
 

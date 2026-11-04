@@ -15,7 +15,7 @@ use crate::settings::Settings;
 use crate::state::AppState;
 use crate::translate::{self, Translation};
 use crate::updater::{self, UpdateInfo};
-use crate::{clipboard, export, hotkeys, notify, ocr, overlay, paste, queue};
+use crate::{clipboard, export, hotkeys, notify, ocr, overlay, paste, qr, queue};
 use tauri_plugin_autostart::ManagerExt;
 
 #[derive(Debug, Serialize)]
@@ -272,6 +272,41 @@ pub async fn capture_ocr(
         .await
         .map_err(|e| e.to_string())?
         .map_err(|e| format!("{e:#}"))
+}
+
+/// QR codes anywhere on this overlay's frozen frame, with their links. Runs in the background
+/// right after the overlay shows; the overlay puts each link next to its code.
+#[tauri::command]
+pub async fn capture_qr(app: AppHandle, window: WebviewWindow) -> Result<Vec<qr::QrCode>, String> {
+    let index = overlay::index_of(window.label()).ok_or("not an overlay window")?;
+    let (w, h, luma) = {
+        let state = app.state::<AppState>();
+        let session = state.session.lock().unwrap();
+        let shot = session
+            .as_ref()
+            .and_then(|s| s.shots.get(index))
+            .ok_or("no capture")?;
+        let (w, h) = (shot.image.width() as usize, shot.image.height() as usize);
+        (w, h, qr::luma(&shot.image))
+    };
+    tauri::async_runtime::spawn_blocking(move || qr::find(w, h, &luma))
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Opens a QR code's web address in the browser; the overlays close so it comes to the front.
+#[tauri::command]
+pub fn open_link(app: AppHandle, url: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        overlay::close_all(&app);
+        qr::open(&url).map_err(|e| format!("{e:#}"))
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (app, url);
+        Err("not supported".into())
+    }
 }
 
 #[tauri::command]

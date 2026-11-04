@@ -49,7 +49,12 @@
     "tool_eraser": "Silgi",
     "color_hex": "Renk kodu",
     "select_all": "Tüm ekranı seç",
-    "menu": "Seçim menüsü"
+    "menu": "Seçim menüsü",
+    "qr_open": "Bağlantıyı aç: {url}",
+    "qr_copy_link": "Bağlantıyı kopyala",
+    "qr_copy_text": "QR koddaki yazıyı kopyala",
+    "qr_copied": "Kopyalandı ✓",
+    "qr_text": "QR kod"
   },
   "save": {
     "dialog_title": "Ekran görüntüsünü kaydet",

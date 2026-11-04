@@ -5,6 +5,7 @@ import { t } from "../../lib/i18n";
 import {
   captureDeliver,
   captureOcr,
+  captureQr,
   captureDeliverAnnotated,
   frameUrl,
   onWindowEvent,
@@ -17,6 +18,7 @@ import {
   textModeSet,
   type Delivery,
   type OverlayInfo,
+  type QrCode,
 } from "../../lib/ipc";
 import {
   DEFAULT_COLOR,
@@ -50,6 +52,7 @@ import {
 } from "./geometry";
 import { CameraIcon, CopyIcon, QueueAddIcon, SaveIcon, ScanTextIcon, TextModeIcon, TrashIcon } from "./icons";
 import { OcrCard, type OcrState } from "./OcrCard";
+import { QrLinks } from "./QrLinks";
 import { Sidebar } from "./Sidebar";
 
 /** Selections smaller than this (CSS px) count as a stray click. */
@@ -85,6 +88,9 @@ const viewSize = () => ({ width: window.innerWidth, height: window.innerHeight }
 
 export function Overlay() {
   const [info, setInfo] = useState<OverlayInfo | null>(null);
+  /** QR codes on the frame, found in the background once it shows. */
+  const [qrCodes, setQrCodes] = useState<QrCode[]>([]);
+  const sessionRef = useRef<number | null>(null);
   const [selection, setSelection] = useState<Rect | null>(null);
   const [drag, setDrag] = useState<Drag>({ kind: "none" });
   /** Selection edge under the pointer, for the resize cursor. */
@@ -144,7 +150,10 @@ export function Overlay() {
   const loadSession = useCallback(async () => {
     resetSelection();
     busy.current = false;
-    setInfo(await overlaySession());
+    setQrCodes([]);
+    const next = await overlaySession();
+    sessionRef.current = next?.session ?? null;
+    setInfo(next);
   }, [resetSelection]);
 
   useEffect(() => {
@@ -154,6 +163,8 @@ export function Overlay() {
       onWindowEvent(OverlayEvents.clearSelection, resetSelection),
       onWindowEvent(OverlayEvents.reset, () => {
         resetSelection();
+        sessionRef.current = null;
+        setQrCodes([]);
         setInfo(null);
       }),
     ];
@@ -517,7 +528,14 @@ export function Overlay() {
         src={frameUrl(info)}
         alt=""
         draggable={false}
-        onLoad={() => void overlayReady()}
+        onLoad={() => {
+          void overlayReady();
+          // Like a phone camera: any QR code on screen gets its link shown beside it.
+          const session = info.session;
+          captureQr()
+            .then((codes) => sessionRef.current === session && setQrCodes(codes))
+            .catch(() => undefined);
+        }}
       />
 
       {flying && (
@@ -563,6 +581,12 @@ export function Overlay() {
       )}
 
       <canvas ref={canvasRef} className={`overlay__canvas${flying ? " overlay__canvas--hidden" : ""}`} />
+
+      {qrCodes.length > 0 && (
+        <div className={`qr-layer${flying || drag.kind !== "none" ? " qr-layer--hidden" : ""}`}>
+          <QrLinks codes={qrCodes} scale={scale} />
+        </div>
+      )}
 
       <div
         className={`overlay__modes${flying ? " overlay__modes--hidden" : ""}`}

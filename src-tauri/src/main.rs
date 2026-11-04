@@ -16,6 +16,7 @@ mod paste;
 mod preview;
 #[cfg(windows)]
 mod process;
+mod qr;
 mod queue;
 mod settings;
 mod state;
@@ -85,6 +86,8 @@ fn main() {
             commands::update_check,
             commands::update_install,
             commands::capture_ocr,
+            commands::capture_qr,
+            commands::open_link,
             commands::translate_text,
             commands::clipboard_write_text,
             commands::queue_add_text,

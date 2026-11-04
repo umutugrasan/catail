@@ -1,6 +1,6 @@
 [package]
 name = "catail"
-version = "0.5.1"
+version = "0.6.0"
 description = "Sequential screenshot and clipboard queue"
 edition = "2021"
 publish = false
@@ -29,6 +29,8 @@ zip = { version = "9", default-features = false, features = ["deflate"] }
 base64 = "0.22"
 tauri-plugin-autostart = "2"
 tauri-plugin-updater = "2"
+# QR codes in screenshots, read on the device.
+rqrr = { version = "0.11.0", default-features = false }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.61", features = [
@@ -46,5 +48,9 @@ windows = { version = "0.61", features = [
     "Win32_System_Registry",
     "Win32_System_Threading",
     "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Shell",
     "Win32_UI_WindowsAndMessaging",
 ] }
+
+[dev-dependencies]
+qrcode = { version = "0.14.1", default-features = false }

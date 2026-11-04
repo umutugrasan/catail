@@ -141,6 +141,21 @@ export const updateInstall = () => invoke<void>("update_install");
 export const captureOcr = (rect: ImageRect) => invoke<string>("capture_ocr", { rect });
 /** Sends the text to Google Translate: into Turkish, or English if it's already Turkish. */
 export const translateText = (text: string) => invoke<Translation>("translate_text", { text });
+/** A QR code found on the frozen frame; the box is in frame pixels. */
+export interface QrCode {
+  text: string;
+  /** Set when the code holds a web address that may be opened (http or https only). */
+  url: string | null;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Every QR code on this overlay's frame. */
+export const captureQr = () => invoke<QrCode[]>("capture_qr");
+/** Opens a QR code's link in the browser and closes the overlays. */
+export const openLink = (url: string) => invoke<void>("open_link", { url });
 export const clipboardWriteText = (text: string) => invoke<void>("clipboard_write_text", { text });
 export const queueAddText = (text: string) => invoke<void>("queue_add_text", { text });
 

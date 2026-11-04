@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  chipPosition,
   clampPoint,
   containsPoint,
   handleAt,
@@ -161,5 +162,21 @@ describe("resizeRect", () => {
     expect(handleCursor("n")).toBe("ns");
     expect(handleCursor("w")).toBe("ew");
     expect(handleCursor("se")).toBe("corner");
+  });
+});
+
+describe("chipPosition", () => {
+  const chip = { width: 200, height: 40 };
+  it("goes to the right of the code, centred", () => {
+    expect(chipPosition({ x: 100, y: 100, width: 120, height: 120 }, chip, view)).toEqual({ x: 230, y: 140 });
+  });
+  it("goes left near the right edge, below when neither side fits", () => {
+    expect(chipPosition({ x: 1500, y: 100, width: 120, height: 120 }, chip, view)).toEqual({ x: 1290, y: 140 });
+    const wide = { x: 50, y: 100, width: 1600, height: 300 };
+    expect(chipPosition(wide, chip, view)).toEqual({ x: 750, y: 410 });
+  });
+  it("stays on screen", () => {
+    const p = chipPosition({ x: 100, y: 1040, width: 30, height: 30 }, chip, view);
+    expect(p.y + chip.height).toBeLessThanOrEqual(view.height);
   });
 });
