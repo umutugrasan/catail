@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { t } from "../../lib/i18n";
-import { onWindowEvent, PreviewEvents, previewClose, queueImageUrl } from "../../lib/ipc";
+import { onWindowEvent, PreviewEvents, previewClose, previewCurrent, queueImageUrl } from "../../lib/ipc";
 import { CloseIcon } from "../overlay/icons";
 
 /** Keep in sync with the exit animation in preview.css. */
@@ -13,11 +13,17 @@ export function Preview() {
   const [closing, setClosing] = useState(false);
 
   useEffect(() => {
-    const unlisten = onWindowEvent<string>(PreviewEvents.show, (next) => {
+    const show = (next: string) => {
       setId(next);
       setClosing(false);
       setOpenCount((n) => n + 1);
-    });
+    };
+    const unlisten = onWindowEvent<string>(PreviewEvents.show, show);
+    // Opened for the first time: the window was created for this image and its show event
+    // went out before this page loaded, so ask which image it is.
+    void previewCurrent()
+      .then((current) => current && show(current))
+      .catch(() => undefined);
     return () => void unlisten.then((u) => u());
   }, []);
 

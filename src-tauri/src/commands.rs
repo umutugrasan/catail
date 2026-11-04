@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use chrono::{DateTime, Local};
 use serde::Serialize;
-use tauri::{AppHandle, Manager, State, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow};
 use tauri_plugin_dialog::DialogExt;
 
 use crate::badge::{self, BadgeState};
@@ -15,7 +15,7 @@ use crate::settings::Settings;
 use crate::state::AppState;
 use crate::translate::{self, Translation};
 use crate::updater::{self, UpdateInfo};
-use crate::{clipboard, export, hotkeys, notify, ocr, overlay, paste, qr, queue};
+use crate::{clipboard, export, hotkeys, notify, ocr, overlay, paste, qr, queue, tray};
 use tauri_plugin_autostart::ManagerExt;
 
 #[derive(Debug, Serialize)]
@@ -190,6 +190,8 @@ pub fn queue_reorder(app: AppHandle, ids: Vec<uuid::Uuid>) {
 pub struct SettingsView {
     settings: Settings,
     version: String,
+    /// The interface language "same as Windows" means here.
+    system_language: String,
 }
 
 #[tauri::command]
@@ -202,6 +204,21 @@ pub fn settings_get(app: AppHandle, state: State<'_, AppState>) -> SettingsView 
     SettingsView {
         settings,
         version: app.package_info().version.to_string(),
+        system_language: crate::i18n::system_language(),
+    }
+}
+
+fn remember_translate_target(app: &AppHandle, target: &str) {
+    if !translate::is_language_code(target) {
+        return;
+    }
+    let state = app.state::<AppState>();
+    let mut settings = state.settings.lock().unwrap();
+    if settings.translate_to != target {
+        settings.translate_to = target.to_owned();
+        if let Err(e) = settings.save() {
+            eprintln!("{e:#}");
+        }
     }
 }
 
@@ -225,8 +242,31 @@ pub async fn settings_save(app: AppHandle, settings: Settings) -> Result<(), Str
     }
     next.save()
         .map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))?;
-    *app.state::<AppState>().settings.lock().unwrap() = next;
+    let language_changed = next.language != previous.language;
+    let corner_changed = next.badge_corner != previous.badge_corner;
+    *app.state::<AppState>().settings.lock().unwrap() = next.clone();
+    if language_changed {
+        let before = crate::i18n::current();
+        if crate::i18n::set_language(next.language.as_deref()) != before {
+            tray::retitle(&app);
+            // Every window reloads itself in the new language.
+            let _ = app.emit(EVENT_LANGUAGE, crate::i18n::current());
+        }
+    }
+    if corner_changed {
+        panel::hide(&app);
+        badge::reposition(&app);
+    }
     Ok(())
+}
+
+/// Sent to every window after the interface language changes.
+pub const EVENT_LANGUAGE: &str = "app:language";
+
+/// The interface language for the windows' strings, e.g. "en".
+#[tauri::command]
+pub fn ui_language() -> String {
+    crate::i18n::current()
 }
 
 /// Recorder feedback: the readable form of a valid shortcut, or why it can't be used.
@@ -294,13 +334,17 @@ pub async fn capture_qr(app: AppHandle, window: WebviewWindow) -> Result<Vec<qr:
         .map_err(|e| e.to_string())
 }
 
-/// Opens a QR code's web address in the browser; the overlays close so it comes to the front.
+/// Opens a QR code's web address in the browser, then closes the overlays. In that order: the
+/// overlay still has the foreground and hands it to the browser.
 #[tauri::command]
 pub fn open_link(app: AppHandle, url: String) -> Result<(), String> {
     #[cfg(windows)]
     {
-        overlay::close_all(&app);
-        qr::open(&url).map_err(|e| format!("{e:#}"))
+        let opened = qr::open(&url).map_err(|e| format!("{e:#}"));
+        if opened.is_ok() {
+            overlay::close_all(&app);
+        }
+        opened
     }
     #[cfg(not(windows))]
     {
@@ -319,9 +363,15 @@ pub fn queue_add_text(app: AppHandle, text: String) {
     queue::add_text(&app, text, None);
 }
 
+/// Translates into `target` and remembers it as the language to offer next time.
 #[tauri::command]
-pub async fn translate_text(text: String) -> Result<Translation, String> {
-    translate::translate(&text)
+pub async fn translate_text(
+    app: AppHandle,
+    text: String,
+    target: String,
+) -> Result<Translation, String> {
+    remember_translate_target(&app, &target);
+    translate::translate(&text, &target)
         .await
         .map_err(|e| t_with("ocr.translate_failed", &[("error", &format!("{e:#}"))]))
 }
@@ -419,6 +469,12 @@ pub async fn queue_export(
 #[tauri::command]
 pub async fn preview_open(app: AppHandle, id: uuid::Uuid) -> Result<(), String> {
     crate::preview::open(&app, id).map_err(|e| format!("{e:#}"))
+}
+
+/// The image the preview window should show, for a window that has only just loaded.
+#[tauri::command]
+pub fn preview_current() -> Option<uuid::Uuid> {
+    crate::preview::current()
 }
 
 #[tauri::command]

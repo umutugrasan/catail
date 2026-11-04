@@ -51,6 +51,34 @@ impl Default for HotkeyMap {
     }
 }
 
+/// Where on the primary monitor the queue badge sits; the panel opens next to it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum BadgeCorner {
+    #[default]
+    BottomRight,
+    BottomCenter,
+    BottomLeft,
+    TopRight,
+    TopCenter,
+    TopLeft,
+}
+
+impl BadgeCorner {
+    pub fn is_top(self) -> bool {
+        matches!(self, Self::TopRight | Self::TopCenter | Self::TopLeft)
+    }
+
+    /// -1 left, 0 centre, 1 right.
+    pub fn side(self) -> i8 {
+        match self {
+            Self::BottomLeft | Self::TopLeft => -1,
+            Self::BottomCenter | Self::TopCenter => 0,
+            Self::BottomRight | Self::TopRight => 1,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
@@ -65,6 +93,11 @@ pub struct Settings {
     /// Start with Windows. The source of truth is the registry; this mirrors it.
     pub autostart: bool,
     pub app_rules: Vec<AppPasteRule>,
+    /// Interface language, e.g. "en"; `None` follows Windows.
+    pub language: Option<String>,
+    /// Language "Çevir" translates into; the last one picked.
+    pub translate_to: String,
+    pub badge_corner: BadgeCorner,
 }
 
 impl Default for Settings {
@@ -79,6 +112,9 @@ impl Default for Settings {
             clear_queue_after_paste: true,
             autostart: false,
             app_rules: Vec::new(),
+            language: None,
+            translate_to: "tr".into(),
+            badge_corner: BadgeCorner::BottomRight,
         }
     }
 }
@@ -139,6 +175,10 @@ impl Settings {
                 (!rule.process.is_empty()).then_some(rule)
             })
             .collect();
+        if !crate::translate::is_language_code(&self.translate_to) {
+            self.translate_to = Self::default().translate_to;
+        }
+        self.language = self.language.filter(|code| crate::i18n::is_supported(code));
         self
     }
 

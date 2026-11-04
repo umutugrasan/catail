@@ -17,6 +17,24 @@ body,
   justify-content: flex-end;
 }
 
+#root[data-corner^="top"] {
+  align-items: flex-start;
+}
+
+#root[data-corner$="left"] {
+  justify-content: flex-start;
+}
+
+#root[data-corner$="center"] {
+  justify-content: center;
+}
+
+/* In a top corner the pill keeps its gap above instead of below. */
+#root[data-corner^="top"] .badge {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

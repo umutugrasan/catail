@@ -25,6 +25,27 @@ button {
   animation: panel-in 380ms var(--ease-pop) both;
 }
 
+[data-corner^="top"] .panel {
+  --rise: -26px;
+  transform-origin: 70% 0;
+}
+
+[data-corner$="left"] .panel {
+  transform-origin: 30% 100%;
+}
+
+[data-corner="top-left"] .panel {
+  transform-origin: 30% 0;
+}
+
+[data-corner$="center"] .panel {
+  transform-origin: 50% 100%;
+}
+
+[data-corner="top-center"] .panel {
+  transform-origin: 50% 0;
+}
+
 .panel--closing {
   animation: panel-out 160ms var(--ease-in-out) both;
 }
@@ -32,7 +53,7 @@ button {
 @keyframes panel-in {
   0% {
     opacity: 0;
-    transform: translateY(26px) scale(0.82);
+    transform: translateY(var(--rise, 26px)) scale(0.82);
     filter: blur(2px);
   }
   60% {

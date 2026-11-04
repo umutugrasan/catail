@@ -94,7 +94,13 @@ pub fn toggle<R: Runtime>(app: &AppHandle<R>) {
         Ok(window) => {
             place(app, &window);
             let _ = app.emit_to(LABEL, EVENT_UPDATE, items(app));
-            let _ = app.emit_to(LABEL, EVENT_OPENED, ());
+            let corner = app
+                .state::<AppState>()
+                .settings
+                .lock()
+                .unwrap()
+                .badge_corner;
+            let _ = app.emit_to(LABEL, EVENT_OPENED, corner);
             let _ = window.show();
         }
         Err(e) => eprintln!("{e:#}"),
@@ -144,19 +150,30 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
         .context("cannot create panel window")
 }
 
-/// Right-aligned with the badge, directly above it.
+/// Lined up with the badge on the same side, directly above it (below it in a top corner).
 fn place<R: Runtime>(app: &AppHandle<R>, window: &WebviewWindow<R>) {
     let Ok(Some(monitor)) = app.primary_monitor() else {
         return;
     };
     let scale = monitor.scale_factor();
     let area = monitor.work_area();
-    let count = app.state::<AppState>().queue.lock().unwrap().len();
+    let state = app.state::<AppState>();
+    let count = state.queue.lock().unwrap().len();
+    let corner = state.settings.lock().unwrap().badge_corner;
     let (w, h) = ((WIDTH * scale).round(), (height_for(count) * scale).round());
-    let x = f64::from(area.position.x) + f64::from(area.size.width) - w - MARGIN * scale;
-    let bottom = f64::from(area.position.y) + f64::from(area.size.height)
-        - (MARGIN + BADGE_HEIGHT + GAP) * scale;
-    let y = (bottom - h).max(f64::from(area.position.y));
+    let (top, height) = (f64::from(area.position.y), f64::from(area.size.height));
+    let x = crate::badge::aligned_x(
+        corner,
+        f64::from(area.position.x),
+        f64::from(area.size.width),
+        w,
+        MARGIN * scale,
+    );
+    let y = if corner.is_top() {
+        (top + (MARGIN + BADGE_HEIGHT + GAP) * scale).min(top + height - h)
+    } else {
+        (top + height - (MARGIN + BADGE_HEIGHT + GAP) * scale - h).max(top)
+    };
     let _ = window.set_position(PhysicalPosition::new(x as i32, y as i32));
     let _ = window.set_size(PhysicalSize::new(w as u32, h as u32));
 }

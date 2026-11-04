@@ -1,6 +1,6 @@
 [package]
 name = "catail"
-version = "0.6.0"
+version = "0.7.1"
 description = "Sequential screenshot and clipboard queue"
 edition = "2021"
 publish = false
@@ -37,6 +37,7 @@ windows = { version = "0.61", features = [
     "Foundation",
     "Foundation_Collections",
     "Globalization",
+    "Win32_Globalization",
     "Graphics_Imaging",
     "Media_Ocr",
     "Storage_Streams",

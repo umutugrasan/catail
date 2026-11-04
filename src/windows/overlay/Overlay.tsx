@@ -6,6 +6,7 @@ import {
   captureDeliver,
   captureOcr,
   captureQr,
+  openLink,
   captureDeliverAnnotated,
   frameUrl,
   onWindowEvent,
@@ -95,6 +96,8 @@ export function Overlay() {
   const [drag, setDrag] = useState<Drag>({ kind: "none" });
   /** Selection edge under the pointer, for the resize cursor. */
   const [hover, setHover] = useState<Handle | null>(null);
+  /** Over a QR code with a link (no selection being made): a click opens it. */
+  const [overQr, setOverQr] = useState(false);
   /** Where the right-click menu is open, if it is. */
   const [menu, setMenu] = useState<Point | null>(null);
   const [tool, setTool] = useState<Tool>("select");
@@ -450,6 +453,18 @@ export function Overlay() {
       const onSurface = target === e.currentTarget || target.classList.contains("overlay__selection");
       const next = onSurface && selection && !drawing && !flying && !menu ? handleAt(selection, p) : null;
       if (next !== hover) setHover(next);
+      const scale = info ? info.width / window.innerWidth : 1;
+      const qr =
+        onSurface &&
+        !next &&
+        !drawing &&
+        !(selection && containsPoint(selection, p)) &&
+        qrCodes.some(
+          (code) =>
+            code.url &&
+            containsPoint({ x: code.x / scale, y: code.y / scale, width: code.width / scale, height: code.height / scale }, p),
+        );
+      if (qr !== overQr) setOverQr(qr);
     } else if (drag.kind === "draw" && draft) {
       setDraft(extendShape(draft, p));
     } else if (drag.kind === "erase") {
@@ -463,6 +478,17 @@ export function Overlay() {
     if (drag.kind === "select" && selection) {
       if (selection.width < MIN_SELECTION || selection.height < MIN_SELECTION) {
         setSelection(null);
+        // A plain click on a QR code opens its link, like tapping it on a phone.
+        const scale = info ? info.width / window.innerWidth : 1;
+        const tapped = qrCodes.find(
+          (code) =>
+            code.url &&
+            containsPoint(
+              { x: code.x / scale, y: code.y / scale, width: code.width / scale, height: code.height / scale },
+              drag.anchor,
+            ),
+        );
+        if (tapped?.url) void openLink(tapped.url).catch(() => undefined);
       }
     } else if (drag.kind === "resize" && selection) {
       // Squashed flat: keep the selection it was before.
@@ -504,6 +530,8 @@ export function Overlay() {
   const resizing = drag.kind === "resize" ? drag.handle : drag.kind === "none" && !drawing ? hover : null;
   const cursorClass = resizing
     ? ` overlay--resize-${handleCursor(resizing)}`
+    : overQr && drag.kind === "none"
+      ? " overlay--link"
     : drag.kind === "move"
       ? " overlay--moving"
       : tool === "eraser" && drawing

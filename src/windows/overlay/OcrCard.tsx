@@ -1,9 +1,10 @@
 // Result of "Metni al": the recognized text (editable), with copy, add-to-queue and
 // in-app translation.
 import { useEffect, useState } from "react";
-import { t } from "../../lib/i18n";
-import { clipboardWriteText, queueAddText, translateText, type Translation } from "../../lib/ipc";
+import { languageName, t } from "../../lib/i18n";
+import { clipboardWriteText, queueAddText, settingsGet, translateText, type Translation } from "../../lib/ipc";
 import { CloseIcon } from "./icons";
+import { LanguagePicker } from "./LanguagePicker";
 
 export type OcrState =
   | { status: "loading" }
@@ -26,6 +27,13 @@ export function OcrCard({ state, onClose, onQueued }: Props) {
   const [text, setText] = useState("");
   const [translation, setTranslation] = useState<TranslateState>({ status: "idle" });
   const [flash, setFlash] = useState<string | null>(null);
+  // Translate into the language picked last time; the source language is detected.
+  const [target, setTarget] = useState("tr");
+  useEffect(() => {
+    void settingsGet()
+      .then((view) => setTarget(view.settings.translate_to))
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (state.status === "done") setText(state.text);
@@ -49,10 +57,10 @@ export function OcrCard({ state, onClose, onQueued }: Props) {
     setFlash(key);
   };
 
-  const translate = async () => {
+  const translate = async (to = target) => {
     setTranslation({ status: "loading" });
     try {
-      setTranslation({ status: "done", result: await translateText(text) });
+      setTranslation({ status: "done", result: await translateText(text, to) });
     } catch (message) {
       setTranslation({ status: "error", message: String(message) });
     }
@@ -96,6 +104,8 @@ export function OcrCard({ state, onClose, onQueued }: Props) {
             <button type="button" disabled={!hasText} onClick={() => void enqueue(text, "queue")}>
               {flash === "queue" ? t("ocr.queued") : t("ocr.add_to_queue")}
             </button>
+          </div>
+          <div className="ocr__translate">
             <button
               type="button"
               disabled={!hasText || translation.status === "loading"}
@@ -103,6 +113,17 @@ export function OcrCard({ state, onClose, onQueued }: Props) {
             >
               {t("ocr.translate")}
             </button>
+            <span className="ocr__arrow" aria-hidden="true">
+              →
+            </span>
+            <LanguagePicker
+              value={target}
+              onChange={(code) => {
+                setTarget(code);
+                // Already translated: redo it in the new language straight away.
+                if (translation.status === "done" && hasText) void translate(code);
+              }}
+            />
           </div>
 
           {translation.status === "loading" && (
@@ -118,8 +139,8 @@ export function OcrCard({ state, onClose, onQueued }: Props) {
             <section className="ocr__translation">
               <div className="ocr__lang">
                 {t("ocr.translated", {
-                  source: translation.result.source.toUpperCase() || "?",
-                  target: translation.result.target.toUpperCase(),
+                  source: translation.result.source ? languageName(translation.result.source) : "?",
+                  target: languageName(translation.result.target),
                 })}
               </div>
               <p>{translation.result.text}</p>

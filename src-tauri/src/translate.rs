@@ -21,13 +21,18 @@ pub struct Translation {
     pub target: String,
 }
 
-/// Translates into Turkish, or into English when the text is already Turkish.
-pub async fn translate(text: &str) -> Result<Translation> {
-    let first = translate_to(text, "tr").await?;
-    if first.source == "tr" {
-        return translate_to(text, "en").await;
-    }
-    Ok(first)
+/// Translates into `target`, a Google language code such as "de" or "zh-CN". The source
+/// language is detected.
+pub async fn translate(text: &str, target: &str) -> Result<Translation> {
+    anyhow::ensure!(is_language_code(target), "unknown language: {target}");
+    translate_to(text, target).await
+}
+
+/// Looks like a language code ("en", "zh-CN", "mni-Mtei"); keeps junk out of the request.
+pub fn is_language_code(code: &str) -> bool {
+    (2..=12).contains(&code.len())
+        && code.starts_with(|c: char| c.is_ascii_lowercase())
+        && code.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
 }
 
 async fn translate_to(text: &str, target: &str) -> Result<Translation> {
@@ -139,13 +144,26 @@ mod tests {
     #[test]
     #[ignore]
     fn translates_online() {
-        let result = tauri::async_runtime::block_on(translate("Hello world")).unwrap();
+        let result = tauri::async_runtime::block_on(translate("Hello world", "tr")).unwrap();
         println!("{result:?}");
-        assert_eq!(result.target, "tr");
+        assert_eq!(
+            (result.source.as_str(), result.target.as_str()),
+            ("en", "tr")
+        );
         assert!(!result.text.is_empty());
-        let back = tauri::async_runtime::block_on(translate("Merhaba dünya")).unwrap();
+        let back = tauri::async_runtime::block_on(translate("Merhaba dünya", "ja")).unwrap();
         println!("{back:?}");
-        assert_eq!(back.target, "en");
+        assert_eq!(back.source, "tr");
+    }
+
+    #[test]
+    fn language_codes() {
+        for ok in ["en", "tr", "zh-CN", "mni-Mtei", "haw"] {
+            assert!(is_language_code(ok), "{ok}");
+        }
+        for bad in ["", "e", "EN", "en us", "en&q=x", "../x", "abcdefghijklm"] {
+            assert!(!is_language_code(bad), "{bad}");
+        }
     }
 
     #[test]

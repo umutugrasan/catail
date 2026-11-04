@@ -36,6 +36,7 @@ function QrLink({ code, box, order }: { code: QrCode; box: Rect; order: number }
   const chipRef = useRef<HTMLDivElement>(null);
   const [at, setAt] = useState<Point | null>(null);
   const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
   useLayoutEffect(() => {
     const el = chipRef.current;
     if (!el) return;
@@ -48,6 +49,11 @@ function QrLink({ code, box, order }: { code: QrCode; box: Rect; order: number }
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
   };
+  const open = () =>
+    void openLink(code.url!).catch(() => {
+      setFailed(true);
+      setTimeout(() => setFailed(false), 2500);
+    });
   const delay = { animationDelay: `${order * 70}ms` };
   const side = at && at.x < box.x ? "left" : "right";
 
@@ -74,14 +80,17 @@ function QrLink({ code, box, order }: { code: QrCode; box: Rect; order: number }
             type="button"
             className="qr__open"
             title={t("overlay.qr_open", { url: code.url })}
-            onClick={() => void openLink(code.url!)}
+            onClick={open}
           >
             <LinkIcon />
             <span className="qr__url">
               <strong>{splitUrl(code.url).host}</strong>
               <span>{splitUrl(code.url).rest}</span>
             </span>
-            <ArrowIcon />
+            <span className={`qr__go${failed ? " qr__go--failed" : ""}`}>
+              {failed ? t("overlay.qr_open_failed") : t("overlay.qr_go")}
+              {!failed && <ArrowIcon />}
+            </span>
           </button>
         ) : (
           <span className="qr__text" title={code.text}>

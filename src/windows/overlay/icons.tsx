@@ -106,12 +106,17 @@ export function ToolIcon({ tool }: { tool: Tool }) {
       );
     case "blur":
       return (
+        // A soft drop with a highlight, its edge fading into specks: the classic blur tool.
         <Icon>
-          <rect x="4" y="4" width="5" height="5" />
-          <rect x="15" y="4" width="5" height="5" />
-          <rect x="9.5" y="9.5" width="5" height="5" />
-          <rect x="4" y="15" width="5" height="5" />
-          <rect x="15" y="15" width="5" height="5" />
+          <path d="M12 3.5C9 7.4 6.2 10.6 6.2 14a5.8 5.8 0 0 0 11.6 0c0-3.4-2.8-6.6-5.8-10.5Z" />
+          <path d="M9.3 14.4a2.8 2.8 0 0 0 2.6 2.8" opacity="0.6" />
+          <g fill="currentColor" stroke="none">
+            <circle cx="20.2" cy="10.2" r="0.95" opacity="0.75" />
+            <circle cx="21.6" cy="14.2" r="0.7" opacity="0.5" />
+            <circle cx="20.4" cy="18" r="0.55" opacity="0.35" />
+            <circle cx="3.8" cy="10.8" r="0.8" opacity="0.6" />
+            <circle cx="2.6" cy="15" r="0.55" opacity="0.4" />
+          </g>
         </Icon>
       );
   }

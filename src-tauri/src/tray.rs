@@ -11,7 +11,9 @@ const MENU_CAPTURE: &str = "capture";
 const MENU_SETTINGS: &str = "settings";
 const MENU_QUIT: &str = "quit";
 
-pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
+const TRAY_ID: &str = "main";
+
+fn menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let capture = MenuItem::with_id(
         app,
         MENU_CAPTURE,
@@ -22,9 +24,25 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     let settings = MenuItem::with_id(app, MENU_SETTINGS, t("tray.settings"), true, None::<&str>)?;
     let quit = MenuItem::with_id(app, MENU_QUIT, t("tray.quit"), true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&capture, &settings, &separator, &quit])?;
+    Menu::with_items(app, &[&capture, &settings, &separator, &quit])
+}
 
-    TrayIconBuilder::with_id("main")
+/// Puts the menu and tooltip into the current interface language.
+pub fn retitle<R: Runtime>(app: &AppHandle<R>) {
+    if let Some(tray) = app.tray_by_id(TRAY_ID) {
+        if let Ok(menu) = menu(app) {
+            let _ = tray.set_menu(Some(menu));
+        }
+        let _ = tray.set_tooltip(Some(t("tray.tooltip")));
+    }
+    if let Some(window) = app.get_webview_window("settings") {
+        let _ = window.set_title(&t("settings.title"));
+    }
+}
+
+pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
+    let menu = menu(app)?;
+    TrayIconBuilder::with_id(TRAY_ID)
         .icon(
             app.default_window_icon()
                 .cloned()

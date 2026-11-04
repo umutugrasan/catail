@@ -55,7 +55,22 @@ export interface Settings {
   clear_queue_after_paste: boolean;
   autostart: boolean;
   app_rules: AppPasteRule[];
+  /** Interface language; null follows Windows. */
+  language: string | null;
+  /** Language "Çevir" translates into. */
+  translate_to: string;
+  badge_corner: BadgeCorner;
 }
+
+export type BadgeCorner = "bottom-right" | "bottom-center" | "bottom-left" | "top-right" | "top-center" | "top-left";
+export const BADGE_CORNERS: BadgeCorner[] = [
+  "bottom-right",
+  "bottom-center",
+  "bottom-left",
+  "top-right",
+  "top-center",
+  "top-left",
+];
 
 export interface Translation {
   text: string;
@@ -83,6 +98,13 @@ export interface BadgeState {
   pasting: boolean;
   /** "Geri al" after a paste or clear, while it lasts. */
   undo: UndoView | null;
+  corner: BadgeCorner;
+}
+
+/** Where the panel's bin is, seen from the badge window (logical px): where the cat starts. */
+export interface LeapStart {
+  x: number;
+  y: number;
 }
 
 /** Selection in physical pixels relative to the monitor's top-left corner. */
@@ -125,8 +147,11 @@ export const queueImageUrl = (id: string) => convertFileSrc(`${id}.png`, "queue"
 /** Shows a queued image large, over the whole screen. */
 export const previewOpen = (id: string) => invoke<void>("preview_open", { id });
 export const previewClose = () => invoke<void>("preview_close");
+/** The image to show, for a preview window that has only just loaded. */
+export const previewCurrent = () => invoke<string | null>("preview_current");
 
-export const settingsGet = () => invoke<{ settings: Settings; version: string }>("settings_get");
+export const settingsGet = () =>
+  invoke<{ settings: Settings; version: string; system_language: string }>("settings_get");
 /** Rejects with a readable message (e.g. a shortcut another app holds); nothing changes then. */
 export const settingsSave = (settings: Settings) => invoke<void>("settings_save", { settings });
 /** Resolves to the readable shortcut, or rejects with why it can't be used. */
@@ -139,8 +164,9 @@ export const updateInstall = () => invoke<void>("update_install");
 
 /** Recognizes text in the selection (offline, Windows OCR). */
 export const captureOcr = (rect: ImageRect) => invoke<string>("capture_ocr", { rect });
-/** Sends the text to Google Translate: into Turkish, or English if it's already Turkish. */
-export const translateText = (text: string) => invoke<Translation>("translate_text", { text });
+/** Translates into `target` (a Google language code); the source language is detected. */
+export const translateText = (text: string, target: string) =>
+  invoke<Translation>("translate_text", { text, target });
 /** A QR code found on the frozen frame; the box is in frame pixels. */
 export interface QrCode {
   text: string;

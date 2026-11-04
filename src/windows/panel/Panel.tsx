@@ -63,7 +63,9 @@ export function Panel() {
       onWindowEvent<QueueItemView[]>(PanelEvents.update, (next) => {
         if (!dragRef.current) setItems(next);
       }),
-      onWindowEvent(PanelEvents.opened, () => {
+      onWindowEvent<string>(PanelEvents.opened, (corner) => {
+        // Grows out of the badge, wherever it sits.
+        document.getElementById("root")!.dataset.corner = corner;
         setClosing(false);
         setRemoving(new Set());
         setExporting({ kind: "idle" });

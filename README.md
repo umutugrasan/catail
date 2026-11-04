@@ -8,6 +8,8 @@ Ekran görüntülerini ve kopyaladığın metinleri sıraya diz, sonra tek Ctrl+
 - **Kuyruk:** seçim ekranından ekran görüntüleri, **Metin modu**nda her Ctrl+C sıraya eklenir. Kuyruk doluyken Ctrl+V hepsini sırayla yapıştırır; 10 saniye içinde geri alınabilir.
 - **Kedi teması:** pastel pembe arayüz, pati imleçleri (basılı tutunca pati yumruk olur), geri al düğmesinin yanında kutuda bekleyen kedi, temizleyince çöpten atlayan kedi.
 
+Arayüz 16 dilde: Türkçe, English, Deutsch, Français, Español, Italiano, Português, Nederlands, Polski, Русский, Українська, العربية, 日本語, 简体中文, 한국어, Bahasa Indonesia.
+
 Tüm veriler yereldir, telemetri yoktur.
 
 ## Kurulum
@@ -20,7 +22,7 @@ Kurulum dosyası henüz kod imzalı değildir; Windows "bilinmeyen yayımcı" uy
 
 ## Ayarlar
 
-`%APPDATA%\Catail\settings.json` dosyasında saklanır ve ayarlar penceresinden düzenlenir: kısayollar (tıklayıp yeni tuşlara basarak), yapıştırma yöntemi, bekleme süreleri, metin ayracı, metinler arası Enter, yapıştırdıktan sonra kuyruğu boşaltma, uygulama kuralları, Windows ile başlatma ve güncellemeler.
+`%APPDATA%\Catail\settings.json` dosyasında saklanır ve ayarlar penceresinden düzenlenir: arayüz dili (varsayılan: Windows'un dili), kuyruk rozetinin yeri (sağ alt, alt orta, sol alt, sağ üst, üst orta, sol üst), kısayollar (tıklayıp yeni tuşlara basarak), yapıştırma yöntemi, bekleme süreleri, metin ayracı, metinler arası Enter, yapıştırdıktan sonra kuyruğu boşaltma, uygulama kuralları, Windows ile başlatma ve güncellemeler.
 
 ## Kullanım
 
@@ -61,7 +63,7 @@ Sağ alttaki rozete tıklayınca yukarı doğru dar bir panel açılır: kuyrukt
 
 ## Metin tanıma ve çeviri
 
-Alan seçince araç çubuğundaki **Metni al**, seçili alandaki yazıyı Windows'un kendi OCR motoruyla (internetsiz, Türkçe dahil) okur. Çıkan metni düzenleyebilir, kopyalayabilir, kuyruğa ekleyebilir ya da **Çevir** ile uygulamanın içinde çevirebilirsin: Türkçe olmayan metin Türkçeye, Türkçe metin İngilizceye çevrilir. Çeviri için metin yalnızca **Çevir**'e basınca Google Çeviri'ye gönderilir (resmi olmayan ücretsiz uç nokta; Google değiştirirse çeviri hata verebilir).
+Alan seçince araç çubuğundaki **Metni al**, seçili alandaki yazıyı Windows'un kendi OCR motoruyla (internetsiz, Türkçe dahil) okur. Çıkan metni düzenleyebilir, kopyalayabilir, kuyruğa ekleyebilir ya da **Çevir** ile uygulamanın içinde çevirebilirsin: metnin dili kendiliğinden algılanır, hangi dile çevrileceğini yanındaki listeden sen seçersin (130'dan fazla dil; son seçtiğin hatırlanır). Çeviri için metin yalnızca **Çevir**'e basınca Google Çeviri'ye gönderilir (resmi olmayan ücretsiz uç nokta; Google değiştirirse çeviri hata verebilir).
 
 ## QR kodlar
 

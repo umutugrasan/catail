@@ -12,6 +12,7 @@ use tauri::{
     WebviewWindow, WebviewWindowBuilder,
 };
 
+use crate::settings::BadgeCorner;
 use crate::state::{AppState, UndoKind};
 
 const LABEL: &str = "badge";
@@ -39,6 +40,8 @@ pub struct BadgeState {
     pub text_mode: bool,
     pub pasting: bool,
     pub undo: Option<UndoView>,
+    /// Where the badge sits, so it lines its content up with that corner.
+    pub corner: BadgeCorner,
 }
 
 /// "Geri al" offer as the badge shows it.
@@ -69,6 +72,7 @@ pub fn current<R: Runtime>(app: &AppHandle<R>) -> BadgeState {
         text_mode: state.text_mode.load(Ordering::SeqCst),
         pasting: state.pasting.load(Ordering::SeqCst),
         undo,
+        corner: corner(app),
     }
 }
 
@@ -105,15 +109,51 @@ pub fn refresh<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
+fn corner<R: Runtime>(app: &AppHandle<R>) -> BadgeCorner {
+    app.state::<AppState>()
+        .settings
+        .lock()
+        .unwrap()
+        .badge_corner
+}
+
+/// Left edge for something `w` wide lined up with `corner` in the work area.
+pub fn aligned_x(corner: BadgeCorner, area_x: f64, area_w: f64, w: f64, margin: f64) -> f64 {
+    match corner.side() {
+        -1 => area_x + margin,
+        0 => area_x + ((area_w - w) / 2.0).round(),
+        _ => area_x + area_w - w - margin,
+    }
+}
+
 /// Where captures "fly" to when queued: the badge pill's center, in physical screen pixels.
-/// The pill is right-aligned in its window, roughly 120 logical px wide.
+/// The pill is roughly 120 logical px wide, at the corner's side of its window.
 pub fn fly_target<R: Runtime>(app: &AppHandle<R>) -> Option<(f64, f64)> {
     let monitor = app.primary_monitor().ok()??;
     let scale = monitor.scale_factor();
     let area = monitor.work_area();
-    let right = f64::from(area.position.x) + f64::from(area.size.width) - MARGIN * scale;
-    let bottom = f64::from(area.position.y) + f64::from(area.size.height) - MARGIN * scale;
-    Some((right - 60.0 * scale, bottom - HEIGHT / 2.0 * scale))
+    let corner = corner(app);
+    let (ax, ay) = (f64::from(area.position.x), f64::from(area.position.y));
+    let (aw, ah) = (f64::from(area.size.width), f64::from(area.size.height));
+    let x = match corner.side() {
+        -1 => ax + (MARGIN + 60.0) * scale,
+        0 => ax + aw / 2.0,
+        _ => ax + aw - (MARGIN + 60.0) * scale,
+    };
+    let y = if corner.is_top() {
+        ay + (MARGIN + HEIGHT / 2.0) * scale
+    } else {
+        ay + ah - (MARGIN + HEIGHT / 2.0) * scale
+    };
+    Some((x, y))
+}
+
+/// Moves a visible badge to the corner now set.
+pub fn reposition<R: Runtime>(app: &AppHandle<R>) {
+    if let Some(window) = app.get_webview_window(LABEL) {
+        place(app, &window);
+        let _ = app.emit_to(LABEL, EVENT_UPDATE, current(app));
+    }
 }
 
 /// Hides the badge so it doesn't end up in a screenshot. `refresh` brings it back.
@@ -153,13 +193,43 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
         .context("cannot create badge window")
 }
 
+/// Where the panel's bin is, seen from the badge window, in logical px: the spot the cat
+/// stands on (the top of the bin icon).
+#[derive(Debug, Clone, Copy, Serialize)]
+pub struct LeapStart {
+    pub x: f64,
+    pub y: f64,
+}
+
+/// Offsets of the bin inside the panel (panel.css): first footer button, 8 px padding,
+/// 38 × 34, a 17 px icon in its middle.
+const BIN_X: f64 = 8.0 + 38.0 / 2.0;
+const BIN_TOP_FROM_BOTTOM: f64 = 8.0 + 34.0 / 2.0 + 17.0 / 2.0;
+
 /// Tells the badge a cat leaps over from the panel's bin, and makes room for it for a moment.
 pub fn leap<R: Runtime>(app: &AppHandle<R>) {
     let Some(window) = app.get_webview_window(LABEL) else {
         return;
     };
+    let panel = app.get_webview_window("panel");
     place_sized(app, &window, LEAP_HEIGHT);
-    let _ = app.emit_to(LABEL, EVENT_LEAP, ());
+    let start = (|| {
+        let panel = panel?;
+        let scale = window.scale_factor().ok()?;
+        let (p, size) = (panel.outer_position().ok()?, panel.outer_size().ok()?);
+        let b = window.outer_position().ok()?;
+        let bin_x = f64::from(p.x) + BIN_X * scale;
+        let bin_top = f64::from(p.y) + f64::from(size.height) - BIN_TOP_FROM_BOTTOM * scale;
+        Some(LeapStart {
+            x: (bin_x - f64::from(b.x)) / scale,
+            y: (bin_top - f64::from(b.y)) / scale,
+        })
+    })();
+    let Some(start) = start else {
+        place(app, &window);
+        return;
+    };
+    let _ = app.emit_to(LABEL, EVENT_LEAP, start);
     let app = app.clone();
     std::thread::spawn(move || {
         std::thread::sleep(LEAP_FOR);
@@ -169,25 +239,37 @@ pub fn leap<R: Runtime>(app: &AppHandle<R>) {
     });
 }
 
-/// Bottom-right of the primary monitor's work area (above the taskbar).
+/// In the chosen corner of the primary monitor's work area (above the taskbar).
 fn place<R: Runtime>(app: &AppHandle<R>, window: &WebviewWindow<R>) {
     place_sized(app, window, HEIGHT);
 }
 
-/// Like `place`, `height` logical px tall; the bottom edge stays where the badge sits.
+/// Like `place`, `height` logical px tall; it grows away from its corner (up from a bottom
+/// corner, down from a top one), so the badge itself stays put.
 fn place_sized<R: Runtime>(app: &AppHandle<R>, window: &WebviewWindow<R>, height: f64) {
     let Ok(Some(monitor)) = app.primary_monitor() else {
         return;
     };
     let scale = monitor.scale_factor();
     let area = monitor.work_area();
+    let corner = corner(app);
     let (w, h, margin) = (
         (WIDTH * scale).round(),
         (height * scale).round(),
         (MARGIN * scale).round(),
     );
-    let x = f64::from(area.position.x) + f64::from(area.size.width) - w - margin;
-    let y = f64::from(area.position.y) + f64::from(area.size.height) - h - margin;
+    let x = aligned_x(
+        corner,
+        f64::from(area.position.x),
+        f64::from(area.size.width),
+        w,
+        margin,
+    );
+    let y = if corner.is_top() {
+        f64::from(area.position.y) + margin
+    } else {
+        f64::from(area.position.y) + f64::from(area.size.height) - h - margin
+    };
     let _ = window.set_position(PhysicalPosition::new(x as i32, y as i32));
     let _ = window.set_size(PhysicalSize::new(w as u32, h as u32));
 }

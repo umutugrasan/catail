@@ -50,6 +50,11 @@ html.pressing .overlay--resize-corner * {
   cursor: var(--paw-nwse) !important;
 }
 
+/* Over a QR code with a link: a click opens it. */
+.overlay--link {
+  cursor: var(--paw);
+}
+
 .overlay--drawing,
 .overlay--drawing .overlay__selection {
   cursor: var(--paw-cross);
@@ -439,10 +444,10 @@ html.pressing .overlay--resize-corner * {
   gap: 10px;
   box-sizing: border-box;
   width: min(560px, calc(100vw - 32px));
-  max-height: calc(100vh - 120px);
   padding: 14px;
   border-radius: var(--radius-lg);
-  overflow: auto;
+  /* Visible, so the language list can hang outside; the text areas scroll on their own. */
+  overflow: visible;
   translate: -50% 0;
   cursor: var(--paw-default);
   user-select: text;
@@ -506,7 +511,8 @@ html.pressing .overlay--resize-corner * {
   gap: 6px;
 }
 
-.ocr__actions button {
+.ocr__actions button,
+.ocr__translate > button {
   height: 32px;
   padding: 0 14px;
   border: 1px solid var(--border);
@@ -518,11 +524,13 @@ html.pressing .overlay--resize-corner * {
   transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
 }
 
-.ocr__actions button:hover:not(:disabled) {
+.ocr__actions button:hover:not(:disabled),
+.ocr__translate > button:hover:not(:disabled) {
   background: var(--surface-hover);
 }
 
-.ocr__actions button:active:not(:disabled) {
+.ocr__actions button:active:not(:disabled),
+.ocr__translate > button:active:not(:disabled) {
   transform: scale(0.97);
 }
 
@@ -537,9 +545,161 @@ html.pressing .overlay--resize-corner * {
   background: var(--accent-hover);
 }
 
-.ocr__actions button:disabled {
+.ocr__actions button:disabled,
+.ocr__translate > button:disabled {
   opacity: 0.45;
   cursor: var(--paw-default);
+}
+
+/* "Çevir → [language]": the source language is detected, the target is picked here. */
+.ocr__translate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Searchable language list. */
+.lang-picker {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.lang-picker__button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  transition: background var(--fast) var(--ease-out), border-color var(--fast) var(--ease-out);
+}
+
+.lang-picker__button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lang-picker__button svg {
+  flex: none;
+  color: var(--text-muted);
+  transform: rotate(90deg);
+  transition: transform var(--normal) var(--ease-pop);
+}
+
+.lang-picker__button:hover,
+.lang-picker__button.open {
+  border-color: var(--pink-400);
+  background: var(--surface-hover);
+}
+
+.lang-picker__button.open svg {
+  transform: rotate(-90deg);
+}
+
+.lang-picker__popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transform-origin: top center;
+  animation: pop-in var(--normal) var(--ease-pop) both;
+}
+
+.lang-picker__popup--up {
+  top: auto;
+  bottom: calc(100% + 6px);
+  flex-direction: column-reverse;
+  transform-origin: bottom center;
+}
+
+.lang-picker__search {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.lang-picker__search:focus {
+  border-color: var(--pink-400);
+  box-shadow: 0 0 0 3px var(--pink-100);
+}
+
+.lang-picker__list {
+  max-height: 240px;
+  margin: 6px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.lang-picker__popup--up .lang-picker__list {
+  margin: 0 0 6px;
+}
+
+.lang-picker__list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 9px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: var(--paw);
+}
+
+.lang-picker__list li.active {
+  background: var(--surface-hover);
+}
+
+.lang-picker__list li.current {
+  font-weight: 650;
+}
+
+.lang-picker__list li.current::before {
+  content: "✓";
+  margin-right: -4px;
+  color: var(--accent-hover);
+}
+
+.lang-picker__native {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lang-picker__list li.lang-picker__empty {
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: var(--paw-default);
+}
+
+.ocr__arrow {
+  color: var(--text-muted);
 }
 
 .ocr__status {
@@ -565,7 +725,9 @@ html.pressing .overlay--resize-corner * {
 }
 
 .ocr__translation p {
+  max-height: 28vh;
   margin: 0;
+  overflow-y: auto;
   font-size: 13.5px;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -1047,12 +1209,40 @@ html.pressing .overlay--resize-corner * {
   transform: scale(0.97);
 }
 
-.qr__open svg:last-child {
+/* "Aç ↗": says plainly that a click opens the link in the browser. */
+.qr__go {
+  display: inline-flex;
   flex: none;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+  padding: 3px 7px 3px 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.qr__go--failed {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.qr__url strong {
+  text-decoration-color: transparent;
+}
+
+/* Reads as a link: underlined on hover. */
+.qr__open:hover .qr__url {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.qr__go svg {
   transition: transform var(--normal) var(--ease-pop);
 }
 
-.qr__open:hover svg:last-child {
+.qr__open:hover .qr__go svg {
   transform: translate(2px, -2px);
 }
 

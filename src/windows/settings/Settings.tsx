@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { t } from "../../lib/i18n";
+import { LANGUAGES, t } from "../../lib/i18n";
 import {
+  BADGE_CORNERS,
   settingsGet,
   settingsSave,
   updateCheck,
   updateInstall,
   type AppPasteRule,
+  type BadgeCorner,
   type HotkeyMap,
   type PasteMode,
   type Settings as SettingsModel,
@@ -43,6 +45,7 @@ type UpdateState =
 export function Settings() {
   const [settings, setSettings] = useState<SettingsModel | null>(null);
   const [version, setVersion] = useState("");
+  const [systemLanguage, setSystemLanguage] = useState("en");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [update, setUpdate] = useState<UpdateState>({ kind: "idle" });
 
@@ -50,6 +53,7 @@ export function Settings() {
     void settingsGet().then((view) => {
       setSettings(view.settings);
       setVersion(view.version);
+      setSystemLanguage(view.system_language);
     });
   }, []);
 
@@ -271,6 +275,35 @@ export function Settings() {
 
       <section>
         <h2>{t("settings.general")}</h2>
+        <label className="field">
+          <span>{t("settings.language")}</span>
+          <select
+            value={settings.language ?? ""}
+            onChange={(e) => change({ language: e.target.value === "" ? null : e.target.value })}
+          >
+            <option value="">{t("settings.language_system", {
+                language: LANGUAGES.find(([code]) => code === systemLanguage)?.[1] ?? systemLanguage,
+              })}</option>
+            {LANGUAGES.map(([code, name]) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>{t("settings.badge_corner")}</span>
+          <select
+            value={settings.badge_corner}
+            onChange={(e) => change({ badge_corner: e.target.value as BadgeCorner })}
+          >
+            {BADGE_CORNERS.map((corner) => (
+              <option key={corner} value={corner}>
+                {t(`settings.corner_${corner}`)}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="check">
           <input
             type="checkbox"

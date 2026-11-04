@@ -35,6 +35,8 @@ use state::AppState;
 fn main() {
     let temp_root = queue::temp_root();
     let session = session_name(chrono::Local::now(), std::process::id());
+    let settings = Settings::load();
+    i18n::set_language(settings.language.as_deref());
 
     tauri::Builder::default()
         // Must be registered first so a second launch exits before doing anything else.
@@ -58,7 +60,7 @@ fn main() {
         .manage(updater::PendingUpdate::default())
         .manage(AppState::new(
             QueueStore::new(&temp_root, &session),
-            Settings::load(),
+            settings,
         ))
         .register_uri_scheme_protocol(capture::region::PROTOCOL, capture::region::serve)
         .register_uri_scheme_protocol(panel::PROTOCOL, panel::serve)
@@ -94,7 +96,9 @@ fn main() {
             commands::queue_export,
             commands::preview_open,
             commands::preview_close,
+            commands::preview_current,
             commands::badge_state,
+            commands::ui_language,
         ])
         .setup(move |app| {
             // Single-instance has already exited any second copy, so older folders are stale.
