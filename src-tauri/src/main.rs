@@ -22,6 +22,8 @@ mod state;
 mod translate;
 mod tray;
 mod updater;
+#[cfg(windows)]
+mod winkeys;
 
 use tauri::{Manager, RunEvent};
 
@@ -95,6 +97,8 @@ fn main() {
             // Single-instance has already exited any second copy, so older folders are stale.
             remove_stale_sessions(&temp_root, &session);
             tray::build(app.handle())?;
+            #[cfg(windows)]
+            hotkeys::start_hook(app.handle());
             hotkeys::register_saved(app.handle());
             #[cfg(windows)]
             {
@@ -110,7 +114,7 @@ fn main() {
             Ok(())
         })
         .build(tauri::generate_context!())
-        .expect("failed to build Stack Screen")
+        .expect("failed to build Catail")
         .run(|app, event| match event {
             // Tray app: closing the settings window must not quit. Only "Çıkış" (exit code set) does.
             RunEvent::ExitRequested { api, code, .. } if code.is_none() => api.prevent_exit(),

@@ -1,4 +1,4 @@
-# Stack Screen
+# Catail
 
 Sıralı ekran görüntüsü ve pano kuyruğu aracı (Windows 10/11, ardından macOS).
 
@@ -23,13 +23,13 @@ Tüm veriler yereldir, telemetri yoktur.
 
 ## Kurulum
 
-[Releases](https://github.com/umutugrasan/stack-screen/releases) sayfasından `Stack Screen_<sürüm>_x64-setup.exe` dosyasını indirip çalıştırın. Kurulum kullanıcı klasörüne yapılır, yönetici izni istemez. Uygulama sistem tepsisine yerleşir; ayarlar için tepsi simgesine sağ tıklayın → **Ayarlar** (ya da Başlat menüsünden Stack Screen'i tekrar açın).
+[Releases](https://github.com/umutugrasan/catail/releases) sayfasından `Catail_<sürüm>_x64-setup.exe` dosyasını indirip çalıştırın. Kurulum kullanıcı klasörüne yapılır, yönetici izni istemez. Uygulama sistem tepsisine yerleşir; ayarlar için tepsi simgesine sağ tıklayın → **Ayarlar** (ya da Başlat menüsünden Catail'i tekrar açın).
 
 Kurulum dosyası henüz kod imzalı değildir; Windows "bilinmeyen yayımcı" uyarısı gösterirse **Ek bilgi → Yine de çalıştır**. Ayrıntılar ve sürüm çıkarma adımları: [docs/release.md](docs/release.md).
 
 ## Ayarlar
 
-`%APPDATA%\Stack Screen\settings.json` dosyasında saklanır ve ayarlar penceresinden düzenlenir: kısayollar (tıklayıp yeni tuşlara basarak), yapıştırma yöntemi, bekleme süreleri, metin ayracı, metinler arası Enter, yapıştırdıktan sonra kuyruğu boşaltma, uygulama kuralları, Windows ile başlatma ve güncellemeler.
+`%APPDATA%\Catail\settings.json` dosyasında saklanır ve ayarlar penceresinden düzenlenir: kısayollar (tıklayıp yeni tuşlara basarak), yapıştırma yöntemi, bekleme süreleri, metin ayracı, metinler arası Enter, yapıştırdıktan sonra kuyruğu boşaltma, uygulama kuralları, Windows ile başlatma ve güncellemeler.
 
 ## Geliştirme
 
@@ -57,6 +57,8 @@ cd src-tauri; cargo test; cargo clippy --all-targets -- -D warnings
 | Ctrl+S | Seçimi PNG olarak kaydet |
 | Ctrl+Z | Seçim ekranında son çizimi geri al |
 | Esc / sağ tık | İptal (sıralı yapıştırmada: durdur) |
+
+Kısayollar Ayarlar'dan değiştirilebilir. Windows tuşlu kısayollar da olur: örneğin bölge yakalamayı **Win+Shift+S**'ye atarsan Windows Ekran Alıntısı Aracı yerine Catail açılır, Win tuşunu bırakınca Başlat menüsü de açılmaz.
 
 ### Kuyruk
 
@@ -92,15 +94,15 @@ Alan seçince sağında araç çubuğu çıkar: seç/taşı, şekiller (dikdört
 ### Yapıştırma yöntemleri
 
 - **Toplu:** Kuyruktaki tüm görseller tek bir dosya listesi olarak panoya konur ve tek Ctrl+V gönderilir. Yalnız görsel içeren kuyruklarda varsayılandır.
-- **Sıralı:** Her öğe tek tek panoya konup yapıştırılır (öğeler arası bekleme varsayılan 250 ms). Toplu yapıştırmada yalnızca ilk görseli alan uygulamalar için `%APPDATA%\Stack Screen\settings.json` içindeki `app_rules` ile seçilebilir:
+- **Sıralı:** Her öğe tek tek panoya konup yapıştırılır (öğeler arası bekleme varsayılan 250 ms). Toplu yapıştırmada yalnızca ilk görseli alan uygulamalar için `%APPDATA%\Catail\settings.json` içindeki `app_rules` ile seçilebilir:
 
 ```json
 { "app_rules": [{ "process": "whatsapp.exe", "mode": "sequential", "delay_ms": 400 }] }
 ```
 
-Kuyruktaki görseller `%TEMP%\stack-screen\<oturum>` altında tutulur ve uygulama kapanınca silinir.
+Kuyruktaki görseller `%TEMP%\catail\<oturum>` altında tutulur ve uygulama kapanınca silinir.
 
-Windows 11'de PrintScreen varsayılan olarak Ekran Alıntısı Aracı'nı açar. Stack Screen'in yakalayabilmesi için Ayarlar → Erişilebilirlik → Klavye → "Ekran alıntısı aracını açmak için Print Screen tuşunu kullan" seçeneğini kapatıp Stack Screen'i yeniden başlatın. Lightshot gibi PrintScreen kullanan başka araçlar açıksa kısayollar çakışır.
+Windows 11'de PrintScreen varsayılan olarak Ekran Alıntısı Aracı'nı açar. Catail'in yakalayabilmesi için Ayarlar → Erişilebilirlik → Klavye → "Ekran alıntısı aracını açmak için Print Screen tuşunu kullan" seçeneğini kapatıp Catail'i yeniden başlatın. Lightshot gibi PrintScreen kullanan başka araçlar açıksa kısayollar çakışır.
 
 ## Faz 0 — paste-test
 

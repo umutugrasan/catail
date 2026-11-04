@@ -1,19 +1,19 @@
 # Sürüm çıkarma
 
-Stack Screen, GitHub Releases üzerinden dağıtılır ve kendini oradan günceller. Uygulama yalnızca `https://github.com/umutugrasan/stack-screen/releases/latest/download/latest.json` adresini kontrol eder; başka hiçbir yere bağlanmaz ve hiçbir veri göndermez.
+Catail, GitHub Releases üzerinden dağıtılır ve kendini oradan günceller. Uygulama yalnızca `https://github.com/umutugrasan/catail/releases/latest/download/latest.json` adresini kontrol eder; başka hiçbir yere bağlanmaz ve hiçbir veri göndermez.
 
 ## Bir kerelik hazırlık
 
 Güncellemeler bir imza anahtarıyla imzalanır; uygulama yalnızca bu anahtarla imzalanmış güncellemeleri kurar. (Bu, Windows kod imzalama sertifikasından ayrı ve ücretsizdir.)
 
 - **Açık anahtar** `src-tauri/tauri.conf.json` → `plugins.updater.pubkey` içinde; paylaşılabilir.
-- **Gizli anahtar** `%USERPROFILE%\.tauri\stack-screen.key` dosyasında. **Repoya koyma, kimseyle paylaşma, yedekle.** Kaybolursa mevcut kurulumlar yeni sürümleri kabul etmez.
+- **Gizli anahtar** `%USERPROFILE%\.tauri\catail.key` dosyasında. **Repoya koyma, kimseyle paylaşma, yedekle.** Kaybolursa mevcut kurulumlar yeni sürümleri kabul etmez.
 
 GitHub'da repo → **Settings → Secrets and variables → Actions → New repository secret**:
 
 | Ad | Değer |
 |---|---|
-| `TAURI_SIGNING_PRIVATE_KEY` | `stack-screen.key` dosyasının içeriği (Not Defteri'nde açıp tamamını kopyala) |
+| `TAURI_SIGNING_PRIVATE_KEY` | `catail.key` dosyasının içeriği (Not Defteri'nde açıp tamamını kopyala) |
 | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Boş bırak (anahtar parolasız oluşturuldu) |
 
 ## Her sürümde
@@ -30,12 +30,12 @@ GitHub'da repo → **Settings → Secrets and variables → Actions → New repo
 ## Yerelde kurulum dosyası derlemek
 
 ```powershell
-$env:TAURI_SIGNING_PRIVATE_KEY = Get-Content "$env:USERPROFILE\.tauri\stack-screen.key" -Raw
+$env:TAURI_SIGNING_PRIVATE_KEY = Get-Content "$env:USERPROFILE\.tauri\catail.key" -Raw
 $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ""
 npm run tauri build
 ```
 
-Çıktı: `src-tauri/target/release/bundle/nsis/Stack Screen_<sürüm>_x64-setup.exe`. Kurulum kullanıcı klasörüne yapılır, yönetici izni istemez.
+Çıktı: `src-tauri/target/release/bundle/nsis/Catail_<sürüm>_x64-setup.exe`. Kurulum kullanıcı klasörüne yapılır, yönetici izni istemez.
 
 ## Kod imzalama (isteğe bağlı)
 

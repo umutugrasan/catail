@@ -1,10 +1,11 @@
 //! Global hotkey registration and dispatch. Bindings come from the settings
-//! (`HotkeyMap`); Ctrl+V while the queue has items is fixed.
+//! (`HotkeyMap`); Ctrl+V while the queue has items is fixed. Shortcuts with the Windows key
+//! go through `winkeys` (a keyboard hook) instead of the plugin.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_global_shortcut::{
     Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutEvent, ShortcutState,
 };
@@ -116,13 +117,20 @@ fn queue_paste_shortcut() -> Shortcut {
     Shortcut::new(Some(Modifiers::CONTROL), Code::KeyV)
 }
 
+/// Sent to the settings window with the accelerator of a Win combo pressed while recording
+/// (the webview never sees those keys).
+pub const EVENT_RECORDED: &str = "settings:hotkey-recorded";
+
 /// Global shortcut handler. Runs on the main thread, so real work goes to a worker.
 pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: ShortcutEvent) {
     #[cfg(debug_assertions)]
     eprintln!("hotkey {} {:?}", shortcut.into_string(), event.state);
-    if event.state != ShortcutState::Pressed {
-        return;
+    if event.state == ShortcutState::Pressed {
+        fire(app, shortcut);
     }
+}
+
+fn fire<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut) {
     let action = if *shortcut == queue_paste_shortcut() {
         Some(Action::PasteQueue)
     } else {
@@ -140,11 +148,76 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
     });
 }
 
+/// Starts the Windows-key hook; its shortcuts fire like the plugin's.
+#[cfg(windows)]
+pub fn start_hook<R: Runtime>(app: &AppHandle<R>) {
+    let on_shortcut = app.clone();
+    let on_recorded = app.clone();
+    // Both callbacks run inside the hook, which must answer quickly: hand off to a worker.
+    crate::winkeys::start(
+        move |accelerator| {
+            let app = on_shortcut.clone();
+            std::thread::spawn(move || {
+                if let Ok(shortcut) = accelerator.parse::<Shortcut>() {
+                    fire(&app, &shortcut);
+                }
+            });
+        },
+        move |accelerator| {
+            let app = on_recorded.clone();
+            std::thread::spawn(move || {
+                let _ = app.emit_to("settings", EVENT_RECORDED, accelerator);
+            });
+        },
+    );
+}
+
+fn via_hook(shortcut: &Shortcut) -> bool {
+    #[cfg(windows)]
+    return crate::winkeys::needs_hook(shortcut);
+    #[cfg(not(windows))]
+    return {
+        let _ = shortcut;
+        false
+    };
+}
+
+/// Win shortcuts are handled by the hook, everything else by `RegisterHotKey`.
+fn register<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) -> Result<(), String> {
+    if via_hook(&shortcut) {
+        return Ok(());
+    }
+    app.global_shortcut()
+        .register(shortcut)
+        .map_err(|e| e.to_string())
+}
+
+fn unregister<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
+    if !via_hook(&shortcut) {
+        let _ = app.global_shortcut().unregister(shortcut);
+    }
+}
+
+/// Tells the hook which Win shortcuts are live.
+fn sync_hook(active: &[(Shortcut, Action)]) {
+    #[cfg(windows)]
+    crate::winkeys::set_bound(
+        active
+            .iter()
+            .map(|(s, _)| *s)
+            .filter(crate::winkeys::needs_hook)
+            .collect(),
+    );
+    #[cfg(not(windows))]
+    let _ = active;
+}
+
 fn unregister_active<R: Runtime>(app: &AppHandle<R>) {
     let mut active = ACTIVE.lock().unwrap();
     for (shortcut, _) in active.drain(..) {
-        let _ = app.global_shortcut().unregister(shortcut);
+        unregister(app, shortcut);
     }
+    sync_hook(&active);
 }
 
 /// Switches to `map`, all or nothing: if any shortcut can't be registered, `previous` is
@@ -158,15 +231,16 @@ pub fn apply<R: Runtime>(
     unregister_active(app);
     let mut registered = Vec::new();
     for (shortcut, action, accelerator) in &next {
-        if app.global_shortcut().register(*shortcut).is_err() {
+        if register(app, *shortcut).is_err() {
             for (s, _) in &registered {
-                let _ = app.global_shortcut().unregister(*s);
+                unregister(app, *s);
             }
             register_best_effort(app, previous);
             return Err(HotkeyError::Taken(accelerator.clone()));
         }
         registered.push((*shortcut, *action));
     }
+    sync_hook(&registered);
     *ACTIVE.lock().unwrap() = registered;
     Ok(())
 }
@@ -180,7 +254,7 @@ fn register_best_effort<R: Runtime>(app: &AppHandle<R>, map: &HotkeyMap) -> Vec<
     let mut failed = Vec::new();
     let mut active = ACTIVE.lock().unwrap();
     for (shortcut, action, accelerator) in next {
-        let result = app.global_shortcut().register(shortcut);
+        let result = register(app, shortcut);
         #[cfg(debug_assertions)]
         eprintln!("register {accelerator}: {result:?}");
         match result {
@@ -188,6 +262,7 @@ fn register_best_effort<R: Runtime>(app: &AppHandle<R>, map: &HotkeyMap) -> Vec<
             Err(_) => failed.push(accelerator),
         }
     }
+    sync_hook(&active);
     failed
 }
 
@@ -195,9 +270,13 @@ fn register_best_effort<R: Runtime>(app: &AppHandle<R>, map: &HotkeyMap) -> Vec<
 /// while suspended, no global shortcut swallows the keys. Must not run on the main thread.
 pub fn suspend<R: Runtime>(app: &AppHandle<R>) {
     unregister_active(app);
+    #[cfg(windows)]
+    crate::winkeys::set_recording(true);
 }
 
 pub fn resume<R: Runtime>(app: &AppHandle<R>) {
+    #[cfg(windows)]
+    crate::winkeys::set_recording(false);
     if ACTIVE.lock().unwrap().is_empty() {
         let map = app
             .state::<AppState>()
@@ -405,6 +484,7 @@ mod tests {
             "control+shift+KeyQ",
             "control+alt+shift+KeyV",
             "Pause",
+            "shift+super+KeyS",
         ] {
             assert!(validate(ok).is_ok(), "{ok} should be accepted");
         }

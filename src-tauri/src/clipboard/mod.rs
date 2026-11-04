@@ -14,7 +14,7 @@ pub use read::{read_for_queue, Clip, Copied};
 pub use snapshot::ClipboardGuard;
 pub use write::{write_image, write_png_file, write_text};
 
-/// True if the clipboard still holds what Stack Screen itself wrote last.
+/// True if the clipboard still holds what Catail itself wrote last.
 #[cfg(windows)]
 pub fn is_self_write() -> bool {
     win32::is_self_write()

@@ -118,7 +118,7 @@ button.secondary {
 
 button:disabled {
   opacity: 0.5;
-  cursor: default;
+  cursor: var(--paw-default);
 }
 
 .icon-button {

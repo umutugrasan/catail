@@ -1,4 +1,4 @@
-/* Cat motion. Slow, idle loops for the bored cat; one quick arc for the leap. */
+/* Cat motion. Slow, idle loops for the cat in the box; one quick arc for the leap. */
 
 .cat-face {
   flex: none;
@@ -21,83 +21,80 @@
   }
 }
 
-.bored-cat {
+.box-cat {
+  position: relative;
+  display: inline-block;
   flex: none;
-  overflow: visible;
+  height: 40px;
+  aspect-ratio: 342 / 256;
+  transform-origin: 50% 100%;
+  animation: box-shuffle 7s var(--ease-in-out) infinite 2s;
 }
 
-.bored-cat__tail {
-  transform-box: fill-box;
-  transform-origin: 0% 100%;
-  animation: tail-swish 2.4s var(--ease-in-out) infinite;
+.box-cat img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-@keyframes tail-swish {
+/* Every so often the cat shifts about and the box rocks. */
+@keyframes box-shuffle {
   0%,
+  80%,
   100% {
-    transform: rotate(0deg);
+    transform: none;
   }
-  50% {
-    transform: rotate(-16deg);
+  84% {
+    transform: rotate(-4deg);
   }
-}
-
-.bored-cat__head {
-  transform-box: fill-box;
-  transform-origin: 50% 90%;
-  animation: head-droop 6s var(--ease-in-out) infinite;
-}
-
-/* Tilts its head, sighs. */
-@keyframes head-droop {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  40% {
-    transform: rotate(-5deg) translateY(0.5px);
-  }
-  60% {
-    transform: rotate(-5deg) translateY(0.5px);
-  }
-}
-
-.bored-cat__eyes {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: bored-blink 3.8s infinite;
-}
-
-@keyframes bored-blink {
-  0%,
-  88%,
-  100% {
-    transform: scaleY(1);
+  88% {
+    transform: rotate(3deg);
   }
   92% {
-    transform: scaleY(0.15);
+    transform: rotate(-1.5deg);
   }
 }
 
-/* A yawn every few seconds. */
-.bored-cat__yawn {
-  transform-box: fill-box;
-  transform-origin: 50% 0%;
-  transform: scale(0);
-  animation: cat-yawn 6s var(--ease-in-out) infinite;
-  animation-delay: 1.5s;
+/* Eyelids over the big eyes (positions in percent of the image): half shut, now and then fully. */
+.box-cat__lid {
+  position: absolute;
+  top: 19.5%;
+  width: 14%;
+  height: 17.5%;
+  border-radius: 50% 50% 40% 40%;
+  background: #f99b3e;
+  box-shadow: 0 1px 0 #7a3a12;
+  transform-origin: 50% 0;
+  animation: lid-droop 5.2s var(--ease-in-out) infinite;
 }
 
-@keyframes cat-yawn {
+.box-cat__lid--left {
+  left: 29%;
+}
+
+.box-cat__lid--right {
+  left: 53.4%;
+}
+
+@keyframes lid-droop {
   0%,
-  55%,
-  85%,
   100% {
-    transform: scale(0);
+    transform: scaleY(0.48);
   }
-  65%,
-  75% {
-    transform: scale(1.4, 1.8);
+  45% {
+    transform: scaleY(0.58);
+  }
+  70% {
+    transform: scaleY(0.45);
+  }
+  86% {
+    transform: scaleY(0.5);
+  }
+  90% {
+    transform: scaleY(1);
+  }
+  94% {
+    transform: scaleY(0.5);
   }
 }
 
@@ -131,6 +128,7 @@
 
 .trash-jump .leaping-cat {
   position: absolute;
+  object-fit: contain;
   bottom: 40%;
   left: 50%;
   animation: cat-leap 760ms cubic-bezier(0.3, 0.6, 0.4, 1) both;

@@ -1,4 +1,4 @@
-//! User settings, stored in `%APPDATA%/Stack Screen/settings.json` and edited in the
+//! User settings, stored in `%APPDATA%/Catail/settings.json` and edited in the
 //! settings window. Missing fields fall back to defaults, so older files keep working.
 
 use std::path::{Path, PathBuf};
@@ -89,7 +89,13 @@ const DELAY_RANGE_MS: std::ops::RangeInclusive<u32> = 50..=5000;
 impl Settings {
     /// Reads the settings file; a missing or broken file yields the defaults.
     pub fn load() -> Self {
-        settings_path().map_or_else(Self::default, |path| Self::load_from(&path))
+        let Some(path) = settings_path() else {
+            return Self::default();
+        };
+        if !path.exists() {
+            migrate_from_old_name(&path);
+        }
+        Self::load_from(&path)
     }
 
     fn load_from(path: &Path) -> Self {
@@ -145,11 +151,23 @@ impl Settings {
 
 fn settings_path() -> Option<PathBuf> {
     let appdata = std::env::var_os("APPDATA")?;
-    Some(
-        PathBuf::from(appdata)
-            .join("Stack Screen")
-            .join("settings.json"),
-    )
+    Some(PathBuf::from(appdata).join("Catail").join("settings.json"))
+}
+
+/// The app was called Stack Screen before 0.5.0; its settings are carried over once.
+fn migrate_from_old_name(path: &Path) {
+    let Some(appdata) = std::env::var_os("APPDATA") else {
+        return;
+    };
+    let old = PathBuf::from(appdata)
+        .join("Stack Screen")
+        .join("settings.json");
+    if old.exists() {
+        if let Some(dir) = path.parent() {
+            let _ = std::fs::create_dir_all(dir);
+        }
+        let _ = std::fs::copy(&old, path);
+    }
 }
 
 #[cfg(test)]
@@ -213,8 +231,7 @@ mod tests {
 
     #[test]
     fn save_and_load_round_trip() {
-        let dir =
-            std::env::temp_dir().join(format!("stack-screen-settings-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("catail-settings-{}", std::process::id()));
         let path = dir.join("settings.json");
         let s = Settings {
             autostart: true,

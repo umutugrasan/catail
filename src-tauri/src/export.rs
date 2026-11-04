@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn zip_numbers_items_in_order() {
-        let dir = std::env::temp_dir().join(format!("stack-screen-export-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("catail-export-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let png = dir.join("a.png");
         RgbaImage::new(2, 2).save(&png).unwrap();

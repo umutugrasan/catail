@@ -25,7 +25,7 @@ button {
 }
 
 .overlay--moving {
-  cursor: move;
+  cursor: var(--paw-move);
 }
 
 .overlay--drawing,
@@ -60,7 +60,7 @@ button {
   border: 1.5px solid var(--selection);
   border-radius: 2px;
   box-shadow: 0 0 0 100vmax var(--dim);
-  cursor: move;
+  cursor: var(--paw-move);
 }
 
 /* Drawings preview; sized to device pixels in Overlay.tsx. */
@@ -122,7 +122,7 @@ button {
   padding: 4px;
   border-radius: var(--radius-lg);
   translate: -50% 0;
-  cursor: default;
+  cursor: var(--paw-default);
   animation: rise-in var(--normal) var(--ease-out) both;
 }
 
@@ -163,7 +163,7 @@ button {
   height: 40px;
   padding: 4px;
   border-radius: var(--radius);
-  cursor: default;
+  cursor: var(--paw-default);
   animation: pop-in var(--normal) var(--ease-pop) both;
   transform-origin: top right;
 }
@@ -229,7 +229,7 @@ button {
   gap: 2px;
   padding: 4px;
   border-radius: var(--radius);
-  cursor: default;
+  cursor: var(--paw-default);
   animation: pop-in var(--normal) var(--ease-pop) both;
   transform-origin: top left;
 }
@@ -263,7 +263,7 @@ button {
 
 .overlay__sidebar button:disabled {
   opacity: 0.35;
-  cursor: default;
+  cursor: var(--paw-default);
 }
 
 .overlay__sidebar-sep {
@@ -363,6 +363,7 @@ button {
 
 .overlay__text-input {
   position: absolute;
+  cursor: var(--paw-text);
   min-width: 160px;
   margin: 0;
   padding: 0;
@@ -392,7 +393,7 @@ button {
   border-radius: var(--radius-lg);
   overflow: auto;
   translate: -50% 0;
-  cursor: default;
+  cursor: var(--paw-default);
   user-select: text;
   animation: pop-in var(--normal) var(--ease-pop) both;
   transform-origin: top center;
@@ -487,7 +488,7 @@ button {
 
 .ocr__actions button:disabled {
   opacity: 0.45;
-  cursor: default;
+  cursor: var(--paw-default);
 }
 
 .ocr__status {
@@ -628,7 +629,7 @@ button {
   height: 12px;
   border-radius: 6px;
   background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
-  cursor: ew-resize;
+  cursor: var(--paw-ew);
   touch-action: none;
 }
 

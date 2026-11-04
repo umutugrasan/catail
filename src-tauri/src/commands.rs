@@ -331,7 +331,7 @@ pub async fn queue_export(
         .file()
         .set_title(t("export.dialog_title"))
         .set_file_name(format!(
-            "StackScreen_Kuyruk_{}.{extension}",
+            "Catail_Kuyruk_{}.{extension}",
             Local::now().format("%Y-%m-%d_%H-%M-%S")
         ))
         .add_filter(filter, &[extension]);
@@ -454,7 +454,7 @@ fn take_selection(
 }
 
 pub fn default_file_name(now: DateTime<Local>) -> String {
-    format!("StackScreen_{}.png", now.format("%Y-%m-%d_%H-%M-%S"))
+    format!("Catail_{}.png", now.format("%Y-%m-%d_%H-%M-%S"))
 }
 
 pub fn with_png_extension(path: PathBuf) -> PathBuf {
@@ -478,10 +478,7 @@ mod tests {
     #[test]
     fn file_name_has_timestamp() {
         let now = Local.with_ymd_and_hms(2026, 11, 3, 9, 5, 7).unwrap();
-        assert_eq!(
-            default_file_name(now),
-            "StackScreen_2026-11-03_09-05-07.png"
-        );
+        assert_eq!(default_file_name(now), "Catail_2026-11-03_09-05-07.png");
     }
 
     #[test]

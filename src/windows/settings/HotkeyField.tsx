@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { t } from "../../lib/i18n";
-import { hotkeyCheck, hotkeysResume, hotkeysSuspend } from "../../lib/ipc";
+import { hotkeyCheck, hotkeysResume, hotkeysSuspend, onWindowEvent, SettingsEvents } from "../../lib/ipc";
 import { acceleratorFrom, prettyAccelerator } from "./accelerator";
 
 interface Props {
@@ -43,6 +43,8 @@ export function HotkeyField({ value, onChange }: Props) {
       if (accelerator) void finish(accelerator);
     };
     const cancel = () => void finish(null);
+    // Win combos never reach the page (Windows would act on them); the app's hook sends them.
+    const unlistenWin = onWindowEvent<string>(SettingsEvents.hotkeyRecorded, (accelerator) => void finish(accelerator));
 
     window.addEventListener("keydown", onKey, true);
     window.addEventListener("keyup", onKey, true);
@@ -51,6 +53,7 @@ export function HotkeyField({ value, onChange }: Props) {
       window.removeEventListener("keydown", onKey, true);
       window.removeEventListener("keyup", onKey, true);
       window.removeEventListener("blur", cancel);
+      void unlistenWin.then((u) => u());
       void hotkeysResume();
     };
   }, [recording, onChange]);

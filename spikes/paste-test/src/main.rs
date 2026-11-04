@@ -27,7 +27,7 @@ enum Mode {
 }
 
 #[derive(Parser, Debug)]
-#[command(name = "paste-test", about = "ClipQueue Phase 0 paste spike")]
+#[command(name = "paste-test", about = "Catail Phase 0 paste spike")]
 struct Cli {
     /// Paste method to test.
     #[arg(long, value_enum, required_unless_present = "generate_samples")]

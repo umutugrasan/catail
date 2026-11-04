@@ -29,9 +29,9 @@ static UNDO_GENERATION: AtomicU64 = AtomicU64::new(0);
 /// Some apps announce one copy several times; identical content this soon is ignored.
 const DUPLICATE_WINDOW: Duration = Duration::from_millis(700);
 
-/// `%TEMP%/stack-screen`; each run gets its own session folder below it.
+/// `%TEMP%/catail`; each run gets its own session folder below it.
 pub fn temp_root() -> PathBuf {
-    std::env::temp_dir().join("stack-screen")
+    std::env::temp_dir().join("catail")
 }
 
 pub fn add_image<R: Runtime>(app: &AppHandle<R>, img: &RgbaImage) -> Result<()> {

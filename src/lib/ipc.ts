@@ -172,6 +172,11 @@ export const PreviewEvents = {
   show: "preview:show",
 } as const;
 
+export const SettingsEvents = {
+  /** A Windows-key shortcut caught by the keyboard hook while recording. */
+  hotkeyRecorded: "settings:hotkey-recorded",
+} as const;
+
 export const PanelEvents = {
   update: "panel:update",
   opened: "panel:opened",

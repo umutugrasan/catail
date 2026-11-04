@@ -1,9 +1,9 @@
 {
   "app": {
-    "name": "Stack Screen"
+    "name": "Catail"
   },
   "tray": {
-    "tooltip": "Stack Screen — PrintScreen ile ekran görüntüsü al",
+    "tooltip": "Catail — PrintScreen ile ekran görüntüsü al",
     "capture": "Ekran görüntüsü al",
     "settings": "Ayarlar",
     "quit": "Çıkış"
@@ -57,7 +57,7 @@
     "hotkey_failed_title": "Kısayol kaydedilemedi",
     "hotkey_failed_body": "{shortcut} başka bir uygulama tarafından kullanılıyor olabilir.",
     "snipping_title": "PrintScreen, Windows Ekran Alıntısı Aracı'na ayrılmış",
-    "snipping_body": "Ayarlar → Erişilebilirlik → Klavye bölümünde \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın, ardından Stack Screen'i yeniden başlatın.",
+    "snipping_body": "Ayarlar → Erişilebilirlik → Klavye bölümünde \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın, ardından Catail'i yeniden başlatın.",
     "capture_failed": "Ekran görüntüsü alınamadı: {error}",
     "copy_failed": "Görsel panoya kopyalanamadı: {error}",
     "save_failed": "Görsel kaydedilemedi: {error}",
@@ -67,12 +67,12 @@
     "paste_failed": "Yapıştırma başarısız: {error}",
     "release_keys": "Kısayol tuşları bırakılmadı, yapıştırma iptal edildi.",
     "update_available_title": "Güncelleme var",
-    "update_available_body": "Stack Screen {version} hazır. Ayarlar → Güncellemeler bölümünden kurabilirsin.",
+    "update_available_body": "Catail {version} hazır. Ayarlar → Güncellemeler bölümünden kurabilirsin.",
     "export_done": "Kuyruk kaydedildi: {path}",
     "export_failed": "Kuyruk kaydedilemedi: {error}"
   },
   "settings": {
-    "title": "Stack Screen Ayarları",
+    "title": "Catail Ayarları",
     "shortcuts": "Kısayollar",
     "shortcut_region": "Bölge seçerek yakala",
     "shortcut_fullscreen": "Tam ekran yakala (imlecin olduğu ekran)",
@@ -114,9 +114,9 @@
     "rule_add": "+ Kural ekle",
     "rule_remove": "Kuralı sil",
     "general": "Genel",
-    "autostart": "Windows açılınca Stack Screen'i başlat",
+    "autostart": "Windows açılınca Catail'i başlat",
     "autostart_failed": "Başlangıç ayarı değiştirilemedi: {error}",
-    "printscreen_note": "PrintScreen basınca Windows Ekran Alıntısı Aracı açılıyorsa: Ayarlar → Erişilebilirlik → Klavye → \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın ve Stack Screen'i yeniden başlatın (tepsi → Çıkış, sonra tekrar açın).",
+    "printscreen_note": "PrintScreen basınca Windows Ekran Alıntısı Aracı açılıyorsa: Ayarlar → Erişilebilirlik → Klavye → \"Ekran alıntısı aracını açmak için Print Screen tuşunu kullan\" seçeneğini kapatın ve Catail'i yeniden başlatın (tepsi → Çıkış, sonra tekrar açın).",
     "updates": "Güncellemeler",
     "version": "Sürüm {version}",
     "update_check": "Güncellemeleri denetle",

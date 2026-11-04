@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BoredCat, CatFace } from "../../lib/cats";
+import { BoxCat, CatFace } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   BadgeEvents,
@@ -38,7 +38,7 @@ export function Badge() {
     const { undo } = state;
     return (
       <div className="undo">
-        <BoredCat />
+        <BoxCat />
         <button
           type="button"
           className="undo__button"

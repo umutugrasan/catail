@@ -16,7 +16,7 @@ body,
   align-items: center;
   justify-content: center;
   background: rgba(28, 10, 20, 0.62);
-  cursor: zoom-out;
+  cursor: var(--paw);
   animation: fade-in var(--normal) var(--ease-out) both;
 }
 

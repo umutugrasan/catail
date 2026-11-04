@@ -132,7 +132,7 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
         return Ok(window);
     }
     WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App(URL.into()))
-        .title("Stack Screen")
+        .title("Catail")
         .inner_size(WIDTH, HEIGHT)
         .decorations(false)
         .transparent(true)

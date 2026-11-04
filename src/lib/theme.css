@@ -1,4 +1,4 @@
-/* Shared palette and motion for every Stack Screen window. Pastel pink surfaces, deep plum
+/* Shared palette and motion for every Catail window. Pastel pink surfaces, deep plum
    text; motion is short and eased, never bouncy for its own sake. */
 :root {
   --pink-50: #fff6fa;
@@ -38,9 +38,16 @@
 
   color-scheme: light;
 
-  /* Cat-paw cursors for clickable things, and a precise crosshair with a paw for selecting. */
-  --paw: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><g fill='%235b2141' stroke='white' stroke-width='1.6'><ellipse cx='14' cy='18.5' rx='6.5' ry='5.5'/><ellipse cx='6.5' cy='11.5' rx='2.6' ry='3.2'/><ellipse cx='11' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='17' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='21.5' cy='11.5' rx='2.6' ry='3.2'/></g></svg>") 11 4, pointer;
-  --paw-cross: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M10 2v16M2 10h16' stroke='white' stroke-width='3.6' stroke-linecap='round'/><path d='M10 2v16M2 10h16' stroke='%235b2141' stroke-width='1.6' stroke-linecap='round'/><g transform='translate(15 15) scale(0.55)' fill='%23e06d9f' stroke='white' stroke-width='2'><ellipse cx='14' cy='18.5' rx='6.5' ry='5.5'/><ellipse cx='6.5' cy='11.5' rx='2.6' ry='3.2'/><ellipse cx='11' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='17' cy='6.5' rx='2.6' ry='3.2'/><ellipse cx='21.5' cy='11.5' rx='2.6' ry='3.2'/></g></svg>") 10 10, crosshair;
+  /* Cat-paw cursor set (src/lib/cursors, 32px with 2x versions); numbers are the hotspots. */
+  --paw-default: image-set(url("./cursors/paw.png") 1x, url("./cursors/paw@2x.png") 2x) 3 9, default;
+  --paw: image-set(url("./cursors/pointer.png") 1x, url("./cursors/pointer@2x.png") 2x) 10 5, pointer;
+  --paw-grab: image-set(url("./cursors/grab.png") 1x, url("./cursors/grab@2x.png") 2x) 12 9, grab;
+  --paw-grabbing: image-set(url("./cursors/grabbing.png") 1x, url("./cursors/grabbing@2x.png") 2x) 16 16, grabbing;
+  --paw-text: image-set(url("./cursors/text.png") 1x, url("./cursors/text@2x.png") 2x) 16 16, text;
+  --paw-cross: image-set(url("./cursors/cross.png") 1x, url("./cursors/cross@2x.png") 2x) 18 20, crosshair;
+  --paw-ew: image-set(url("./cursors/ew.png") 1x, url("./cursors/ew@2x.png") 2x) 16 16, ew-resize;
+  --paw-move: image-set(url("./cursors/move.png") 1x, url("./cursors/move@2x.png") 2x) 16 16, move;
+  --paw-blocked: image-set(url("./cursors/blocked.png") 1x, url("./cursors/blocked@2x.png") 2x) 9 4, not-allowed;
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
@@ -92,9 +99,21 @@
 
 body,
 button {
-  cursor: default;
+  cursor: var(--paw-default);
 }
 
 button:not(:disabled) {
   cursor: var(--paw);
+}
+
+button:disabled {
+  cursor: var(--paw-blocked);
+}
+
+input[type="text"],
+input[type="number"],
+input:not([type]),
+textarea,
+[contenteditable] {
+  cursor: var(--paw-text);
 }

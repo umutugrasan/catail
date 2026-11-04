@@ -102,9 +102,11 @@ body,
   height: 100%;
 }
 
-.undo .bored-cat {
-  margin-bottom: -2px;
-  animation: cat-arrive 420ms var(--ease-out) backwards;
+.undo .box-cat {
+  margin-bottom: -1px;
+  animation:
+    cat-arrive 420ms var(--ease-out) backwards,
+    box-shuffle 7s var(--ease-in-out) infinite 2s;
 }
 
 @keyframes cat-arrive {

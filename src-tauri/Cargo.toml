@@ -1,6 +1,6 @@
 [package]
-name = "stack-screen"
-version = "0.4.0"
+name = "catail"
+version = "0.5.0"
 description = "Sequential screenshot and clipboard queue"
 edition = "2021"
 publish = false
