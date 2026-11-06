@@ -23,6 +23,10 @@ use windows::Win32::UI::WindowsAndMessaging::{
 const VK_DUMMY: u16 = 0xE8;
 /// Tags our own injected keys so the hook lets them through.
 const INJECTED: usize = 0x4341_544C; // "CATL"
+/// Keyboards repeat a held key at least this often (the longest Windows repeat delay is 1 s).
+/// A down after a longer gap is a new press, even if the old press's key-up never reached us:
+/// Windows skips a low-level hook that answers late, so a key-up can get lost.
+const REPEAT_WINDOW_MS: u32 = 1200;
 
 type Callback = Box<dyn Fn(String) + Send + Sync>;
 
@@ -34,8 +38,9 @@ static BOUND: Mutex<Vec<Shortcut>> = Mutex::new(Vec::new());
 static RECORDING: AtomicBool = AtomicBool::new(false);
 
 thread_local! {
-    /// Keys whose down we swallowed; their repeats and key-up are swallowed too.
-    static SWALLOWED: RefCell<Vec<u32>> = const { RefCell::new(Vec::new()) };
+    /// Keys whose down we swallowed, with the time of their last event; their repeats and
+    /// key-up are swallowed too.
+    static SWALLOWED: RefCell<Vec<(u32, u32)>> = const { RefCell::new(Vec::new()) };
 }
 
 /// Installs the hook on its own thread. `on_shortcut` gets the accelerator of a bound combo,
@@ -78,7 +83,7 @@ unsafe extern "system" fn hook(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRE
         // SAFETY: for HC_ACTION, `lparam` points to a KBDLLHOOKSTRUCT.
         let info = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
         let down = matches!(wparam.0 as u32, WM_KEYDOWN | WM_SYSKEYDOWN);
-        if info.dwExtraInfo != INJECTED && on_key(info.vkCode, down) {
+        if info.dwExtraInfo != INJECTED && on_key(info.vkCode, down, info.time) {
             return LRESULT(1);
         }
     }
@@ -87,16 +92,25 @@ unsafe extern "system" fn hook(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRE
 }
 
 /// Returns true to swallow the key.
-fn on_key(vk: u32, down: bool) -> bool {
-    let swallowed = SWALLOWED.with_borrow(|keys| keys.contains(&vk));
+fn on_key(vk: u32, down: bool, time: u32) -> bool {
+    let last = SWALLOWED.with_borrow(|keys| keys.iter().find(|k| k.0 == vk).map(|k| k.1));
     if !down {
-        if swallowed {
-            SWALLOWED.with_borrow_mut(|keys| keys.retain(|&k| k != vk));
+        if last.is_some() {
+            SWALLOWED.with_borrow_mut(|keys| keys.retain(|k| k.0 != vk));
         }
-        return swallowed;
+        return last.is_some();
     }
-    if swallowed {
-        return true; // auto-repeat of a combo already handled
+    if let Some(last) = last {
+        if is_repeat(last, time) {
+            // Auto-repeat of a combo already handled.
+            SWALLOWED.with_borrow_mut(|keys| {
+                keys.iter_mut()
+                    .filter(|k| k.0 == vk)
+                    .for_each(|k| k.1 = time);
+            });
+            return true;
+        }
+        SWALLOWED.with_borrow_mut(|keys| keys.retain(|k| k.0 != vk));
     }
     let recording = RECORDING.load(Ordering::SeqCst);
     if is_win(vk) {
@@ -124,12 +138,17 @@ fn on_key(vk: u32, down: bool) -> bool {
         }
         ON_SHORTCUT.get()
     };
-    SWALLOWED.with_borrow_mut(|keys| keys.push(vk));
+    SWALLOWED.with_borrow_mut(|keys| keys.push((vk, time)));
     mask_start_menu();
     if let Some(callback) = callback {
         callback(accelerator);
     }
     true
+}
+
+/// Whether a down at `now` continues a press last seen at `last` (tick counts, which wrap).
+fn is_repeat(last: u32, now: u32) -> bool {
+    now.wrapping_sub(last) < REPEAT_WINDOW_MS
 }
 
 /// Presses and releases the dummy key, so releasing Win doesn't open Start.
@@ -249,6 +268,19 @@ mod tests {
             assert!(format!("shift+super+{name_of}").parse::<Shortcut>().is_ok());
         }
         assert_eq!(key_name(0xE8), None);
+    }
+
+    #[test]
+    fn a_long_gap_means_a_new_press() {
+        // Held key: the first repeat comes after the repeat delay (up to 1 s).
+        assert!(is_repeat(5_000, 5_000));
+        assert!(is_repeat(5_000, 6_000));
+        // The key-up was lost and the user pressed again later.
+        assert!(!is_repeat(5_000, 6_200));
+        assert!(!is_repeat(5_000, 60_000));
+        // The tick count wraps after about 49 days.
+        assert!(is_repeat(u32::MAX - 100, 200));
+        assert!(!is_repeat(u32::MAX - 100, 2_000));
     }
 
     #[test]
