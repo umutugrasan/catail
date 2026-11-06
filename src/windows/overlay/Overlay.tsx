@@ -59,16 +59,13 @@ import { Sidebar } from "./Sidebar";
 /** Selections smaller than this (CSS px) count as a stray click. */
 const MIN_SELECTION = 3;
 const TOOLBAR_HEIGHT = 40;
-/** Icon-only buttons; names show as tooltips on hover. */
-const TOOLBAR_BUTTON_WIDTH = 36;
-const TOOLBAR_GAP = 4;
-/** Padding plus border on both sides. */
-const TOOLBAR_CHROME = 10;
 const SIZE_LABEL_HEIGHT = 22;
 /** Eraser reach around the pointer, CSS px. */
 const ERASER_TOLERANCE = 6;
 /** First-render guess; replaced by the measured size. */
 const SIDEBAR_FALLBACK: Size = { width: 46, height: 560 };
+/** First-render guess; the queue button's label makes the real width depend on the language. */
+const TOOLBAR_FALLBACK_WIDTH = 300;
 
 const HANDLES: Handle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
@@ -119,6 +116,7 @@ export function Overlay() {
   // Read by commitText: blur and the next click can both fire for the same draft.
   const textDraftRef = useRef<TextDraft | null>(null);
   const [sidebarSize, setSidebarSize] = useState<Size>(SIDEBAR_FALLBACK);
+  const [toolbarWidth, setToolbarWidth] = useState(TOOLBAR_FALLBACK_WIDTH);
   const [ocr, setOcr] = useState<OcrState | null>(null);
   /** Snapshot flying into the badge after "Kuyruğa ekle"; hides the rest of the UI. */
   const [flying, setFlying] = useState<{ rect: Rect; drawings: string | null } | null>(null);
@@ -128,6 +126,7 @@ export function Overlay() {
   const textRef = useRef<HTMLTextAreaElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   const setTextDraft = useCallback((next: TextDraft | null) => {
     textDraftRef.current = next;
@@ -374,6 +373,8 @@ export function Overlay() {
     if (el && (el.offsetHeight !== sidebarSize.height || el.offsetWidth !== sidebarSize.width)) {
       setSidebarSize({ width: el.offsetWidth, height: el.offsetHeight });
     }
+    const bar = toolbarRef.current;
+    if (bar && bar.offsetWidth !== toolbarWidth) setToolbarWidth(bar.offsetWidth);
   });
 
   const pointFrom = (e: ReactPointerEvent) => clampPoint({ x: e.clientX, y: e.clientY }, viewSize());
@@ -517,11 +518,7 @@ export function Overlay() {
   const imageRect = selection && toImageRect(selection, scale, info);
   const settled =
     selection !== null && flying === null && (drag.kind === "none" || drag.kind === "draw" || drag.kind === "erase");
-  const buttonCount = hasQueue ? 5 : 4;
-  const toolbarSize = {
-    width: buttonCount * TOOLBAR_BUTTON_WIDTH + (buttonCount - 1) * TOOLBAR_GAP + TOOLBAR_CHROME,
-    height: TOOLBAR_HEIGHT,
-  };
+  const toolbarSize = { width: toolbarWidth, height: TOOLBAR_HEIGHT };
   const toolbar = settled && toolbarPosition(selection, toolbarSize, viewSize());
   const sidebar = settled && sidebarPosition(selection, sidebarSize, viewSize());
   const flyoutSide = sidebar && sidebar.x < selection.x ? "left" : "right";
@@ -694,8 +691,9 @@ export function Overlay() {
 
       {toolbar && (
         <div
+          ref={toolbarRef}
           className="overlay__toolbar"
-          style={{ left: toolbar.x, top: toolbar.y, width: toolbarSize.width }}
+          style={{ left: toolbar.x, top: toolbar.y }}
           onPointerDown={(e) => e.stopPropagation()}
         >
           <button
@@ -714,7 +712,7 @@ export function Overlay() {
           </button>
           <button
             type="button"
-            className={primaryClass("enqueue")}
+            className={`overlay__enqueue ${primaryClass("enqueue") ?? ""}`}
             data-label={
               hasQueue
                 ? t("overlay.add_to_queue_title", { count: info.queueCount })
@@ -723,6 +721,7 @@ export function Overlay() {
             onClick={() => void finish("enqueue")}
           >
             <QueueAddIcon />
+            {t(hasQueue ? "overlay.add_to_queue" : "overlay.create_queue")}
           </button>
           {hasQueue && (
             <button

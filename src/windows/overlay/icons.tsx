@@ -190,13 +190,12 @@ export function SaveIcon() {
   );
 }
 
-/** A stack with a plus: start or grow the queue. */
+/** A circled plus: start or grow the queue. Kept distinct from the copy icon's stacked sheets. */
 export function QueueAddIcon() {
   return (
     <Icon>
-      <rect x="4" y="9" width="12" height="11" rx="2" />
-      <path d="M8 5h10a2 2 0 0 1 2 2v9" />
-      <path d="M10 12v5M7.5 14.5h5" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v8M8 12h8" />
     </Icon>
   );
 }

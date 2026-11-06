@@ -216,6 +216,7 @@ html.pressing .overlay--resize-corner * {
   box-sizing: border-box;
   display: flex;
   gap: 4px;
+  width: max-content;
   height: 40px;
   padding: 4px;
   border-radius: var(--radius);
@@ -262,6 +263,12 @@ html.pressing .overlay--resize-corner * {
 .overlay__toolbar button.danger:hover {
   background: var(--danger-soft);
   color: var(--danger);
+}
+
+/* The queue button spells out what it does; its width follows the language. */
+.overlay__toolbar button.overlay__enqueue {
+  flex: 0 0 auto;
+  padding: 0 10px 0 8px;
 }
 
 /* Trash lid tips open on hover. */
