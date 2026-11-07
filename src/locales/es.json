@@ -146,7 +146,14 @@
     "update_error": "No se pudo contactar con el servidor de actualizaciones. Revisa tu conexión o inténtalo más tarde.",
     "save": "Guardar",
     "saved": "Guardado.",
-    "save_failed": "No se pudo guardar la configuración: {error}"
+    "save_failed": "No se pudo guardar la configuración: {error}",
+    "cat": "Tema",
+    "cat_orange": "Gato naranja",
+    "cat_gray": "Atigrado gris",
+    "cat_white": "Gato blanco",
+    "cat_calico": "Gato calicó",
+    "cat_black": "Gato negro (oscuro)",
+    "cat_plain": "Normal"
   },
   "badge": {
     "count": "Cola: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Mostrar la cola",
     "undo": "Deshacer",
     "undo_paste_title": "Devolver a la cola los {count} elementos pegados",
-    "undo_clear_title": "Devolver a la cola los {count} elementos eliminados"
+    "undo_clear_title": "Devolver a la cola los {count} elementos eliminados",
+    "close_queue": "Cerrar la cola",
+    "close_text_mode": "Desactivar el modo texto"
   },
   "panel": {
     "title": "Cola · {count} elementos",

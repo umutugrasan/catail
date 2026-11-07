@@ -101,6 +101,8 @@ fn main() {
             commands::preview_current,
             commands::badge_state,
             commands::ui_language,
+            commands::ui_cat,
+            commands::cat_set,
         ])
         .setup(move |app| {
             // Single-instance has already exited any second copy, so older folders are stale.

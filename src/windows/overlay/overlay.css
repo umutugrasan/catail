@@ -1,6 +1,6 @@
 :root {
-  --dim: rgba(28, 10, 20, 0.45);
-  --selection: var(--pink-400);
+  --dim: rgba(var(--shade-rgb), 0.45);
+  --selection: var(--tint-400);
 }
 
 html,
@@ -365,7 +365,7 @@ html.pressing .overlay--resize-corner * {
 .style-face {
   width: 18px;
   height: 18px;
-  border: 1px solid rgba(59, 23, 41, 0.25);
+  border: 1px solid rgba(var(--ring-rgb), 0.25);
   border-radius: 50%;
   transition: background var(--fast) var(--ease-out);
 }
@@ -425,7 +425,7 @@ html.pressing .overlay--resize-corner * {
 
 .flyout__width span {
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(59, 23, 41, 0.2);
+  box-shadow: 0 0 0 1px rgba(var(--ring-rgb), 0.2);
 }
 
 .overlay__sidebar .flyout__width.active {
@@ -613,7 +613,7 @@ html.pressing .overlay--resize-corner * {
 
 .lang-picker__button:hover,
 .lang-picker__button.open {
-  border-color: var(--pink-400);
+  border-color: var(--tint-400);
   background: var(--surface-hover);
 }
 
@@ -659,8 +659,8 @@ html.pressing .overlay--resize-corner * {
 }
 
 .lang-picker__search:focus {
-  border-color: var(--pink-400);
-  box-shadow: 0 0 0 3px var(--pink-100);
+  border-color: var(--tint-400);
+  box-shadow: 0 0 0 3px var(--tint-100);
 }
 
 .lang-picker__list {
@@ -736,7 +736,7 @@ html.pressing .overlay--resize-corner * {
   gap: 8px;
   padding: 10px 12px;
   border-radius: var(--radius);
-  background: var(--pink-100);
+  background: var(--tint-100);
   animation: rise-in var(--normal) var(--ease-out) both;
 }
 
@@ -759,8 +759,8 @@ html.pressing .overlay--resize-corner * {
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid var(--pink-200);
-  border-top-color: var(--pink-500);
+  border: 2px solid var(--tint-200);
+  border-top-color: var(--tint-500);
   border-radius: 50%;
   animation: spin 700ms linear infinite;
 }
@@ -778,8 +778,8 @@ html.pressing .overlay--resize-corner * {
   z-index: 10;
   padding: 5px 9px;
   border-radius: var(--radius-sm);
-  background: var(--plum-900);
-  color: #fff;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -884,7 +884,7 @@ html.pressing .overlay--resize-corner * {
   flex: 0 0 26px;
   height: 26px;
   border-radius: var(--radius-sm);
-  box-shadow: inset 0 0 0 1px rgba(59, 23, 41, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(var(--ring-rgb), 0.2);
 }
 
 .picker__hex {
@@ -918,7 +918,7 @@ html.pressing .overlay--resize-corner * {
   height: 21px;
   border: 2px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(59, 23, 41, 0.2);
+  box-shadow: 0 0 0 1px rgba(var(--ring-rgb), 0.2);
   transition: transform var(--fast) var(--ease-pop);
 }
 
@@ -928,7 +928,7 @@ html.pressing .overlay--resize-corner * {
 }
 
 .overlay__sidebar .picker__preset.active {
-  box-shadow: 0 0 0 2px var(--plum-700);
+  box-shadow: 0 0 0 2px var(--ink-700);
 }
 
 /* "Kuyruğa ekle": the cat's tail wraps the snapshot and drags it into the badge. */
@@ -937,12 +937,12 @@ html.pressing .overlay--resize-corner * {
   z-index: 6;
   overflow: hidden;
   border-radius: 4px;
-  box-shadow: 0 18px 40px rgba(28, 10, 20, 0.45), 0 0 0 2px var(--pink-300);
+  box-shadow: 0 18px 40px rgba(var(--shade-rgb), 0.45), 0 0 0 2px var(--tint-300);
   will-change: transform, opacity;
   pointer-events: none;
 }
 
-/* Colors sampled from the orange cat (cats/standing.png). Widths and stripe offsets: tail.ts. */
+/* Colors come from the chosen cat (theme.css). Widths and stripe offsets: tail.ts. */
 .overlay__tail {
   position: absolute;
   inset: 0;
@@ -953,21 +953,21 @@ html.pressing .overlay--resize-corner * {
   fill: none;
   stroke-linejoin: round;
   pointer-events: none;
-  filter: drop-shadow(0 3px 5px rgba(28, 10, 20, 0.35));
+  filter: drop-shadow(0 3px 5px rgba(var(--shade-rgb), 0.35));
 }
 
 .overlay__tail-outline {
-  stroke: #c86008;
+  stroke: var(--tail-outline);
   stroke-linecap: round;
 }
 
 .overlay__tail-body {
-  stroke: #f89838;
+  stroke: var(--tail-body);
   stroke-linecap: round;
 }
 
 .overlay__tail-stripes {
-  stroke: #f8c060;
+  stroke: var(--tail-stripe);
   stroke-linecap: butt;
   stroke-dasharray: 11 25;
 }
@@ -978,7 +978,7 @@ html.pressing .overlay--resize-corner * {
 }
 
 .overlay__dim--fly {
-  background: rgba(28, 10, 20, 0.55);
+  background: rgba(var(--shade-rgb), 0.55);
   animation: fade-in 200ms var(--ease-out) both;
 }
 
@@ -1138,8 +1138,8 @@ html.pressing .overlay--resize-corner * {
   height: 22%;
   max-width: 26px;
   max-height: 26px;
-  border: 3px solid var(--pink-400);
-  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 3px rgba(91, 33, 65, 0.45));
+  border: 3px solid var(--tint-400);
+  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 3px rgba(var(--shade-rgb), 0.45));
   animation: qr-breathe 1.8s var(--ease-in-out) infinite 420ms;
 }
 
@@ -1194,7 +1194,7 @@ html.pressing .overlay--resize-corner * {
   gap: 2px;
   max-width: 320px;
   padding: 3px;
-  border: 1px solid var(--pink-400);
+  border: 1px solid var(--tint-400);
   border-radius: 14px;
   background: var(--surface);
   color: var(--text);

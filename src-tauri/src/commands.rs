@@ -11,7 +11,7 @@ use crate::badge::{self, BadgeState};
 use crate::capture::region::{self, SelectionRect};
 use crate::i18n::{t, t_with};
 use crate::panel::{self, ItemView};
-use crate::settings::Settings;
+use crate::settings::{Cat, Settings};
 use crate::state::AppState;
 use crate::translate::{self, Translation};
 use crate::updater::{self, UpdateInfo};
@@ -300,6 +300,24 @@ pub async fn settings_save(app: AppHandle, settings: Settings) -> Result<(), Str
 
 /// Sent to every window after the interface language changes.
 pub const EVENT_LANGUAGE: &str = "app:language";
+pub const EVENT_CAT: &str = "app:cat";
+
+/// The cat every window dresses for.
+#[tauri::command]
+pub fn ui_cat(state: State<'_, AppState>) -> Cat {
+    state.settings.lock().unwrap().cat
+}
+
+/// A cat picked in Settings. Saved and shown everywhere right away, unlike the rest of the page.
+#[tauri::command]
+pub fn cat_set(app: AppHandle, state: State<'_, AppState>, cat: Cat) -> Result<(), String> {
+    let mut settings = state.settings.lock().unwrap();
+    settings.cat = cat;
+    let saved = settings.save();
+    drop(settings);
+    let _ = app.emit(EVENT_CAT, cat);
+    saved.map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))
+}
 
 /// The interface language for the windows' strings, e.g. "en".
 #[tauri::command]

@@ -146,7 +146,14 @@
     "update_error": "Couldn't reach the update server. Check your internet connection or try again later.",
     "save": "Save",
     "saved": "Saved.",
-    "save_failed": "Couldn't save the settings: {error}"
+    "save_failed": "Couldn't save the settings: {error}",
+    "cat": "Theme",
+    "cat_orange": "Orange cat",
+    "cat_gray": "Gray tabby",
+    "cat_white": "White cat",
+    "cat_calico": "Calico cat",
+    "cat_black": "Black cat (dark)",
+    "cat_plain": "Normal"
   },
   "badge": {
     "count": "Queue: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Show the queue",
     "undo": "Undo",
     "undo_paste_title": "Bring the {count} pasted items back into the queue",
-    "undo_clear_title": "Bring the {count} removed items back into the queue"
+    "undo_clear_title": "Bring the {count} removed items back into the queue",
+    "close_queue": "Close the queue",
+    "close_text_mode": "Turn off text mode"
   },
   "panel": {
     "title": "Queue · {count} items",

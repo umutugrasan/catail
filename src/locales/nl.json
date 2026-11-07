@@ -146,7 +146,14 @@
     "update_error": "De updateserver is niet bereikbaar. Controleer je internetverbinding of probeer het later.",
     "save": "Opslaan",
     "saved": "Opgeslagen.",
-    "save_failed": "Instellingen konden niet worden opgeslagen: {error}"
+    "save_failed": "Instellingen konden niet worden opgeslagen: {error}",
+    "cat": "Thema",
+    "cat_orange": "Rode kat",
+    "cat_gray": "Grijze cyperse",
+    "cat_white": "Witte kat",
+    "cat_calico": "Lapjeskat",
+    "cat_black": "Zwarte kat (donker)",
+    "cat_plain": "Normaal"
   },
   "badge": {
     "count": "Wachtrij: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Wachtrij tonen",
     "undo": "Ongedaan maken",
     "undo_paste_title": "De {count} geplakte items terugzetten in de wachtrij",
-    "undo_clear_title": "De {count} verwijderde items terugzetten in de wachtrij"
+    "undo_clear_title": "De {count} verwijderde items terugzetten in de wachtrij",
+    "close_queue": "Wachtrij sluiten",
+    "close_text_mode": "Tekstmodus uitzetten"
   },
   "panel": {
     "title": "Wachtrij · {count} items",

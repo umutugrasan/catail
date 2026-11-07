@@ -1,3 +1,8 @@
+/* This window is see-through. A dark color scheme would paint its empty parts black. */
+html:root {
+  color-scheme: light;
+}
+
 /* The editor borrows the overlay's tool bar and its styles, so its black page is undone here,
    with enough weight to win whichever stylesheet loads last. */
 :root,
@@ -17,7 +22,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(28, 10, 20, 0.62);
+  background: rgba(var(--shade-rgb), 0.62);
   cursor: var(--paw-default);
   animation: fade-in var(--normal) var(--ease-out) both;
 }
@@ -86,7 +91,7 @@ html.pressing .preview__stage--text * {
 
 .preview__crop-shade {
   position: absolute;
-  box-shadow: 0 0 0 100vmax rgba(28, 10, 20, 0.55);
+  box-shadow: 0 0 0 100vmax rgba(var(--shade-rgb), 0.55);
 }
 
 .preview__crop {
@@ -146,7 +151,7 @@ html.pressing .preview__stage--text * {
 }
 
 .preview__button:focus-visible {
-  outline: 2px solid var(--pink-500);
+  outline: 2px solid var(--tint-500);
   outline-offset: 1px;
 }
 
@@ -220,11 +225,11 @@ html.pressing .preview__stage--text * {
   resize: none;
   user-select: text;
   cursor: var(--paw-text);
-  scrollbar-color: var(--pink-300) transparent;
+  scrollbar-color: var(--ink-300) transparent;
 }
 
 .preview__text textarea:focus {
-  border-color: var(--pink-300);
+  border-color: var(--tint-300);
 }
 
 /* Asked before closing with unsaved changes. */
@@ -278,6 +283,6 @@ html.pressing .preview__stage--text * {
 }
 
 .preview__close:hover {
-  background: var(--pink-100);
+  background: var(--tint-100);
   transform: rotate(90deg);
 }

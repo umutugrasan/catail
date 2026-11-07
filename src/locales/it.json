@@ -146,7 +146,14 @@
     "update_error": "Server degli aggiornamenti non raggiungibile. Controlla la connessione o riprova più tardi.",
     "save": "Salva",
     "saved": "Salvato.",
-    "save_failed": "Impossibile salvare le impostazioni: {error}"
+    "save_failed": "Impossibile salvare le impostazioni: {error}",
+    "cat": "Tema",
+    "cat_orange": "Gatto rosso",
+    "cat_gray": "Soriano grigio",
+    "cat_white": "Gatto bianco",
+    "cat_calico": "Gatto calico",
+    "cat_black": "Gatto nero (scuro)",
+    "cat_plain": "Normale"
   },
   "badge": {
     "count": "Coda: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Mostra la coda",
     "undo": "Annulla",
     "undo_paste_title": "Riporta in coda i {count} elementi incollati",
-    "undo_clear_title": "Riporta in coda i {count} elementi eliminati"
+    "undo_clear_title": "Riporta in coda i {count} elementi eliminati",
+    "close_queue": "Chiudi la coda",
+    "close_text_mode": "Disattiva la modalità testo"
   },
   "panel": {
     "title": "Coda · {count} elementi",

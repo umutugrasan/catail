@@ -6,11 +6,13 @@ import {
   badgeState,
   onWindowEvent,
   panelToggle,
+  queueClear,
   queueRestore,
+  textModeSet,
   type BadgeState,
   type LeapStart,
 } from "../../lib/ipc";
-import { UndoIcon } from "../overlay/icons";
+import { CloseIcon, UndoIcon } from "../overlay/icons";
 
 export function Badge() {
   const [state, setState] = useState<BadgeState>({
@@ -107,18 +109,29 @@ export function Badge() {
     );
   }
 
+  // With items, closing is a clear (which also ends text mode), and "Geri al" can undo it.
+  const closeTitle = t(state.count > 0 ? "badge.close_queue" : "badge.close_text_mode");
+  const close = () => void (state.count > 0 ? queueClear() : textModeSet(false));
+
   return (
-    <button
-      type="button"
-      key={bump}
-      className={`badge${state.pasting ? " badge--pasting" : ""}${bump > 0 ? " badge--bump" : ""}`}
-      title={t("badge.open_panel")}
-      onMouseDown={onPress(() => void panelToggle())}
-    >
-      <CatFace />
-      {state.pasting
-        ? t("badge.pasting")
-        : t(state.textMode ? "badge.text_mode" : "badge.count", { count: state.count })}
-    </button>
+    <div className="badge-wrap">
+      <button
+        type="button"
+        key={bump}
+        className={`badge${state.pasting ? " badge--pasting" : ""}${bump > 0 ? " badge--bump" : ""}`}
+        title={t("badge.open_panel")}
+        onMouseDown={onPress(() => void panelToggle())}
+      >
+        <CatFace />
+        {state.pasting
+          ? t("badge.pasting")
+          : t(state.textMode ? "badge.text_mode" : "badge.count", { count: state.count })}
+      </button>
+      {!state.pasting && (
+        <button type="button" className="badge__close" title={closeTitle} onMouseDown={onPress(close)}>
+          <CloseIcon />
+        </button>
+      )}
+    </div>
   );
 }

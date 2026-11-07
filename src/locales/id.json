@@ -146,7 +146,14 @@
     "update_error": "Server pembaruan tidak bisa dihubungi. Periksa koneksi internet atau coba lagi nanti.",
     "save": "Simpan",
     "saved": "Tersimpan.",
-    "save_failed": "Pengaturan tidak bisa disimpan: {error}"
+    "save_failed": "Pengaturan tidak bisa disimpan: {error}",
+    "cat": "Tema",
+    "cat_orange": "Kucing oranye",
+    "cat_gray": "Kucing abu-abu belang",
+    "cat_white": "Kucing putih",
+    "cat_calico": "Kucing belang tiga",
+    "cat_black": "Kucing hitam (gelap)",
+    "cat_plain": "Normal"
   },
   "badge": {
     "count": "Antrean: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Tampilkan antrean",
     "undo": "Urungkan",
     "undo_paste_title": "Kembalikan {count} item yang ditempel ke antrean",
-    "undo_clear_title": "Kembalikan {count} item yang dihapus ke antrean"
+    "undo_clear_title": "Kembalikan {count} item yang dihapus ke antrean",
+    "close_queue": "Tutup antrean",
+    "close_text_mode": "Matikan mode teks"
   },
   "panel": {
     "title": "Antrean · {count} item",

@@ -1,33 +1,220 @@
-/* Shared palette and motion for every Catail window. Pastel pink surfaces, deep plum
-   text; motion is short and eased, never bouncy for its own sake. */
-:root {
-  --pink-50: #fff6fa;
-  --pink-100: #ffe8f1;
-  --pink-200: #fbd2e3;
-  --pink-300: #f7b3cf;
-  --pink-400: #ee93ba;
-  --pink-500: #e06d9f;
-  --plum-900: #3b1729;
-  --plum-700: #5b2141;
-  --plum-500: #8f5a75;
-  --plum-300: #c49aae;
+/* Shared palette and motion for every Catail window. Each cat from Settings is one block below;
+   `data-cat` sits on <html>, and a settings card can carry it too to show that cat's colors. */
+@import "./cat-art.css";
 
-  --surface: var(--pink-50);
+:root,
+[data-cat="orange"] {
+  --tint-50: #fff6fa;
+  --tint-100: #ffe8f1;
+  --tint-200: #fbd2e3;
+  --tint-300: #f7b3cf;
+  --tint-400: #ee93ba;
+  --tint-500: #c9507f;
+  --ink-900: #3b1729;
+  --ink-700: #5b2141;
+  --ink-500: #8a5570;
+  --ink-300: #c49aae;
   --surface-raised: #ffffff;
-  --surface-hover: var(--pink-100);
-  --border: var(--pink-200);
-  --text: var(--plum-900);
-  --text-muted: var(--plum-500);
-  --accent: var(--pink-300);
-  --accent-hover: var(--pink-400);
-  --accent-text: var(--plum-900);
-  --danger: #c8325f;
+  --accent-text: #3b1729;
+  --danger: #b92a55;
   --danger-soft: #ffe1ea;
+  --shadow-rgb: 59, 23, 41;
+  --shade-rgb: 28, 10, 20;
+  --ring-rgb: 59, 23, 41;
+  color-scheme: light;
+
+  --face: #5b2141;
+  --face-rim: #5b2141;
+  --face-eye: #f7b3cf;
+  --face-whisker: #5b2141;
+  --whisker: #fff6fa;
+  --cat-lid: #f99b3e;
+  --cat-lid-edge: #7a3a12;
+  --tail-body: #f89838;
+  --tail-outline: #c86008;
+  --tail-stripe: #f8c060;
+}
+
+[data-cat="gray"] {
+  --tint-50: #f5f6f8;
+  --tint-100: #e9ecf0;
+  --tint-200: #d5d9e0;
+  --tint-300: #b4bcc9;
+  --tint-400: #97a1b1;
+  --tint-500: #5a6472;
+  --ink-900: #20242b;
+  --ink-700: #333944;
+  --ink-500: #5a6472;
+  --ink-300: #98a1ae;
+  --surface-raised: #ffffff;
+  --accent-text: #20242b;
+  --danger: #b92a55;
+  --danger-soft: #fbe3ea;
+  --shadow-rgb: 32, 36, 43;
+  --shade-rgb: 16, 18, 22;
+  --ring-rgb: 32, 36, 43;
+  color-scheme: light;
+
+  --face: #6d7480;
+  --face-rim: #4a5059;
+  --face-eye: #fff3b8;
+  --face-whisker: #4a5059;
+  --whisker: #f5f6f8;
+  --cat-lid: #8e96a3;
+  --cat-lid-edge: #4a5059;
+  --tail-body: #8e96a3;
+  --tail-outline: #4a5059;
+  --tail-stripe: #5f6672;
+}
+
+[data-cat="white"] {
+  --tint-50: #fffefc;
+  --tint-100: #f6f3ee;
+  --tint-200: #e7e2da;
+  --tint-300: #b9d9f2;
+  --tint-400: #98c6ea;
+  --tint-500: #3a7fb8;
+  --ink-900: #26231f;
+  --ink-700: #3d3933;
+  --ink-500: #6b655c;
+  --ink-300: #a39c91;
+  --surface-raised: #ffffff;
+  --accent-text: #1d2a35;
+  --danger: #b92a55;
+  --danger-soft: #fbe3ea;
+  --shadow-rgb: 38, 35, 31;
+  --shade-rgb: 20, 18, 16;
+  --ring-rgb: 38, 35, 31;
+  color-scheme: light;
+
+  --face: #fbf8f4;
+  --face-rim: #8b8580;
+  --face-eye: #3a3633;
+  --face-whisker: #8b8580;
+  --whisker: #fffefc;
+  --cat-lid: #f6f1ea;
+  --cat-lid-edge: #8b8580;
+  --tail-body: #fbf8f4;
+  --tail-outline: #8b8580;
+  --tail-stripe: #e4ddd4;
+}
+
+[data-cat="calico"] {
+  --tint-50: #fff8ef;
+  --tint-100: #fdeedb;
+  --tint-200: #f5dcbc;
+  --tint-300: #f6b877;
+  --tint-400: #ef9f52;
+  --tint-500: #b5601a;
+  --ink-900: #2e2018;
+  --ink-700: #4a3526;
+  --ink-500: #75604f;
+  --ink-300: #b39c8a;
+  --surface-raised: #ffffff;
+  --accent-text: #2e2018;
+  --danger: #b92a55;
+  --danger-soft: #fce4e6;
+  --shadow-rgb: 46, 32, 24;
+  --shade-rgb: 24, 16, 12;
+  --ring-rgb: 46, 32, 24;
+  color-scheme: light;
+
+  --face: #fff4e6;
+  --face-rim: #4a3526;
+  --face-ear-left: #f39a3d;
+  --face-ear-right: #2b2622;
+  --face-eye: #2b2622;
+  --face-whisker: #4a3526;
+  --whisker: #fff8ef;
+  --cat-lid: #fff4e6;
+  --cat-lid-edge: #4a3526;
+  --tail-body: #fff4e6;
+  --tail-outline: #4a3526;
+  --tail-stripe: #f39a3d;
+}
+
+/* The dark mode. Outlines stay light, or the cat would vanish into the background. */
+[data-cat="black"] {
+  --tint-50: #1b1a1e;
+  --tint-100: #2a282f;
+  --tint-200: #3b3842;
+  --tint-300: #f2c94c;
+  --tint-400: #e0b53a;
+  --tint-500: #f2c94c;
+  --ink-900: #f3f0f6;
+  --ink-700: #dcd7e2;
+  --ink-500: #a9a3b2;
+  --ink-300: #6f6a78;
+  --surface-raised: #242228;
+  --accent-text: #1b1a1e;
+  --danger: #ff8aa5;
+  --danger-soft: #43202b;
+  --shadow-rgb: 0, 0, 0;
+  --shade-rgb: 8, 6, 10;
+  --ring-rgb: 255, 255, 255;
+  color-scheme: dark;
+
+  --face: #141317;
+  --face-rim: #8b8694;
+  --face-eye: #f2c94c;
+  --face-whisker: #cfcad6;
+  --whisker: #e6e2ea;
+  --cat-lid: #26242a;
+  --cat-lid-edge: #8b8694;
+  --tail-body: #26242a;
+  --tail-outline: #8b8694;
+  --tail-stripe: #3f3c45;
+}
+
+/* No cat at all: plain colors, the system's mouse pointers. */
+[data-cat="plain"] {
+  --tint-50: #ffffff;
+  --tint-100: #f2f2f2;
+  --tint-200: #dcdcdc;
+  --tint-300: #0067c0;
+  --tint-400: #005aa8;
+  --tint-500: #0067c0;
+  --ink-900: #1b1b1b;
+  --ink-700: #2b2b2b;
+  --ink-500: #5f5f5f;
+  --ink-300: #a0a0a0;
+  --surface-raised: #ffffff;
+  --accent-text: #ffffff;
+  --danger: #c42b1c;
+  --danger-soft: #fdecea;
+  --shadow-rgb: 0, 0, 0;
+  --shade-rgb: 0, 0, 0;
+  --ring-rgb: 0, 0, 0;
+  color-scheme: light;
+
+  /* Never drawn here, but a card or test may read them. */
+  --face: #5f5f5f;
+  --face-rim: #5f5f5f;
+  --face-eye: #ffffff;
+  --face-whisker: #5f5f5f;
+  --whisker: #ffffff;
+  --cat-lid: #5f5f5f;
+  --cat-lid-edge: #2b2b2b;
+  --tail-body: #dcdcdc;
+  --tail-outline: #5f5f5f;
+  --tail-stripe: #a0a0a0;
+}
+
+:root {
+  --surface: var(--tint-50);
+  --surface-hover: var(--tint-100);
+  --border: var(--tint-200);
+  --text: var(--ink-900);
+  --text-muted: var(--ink-500);
+  --accent: var(--tint-300);
+  --accent-hover: var(--tint-400);
+  --tooltip-bg: var(--ink-900);
+  --tooltip-fg: var(--tint-50);
 
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 14px;
-  --shadow: 0 10px 28px rgba(59, 23, 41, 0.18), 0 1px 3px rgba(59, 23, 41, 0.12);
+  --shadow: 0 10px 28px rgba(var(--shadow-rgb), 0.18), 0 1px 3px rgba(var(--shadow-rgb), 0.12);
 
   --ease-out: cubic-bezier(0.22, 0.9, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -36,24 +223,8 @@
   --fast: 140ms;
   --normal: 220ms;
 
-  color-scheme: light;
-
-  /* Cat-paw cursor set (src/lib/cursors, with 2x versions); numbers are the hotspots. Every paw
-     body is 30px tall, whatever arrows or sparkles stick out of it. */
-  --paw-default: image-set(url("./cursors/paw.png") 1x, url("./cursors/paw@2x.png") 2x) 2 9, default;
-  --paw: image-set(url("./cursors/pointer.png") 1x, url("./cursors/pointer@2x.png") 2x) 7 7, pointer;
-  --paw-grab: image-set(url("./cursors/grab.png") 1x, url("./cursors/grab@2x.png") 2x) 9 7, grab;
-  --paw-grabbing: image-set(url("./cursors/grabbing.png") 1x, url("./cursors/grabbing@2x.png") 2x) 9 4, grabbing;
   /* While the left button is held (pressCursor.ts); same spot of the paw as --paw. */
   --paw-press: var(--paw-grabbing);
-  --paw-text: image-set(url("./cursors/text.png") 1x, url("./cursors/text@2x.png") 2x) 7 16, text;
-  --paw-cross: image-set(url("./cursors/cross.png") 1x, url("./cursors/cross@2x.png") 2x) 16 18, crosshair;
-  --paw-ew: image-set(url("./cursors/ew.png") 1x, url("./cursors/ew@2x.png") 2x) 22 15, ew-resize;
-  --paw-move: image-set(url("./cursors/move.png") 1x, url("./cursors/move@2x.png") 2x) 26 25, move;
-  --paw-ns: image-set(url("./cursors/ns.png") 1x, url("./cursors/ns@2x.png") 2x) 14 22, ns-resize;
-  --paw-nwse: image-set(url("./cursors/corner.png") 1x, url("./cursors/corner@2x.png") 2x) 18 18, nwse-resize;
-  --paw-nesw: image-set(url("./cursors/corner.png") 1x, url("./cursors/corner@2x.png") 2x) 18 18, nesw-resize;
-  --paw-blocked: image-set(url("./cursors/blocked.png") 1x, url("./cursors/blocked@2x.png") 2x) 8 5, not-allowed;
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
@@ -128,4 +299,9 @@ textarea,
 html.pressing,
 html.pressing * {
   cursor: var(--paw-press) !important;
+}
+
+/* The plain theme's pointer doesn't change while the button is held. */
+:root[data-cat="plain"] {
+  --paw-press: auto;
 }

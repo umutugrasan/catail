@@ -146,7 +146,14 @@
     "update_error": "업데이트 서버에 연결할 수 없습니다. 인터넷 연결을 확인하거나 나중에 다시 시도하세요.",
     "save": "저장",
     "saved": "저장했습니다.",
-    "save_failed": "설정을 저장할 수 없습니다: {error}"
+    "save_failed": "설정을 저장할 수 없습니다: {error}",
+    "cat": "테마",
+    "cat_orange": "치즈 고양이",
+    "cat_gray": "회색 태비",
+    "cat_white": "흰 고양이",
+    "cat_calico": "삼색 고양이",
+    "cat_black": "검은 고양이(어둡게)",
+    "cat_plain": "기본"
   },
   "badge": {
     "count": "대기열: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "대기열 보기",
     "undo": "되돌리기",
     "undo_paste_title": "붙여 넣은 {count}개를 대기열로 되돌리기",
-    "undo_clear_title": "삭제한 {count}개를 대기열로 되돌리기"
+    "undo_clear_title": "삭제한 {count}개를 대기열로 되돌리기",
+    "close_queue": "대기열 닫기",
+    "close_text_mode": "텍스트 모드 끄기"
   },
   "panel": {
     "title": "대기열 · {count}개",

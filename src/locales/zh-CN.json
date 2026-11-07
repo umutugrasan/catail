@@ -146,7 +146,14 @@
     "update_error": "无法连接更新服务器。请检查网络连接或稍后再试。",
     "save": "保存",
     "saved": "已保存。",
-    "save_failed": "无法保存设置：{error}"
+    "save_failed": "无法保存设置：{error}",
+    "cat": "主题",
+    "cat_orange": "橘猫",
+    "cat_gray": "灰色虎斑猫",
+    "cat_white": "白猫",
+    "cat_calico": "三花猫",
+    "cat_black": "黑猫(深色)",
+    "cat_plain": "普通"
   },
   "badge": {
     "count": "队列：{count}",
@@ -155,7 +162,9 @@
     "open_panel": "显示队列",
     "undo": "撤销",
     "undo_paste_title": "将已粘贴的 {count} 项放回队列",
-    "undo_clear_title": "将已删除的 {count} 项放回队列"
+    "undo_clear_title": "将已删除的 {count} 项放回队列",
+    "close_queue": "关闭队列",
+    "close_text_mode": "关闭文本模式"
   },
   "panel": {
     "title": "队列 · {count} 项",

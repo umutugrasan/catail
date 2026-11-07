@@ -146,7 +146,14 @@
     "update_error": "Güncelleme sunucusuna ulaşılamadı. İnternet bağlantını kontrol et ya da daha sonra dene.",
     "save": "Kaydet",
     "saved": "Kaydedildi.",
-    "save_failed": "Ayarlar kaydedilemedi: {error}"
+    "save_failed": "Ayarlar kaydedilemedi: {error}",
+    "cat": "Tema",
+    "cat_orange": "Turuncu kedi",
+    "cat_gray": "Gri tekir",
+    "cat_white": "Beyaz kedi",
+    "cat_calico": "Alacalı kedi",
+    "cat_black": "Siyah kedi (koyu)",
+    "cat_plain": "Normal"
   },
   "badge": {
     "count": "Kuyruk: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Kuyruğu göster",
     "undo": "Geri al",
     "undo_paste_title": "Yapıştırılan {count} öğeyi kuyruğa geri getir",
-    "undo_clear_title": "Silinen {count} öğeyi kuyruğa geri getir"
+    "undo_clear_title": "Silinen {count} öğeyi kuyruğa geri getir",
+    "close_queue": "Kuyruğu kapat",
+    "close_text_mode": "Metin modunu kapat"
   },
   "panel": {
     "title": "Kuyruk · {count} öğe",

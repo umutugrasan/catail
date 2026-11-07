@@ -2,10 +2,18 @@
 
 use tauri::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::window::Color;
 use tauri::{AppHandle, Manager, Runtime, WebviewUrl, WebviewWindowBuilder};
 
 use crate::capture::region;
 use crate::i18n::t;
+use crate::settings::Cat;
+use crate::state::AppState;
+
+/// Matches `--tint-50` of the black cat's theme.
+const DARK_WINDOW: Color = Color(27, 26, 30, 255);
+/// Matches `--tint-50` of the other themes, near enough for the moment before the page loads.
+const LIGHT_WINDOW: Color = Color(255, 250, 250, 255);
 
 const MENU_CAPTURE: &str = "capture";
 const MENU_SETTINGS: &str = "settings";
@@ -100,8 +108,17 @@ pub fn open_settings<R: Runtime>(app: &AppHandle<R>) {
     .min_inner_size(520.0, 480.0)
     .maximizable(false)
     .center()
+    // Dark from the first frame, without a white flash before the page has loaded.
+    .background_color(window_background(app))
     .build();
     if let Err(e) = result {
         eprintln!("cannot open settings: {e}");
+    }
+}
+
+fn window_background<R: Runtime>(app: &AppHandle<R>) -> Color {
+    match app.state::<AppState>().settings.lock().unwrap().cat {
+        Cat::Black => DARK_WINDOW,
+        _ => LIGHT_WINDOW,
     }
 }

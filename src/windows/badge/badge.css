@@ -1,3 +1,8 @@
+/* This window is see-through. A dark color scheme would paint its empty parts black. */
+html:root {
+  color-scheme: light;
+}
+
 /* The window is transparent; only the pill is painted. */
 html,
 body,
@@ -35,6 +40,57 @@ body,
   margin-bottom: 0;
 }
 
+.badge-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* ✕ on the pill's inner corner, there only while the pointer is on the badge. */
+.badge__close {
+  position: absolute;
+  top: -3px;
+  left: -5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: var(--paw);
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease-out), background var(--fast) var(--ease-out),
+    color var(--fast) var(--ease-out);
+}
+
+.badge__close svg {
+  width: 11px;
+  height: 11px;
+}
+
+.badge-wrap:hover .badge__close {
+  opacity: 1;
+}
+
+.badge__close:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* In a left corner the pill touches the window's edge, so the ✕ goes on the other end. */
+#root[data-corner$="left"] .badge__close {
+  right: -5px;
+  left: auto;
+}
+
+/* The pill sits lower in a bottom corner; up top there's less room above it. */
+#root[data-corner^="top"] .badge__close {
+  top: 0;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -42,10 +98,10 @@ body,
   box-sizing: border-box;
   height: 32px;
   padding: 0 14px;
-  border: 1px solid var(--pink-400);
+  border: 1px solid var(--tint-400);
   border-radius: 16px;
-  background: var(--pink-300);
-  color: var(--plum-900);
+  background: var(--tint-300);
+  color: var(--accent-text);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -58,7 +114,7 @@ body,
 }
 
 .badge:hover {
-  background: var(--pink-400);
+  background: var(--tint-400);
   transform: translateY(-1px);
 }
 
@@ -176,10 +232,10 @@ body,
   margin-bottom: 4px;
   padding: 0 12px 0 10px;
   overflow: hidden;
-  border: 1px solid var(--pink-400);
+  border: 1px solid var(--tint-400);
   border-radius: 16px;
   background: var(--surface-raised);
-  color: var(--plum-900);
+  color: var(--ink-900);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -190,7 +246,7 @@ body,
 }
 
 .undo__button:hover {
-  background: var(--pink-100);
+  background: var(--tint-100);
   transform: translateY(-1px);
 }
 
@@ -225,7 +281,7 @@ body,
   left: 10px;
   height: 2px;
   border-radius: 1px;
-  background: var(--pink-400);
+  background: var(--tint-400);
   transform-origin: left center;
   animation-name: drain;
   animation-timing-function: linear;

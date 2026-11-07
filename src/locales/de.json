@@ -146,7 +146,14 @@
     "update_error": "Der Update-Server ist nicht erreichbar. Prüfe deine Internetverbindung oder versuche es später.",
     "save": "Speichern",
     "saved": "Gespeichert.",
-    "save_failed": "Einstellungen konnten nicht gespeichert werden: {error}"
+    "save_failed": "Einstellungen konnten nicht gespeichert werden: {error}",
+    "cat": "Design",
+    "cat_orange": "Orange Katze",
+    "cat_gray": "Graue Tigerkatze",
+    "cat_white": "Weiße Katze",
+    "cat_calico": "Glückskatze",
+    "cat_black": "Schwarze Katze (dunkel)",
+    "cat_plain": "Normal"
   },
   "badge": {
     "count": "Warteschlange: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Warteschlange zeigen",
     "undo": "Rückgängig",
     "undo_paste_title": "Die {count} eingefügten Elemente zurück in die Warteschlange holen",
-    "undo_clear_title": "Die {count} entfernten Elemente zurück in die Warteschlange holen"
+    "undo_clear_title": "Die {count} entfernten Elemente zurück in die Warteschlange holen",
+    "close_queue": "Warteschlange schließen",
+    "close_text_mode": "Textmodus beenden"
   },
   "panel": {
     "title": "Warteschlange · {count} Elemente",

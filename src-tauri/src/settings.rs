@@ -98,6 +98,23 @@ pub struct Settings {
     /// Language "Çevir" translates into; the last one picked.
     pub translate_to: String,
     pub badge_corner: BadgeCorner,
+    /// Which cat the app looks like; the theme follows it.
+    pub cat: Cat,
+}
+
+/// Unknown names, from a newer version's settings file, fall back to the orange cat.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Cat {
+    Gray,
+    White,
+    Calico,
+    Black,
+    /// No cat: plain colors, system pointers, no tail animation.
+    Plain,
+    #[default]
+    #[serde(other)]
+    Orange,
 }
 
 impl Default for Settings {
@@ -115,6 +132,7 @@ impl Default for Settings {
             language: None,
             translate_to: "tr".into(),
             badge_corner: BadgeCorner::BottomRight,
+            cat: Cat::default(),
         }
     }
 }
@@ -213,6 +231,18 @@ fn migrate_from_old_name(path: &Path) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unknown_cats_become_the_orange_one() {
+        let parsed: Settings = serde_json::from_str(r#"{"cat":"tiger"}"#).unwrap();
+        assert_eq!(parsed.cat, Cat::Orange);
+        let parsed: Settings = serde_json::from_str(r#"{"cat":"black"}"#).unwrap();
+        assert_eq!(parsed.cat, Cat::Black);
+        assert_eq!(serde_json::to_string(&Cat::Calico).unwrap(), "\"calico\"");
+        // Files from before cats existed keep the look they had.
+        let parsed: Settings = serde_json::from_str("{}").unwrap();
+        assert_eq!(parsed.cat, Cat::Orange);
+    }
 
     #[test]
     fn defaults_match_spec() {

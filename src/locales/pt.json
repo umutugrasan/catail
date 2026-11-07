@@ -146,7 +146,14 @@
     "update_error": "Não foi possível acessar o servidor de atualizações. Verifique sua conexão ou tente mais tarde.",
     "save": "Salvar",
     "saved": "Salvo.",
-    "save_failed": "Não foi possível salvar as configurações: {error}"
+    "save_failed": "Não foi possível salvar as configurações: {error}",
+    "cat": "Tema",
+    "cat_orange": "Gato laranja",
+    "cat_gray": "Tigrado cinzento",
+    "cat_white": "Gato branco",
+    "cat_calico": "Gato tricolor",
+    "cat_black": "Gato preto (escuro)",
+    "cat_plain": "Normal"
   },
   "badge": {
     "count": "Fila: {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Mostrar a fila",
     "undo": "Desfazer",
     "undo_paste_title": "Trazer de volta à fila os {count} itens colados",
-    "undo_clear_title": "Trazer de volta à fila os {count} itens removidos"
+    "undo_clear_title": "Trazer de volta à fila os {count} itens removidos",
+    "close_queue": "Fechar a fila",
+    "close_text_mode": "Desativar o modo de texto"
   },
   "panel": {
     "title": "Fila · {count} itens",

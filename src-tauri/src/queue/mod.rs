@@ -41,6 +41,7 @@ pub fn add_image<R: Runtime>(app: &AppHandle<R>, img: &RgbaImage) -> Result<()> 
         .lock()
         .unwrap()
         .push_image(img)?;
+    withdraw_undo(app);
     changed(app);
     Ok(())
 }
@@ -52,7 +53,18 @@ pub fn add_text<R: Runtime>(app: &AppHandle<R>, text: String, source_app: Option
         .lock()
         .unwrap()
         .push(QueueItem::text(text, source_app));
+    withdraw_undo(app);
     changed(app);
+}
+
+/// Something new joined the queue: the user has moved on, so "Geri al" for the last paste or
+/// clear gives way to the new queue, and what it would have brought back is let go.
+fn withdraw_undo<R: Runtime>(app: &AppHandle<R>) {
+    let state = app.state::<AppState>();
+    let offered = state.undo.lock().unwrap().take().is_some();
+    if offered {
+        state.queue.lock().unwrap().discard_set_aside();
+    }
 }
 
 pub fn undo_last<R: Runtime>(app: &AppHandle<R>) {

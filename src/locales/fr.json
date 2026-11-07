@@ -146,7 +146,14 @@
     "update_error": "Serveur de mise à jour injoignable. Vérifiez votre connexion ou réessayez plus tard.",
     "save": "Enregistrer",
     "saved": "Enregistré.",
-    "save_failed": "Impossible d’enregistrer les paramètres : {error}"
+    "save_failed": "Impossible d’enregistrer les paramètres : {error}",
+    "cat": "Thème",
+    "cat_orange": "Chat roux",
+    "cat_gray": "Tigré gris",
+    "cat_white": "Chat blanc",
+    "cat_calico": "Chat calico",
+    "cat_black": "Chat noir (sombre)",
+    "cat_plain": "Normal"
   },
   "badge": {
     "count": "File : {count}",
@@ -155,7 +162,9 @@
     "open_panel": "Afficher la file",
     "undo": "Annuler",
     "undo_paste_title": "Remettre les {count} éléments collés dans la file",
-    "undo_clear_title": "Remettre les {count} éléments supprimés dans la file"
+    "undo_clear_title": "Remettre les {count} éléments supprimés dans la file",
+    "close_queue": "Fermer la file",
+    "close_text_mode": "Quitter le mode texte"
   },
   "panel": {
     "title": "File · {count} éléments",

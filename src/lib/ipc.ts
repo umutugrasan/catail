@@ -62,7 +62,14 @@ export interface Settings {
   /** Language "Çevir" translates into. */
   translate_to: string;
   badge_corner: BadgeCorner;
+  /** Which cat the app looks like; the theme follows it. */
+  cat: Cat;
 }
+
+export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "plain";
+export const CATS: Cat[] = ["orange", "gray", "white", "calico", "black", "plain"];
+/** Takes effect right away, in every window. */
+export const catSet = (cat: Cat) => invoke<void>("cat_set", { cat });
 
 export type BadgeCorner = "bottom-right" | "bottom-center" | "bottom-left" | "top-right" | "top-center" | "top-left";
 export const BADGE_CORNERS: BadgeCorner[] = [

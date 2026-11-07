@@ -220,6 +220,8 @@ export function Overlay() {
   const flyToBadge = useCallback(async () => {
     if (!info || !selection || info.flyX == null || info.flyY == null) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // The plain theme has no cat, so no tail: the capture just goes to the queue.
+    if (document.documentElement.dataset.cat === "plain") return;
     const scale = info.width / window.innerWidth;
     setFlying({ rect: selection, drawings: shapes.length > 0 ? (canvasRef.current?.toDataURL() ?? null) : null });
     await new Promise(requestAnimationFrame);

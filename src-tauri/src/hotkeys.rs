@@ -131,6 +131,8 @@ pub fn handle<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut, event: Shortc
 }
 
 fn fire<R: Runtime>(app: &AppHandle<R>, shortcut: &Shortcut) {
+    #[cfg(windows)]
+    crate::winkeys::diag(format!("fire {}", shortcut.into_string())); // TEMP-DIAG
     let action = if *shortcut == queue_paste_shortcut() {
         Some(Action::PasteQueue)
     } else {
@@ -228,6 +230,8 @@ pub fn apply<R: Runtime>(
     previous: &HotkeyMap,
 ) -> Result<(), HotkeyError> {
     let next = bindings(map)?;
+    #[cfg(windows)]
+    crate::winkeys::diag(format!("apply {}", map.region)); // TEMP-DIAG
     unregister_active(app);
     let mut registered = Vec::new();
     for (shortcut, action, accelerator) in &next {
@@ -269,12 +273,16 @@ fn register_best_effort<R: Runtime>(app: &AppHandle<R>, map: &HotkeyMap) -> Vec<
 /// Lets the settings window record a shortcut that is currently bound (e.g. PrintScreen):
 /// while suspended, no global shortcut swallows the keys. Must not run on the main thread.
 pub fn suspend<R: Runtime>(app: &AppHandle<R>) {
+    #[cfg(windows)]
+    crate::winkeys::diag("suspend".into()); // TEMP-DIAG
     unregister_active(app);
     #[cfg(windows)]
     crate::winkeys::set_recording(true);
 }
 
 pub fn resume<R: Runtime>(app: &AppHandle<R>) {
+    #[cfg(windows)]
+    crate::winkeys::diag("resume".into()); // TEMP-DIAG
     #[cfg(windows)]
     crate::winkeys::set_recording(false);
     if ACTIVE.lock().unwrap().is_empty() {

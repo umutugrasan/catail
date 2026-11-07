@@ -187,9 +187,9 @@ button {
 }
 
 .panel__tile:hover {
-  border-color: var(--pink-400);
+  border-color: var(--tint-400);
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(59, 23, 41, 0.14);
+  box-shadow: var(--shadow);
 }
 
 @keyframes tile-in {
@@ -211,7 +211,7 @@ button {
 }
 
 .panel__tile--text {
-  background: var(--pink-100);
+  background: var(--tint-100);
 }
 
 .panel__text {
@@ -235,7 +235,7 @@ button {
   padding: 0 4px;
   box-sizing: border-box;
   border-radius: 8px;
-  background: rgba(59, 23, 41, 0.72);
+  background: rgba(var(--shade-rgb), 0.72);
   color: #fff;
   font-size: 10px;
   font-weight: 600;
@@ -258,7 +258,7 @@ button {
   justify-content: center;
   gap: 4px;
   padding: 4px;
-  background: linear-gradient(to top, rgba(59, 23, 41, 0.55), transparent);
+  background: linear-gradient(to top, rgba(var(--shade-rgb), 0.55), transparent);
   opacity: 0;
   transform: translateY(8px);
   transition: opacity var(--fast) var(--ease-out), transform var(--normal) var(--ease-out);
@@ -277,8 +277,8 @@ button {
   height: 24px;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--plum-700);
+  background: var(--surface-raised);
+  color: var(--text);
   cursor: var(--paw);
   transition: transform var(--fast) var(--ease-pop), background var(--fast) var(--ease-out),
     color var(--fast) var(--ease-out);
@@ -377,7 +377,7 @@ button {
 }
 
 .panel__button--danger:hover {
-  border-color: #f4b9c9;
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
   background: var(--danger-soft);
   color: var(--danger);
 }
@@ -432,8 +432,8 @@ button {
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid var(--pink-200);
-  border-top-color: var(--pink-500);
+  border: 2px solid var(--tint-200);
+  border-top-color: var(--tint-500);
   border-radius: 50%;
   animation: spin 700ms linear infinite;
 }
@@ -447,8 +447,8 @@ button {
   z-index: 10;
   padding: 5px 9px;
   border-radius: var(--radius-sm);
-  background: var(--plum-900);
-  color: #fff;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
   font-size: 11.5px;
   font-weight: 500;
   white-space: nowrap;

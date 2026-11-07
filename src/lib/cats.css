@@ -4,16 +4,33 @@
   flex: none;
 }
 
+/* The pictures come from the chosen cat (cat-art.css); `src` holds the orange one. */
+.box-cat__head img {
+  content: var(--cat-head);
+}
+
+.leaping-cat__body {
+  content: var(--cat-body);
+}
+
+.leaping-cat__foot--left {
+  content: var(--cat-foot-left);
+}
+
+.leaping-cat__foot--right {
+  content: var(--cat-foot-right);
+}
+
 /* Whiskers: light with a soft shadow, so they read over both dark and bright screens. */
 .whiskers {
   position: absolute;
   top: 50%;
   margin-top: -13px;
   fill: none;
-  stroke: var(--pink-50);
+  stroke: var(--whisker);
   stroke-width: 1.5;
   stroke-linecap: round;
-  filter: drop-shadow(0 1px 1px rgba(59, 23, 41, 0.6));
+  filter: drop-shadow(0 1px 1px rgba(var(--shade-rgb), 0.6));
   pointer-events: none;
   animation: whisker-twitch 7s var(--ease-in-out) infinite;
   transition: rotate var(--normal) var(--ease-pop);
@@ -73,7 +90,7 @@
 }
 
 .cat-ear__inner {
-  fill: var(--pink-200);
+  fill: var(--tint-200);
 }
 
 .cat-face__eyes {
@@ -227,8 +244,8 @@
   width: 14%;
   height: 17.5%;
   border-radius: 50% 50% 40% 40%;
-  background: #f99b3e;
-  box-shadow: 0 1px 0 #7a3a12;
+  background: var(--cat-lid);
+  box-shadow: 0 1px 0 var(--cat-lid-edge);
   transform-origin: 50% 0;
   animation: lid-droop 5.2s var(--ease-in-out) infinite;
 }
@@ -412,4 +429,14 @@
     opacity: 0;
     transform: translate(-290%, -10%) rotate(-24deg) scale(0.9);
   }
+}
+
+/* The plain theme has no cats anywhere, except the other themes' cards in Settings. */
+:root[data-cat="plain"] :not(.cat-card) > .leaping-cat,
+:root[data-cat="plain"] .cat-face,
+:root[data-cat="plain"] .box-cat,
+:root[data-cat="plain"] .undo__cat,
+:root[data-cat="plain"] .whiskers,
+:root[data-cat="plain"] .cat-ear {
+  display: none;
 }

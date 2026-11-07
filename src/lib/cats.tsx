@@ -9,20 +9,22 @@ import footRight from "./cats/foot-right.png";
 import standingBody from "./cats/standing-body.png";
 import "./cats.css";
 
-const PLUM = "#5b2141";
-const PINK = "#f7b3cf";
-
-/** Tiny face with whiskers; sits in the badge where a status dot would be. */
+/** Tiny face with whiskers, in the chosen cat's colors; sits in the badge where a status dot would be. */
 export function CatFace({ size = 18 }: { size?: number }) {
   return (
     <svg className="cat-face" viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
-      <path d="M5 9.5 6.2 3l4.3 3.6h3L17.8 3 19 9.5c1 1.2 1.5 2.7 1.5 4.3C20.5 18 16.7 21 12 21s-8.5-3-8.5-7.2c0-1.6.5-3.1 1.5-4.3Z" fill={PLUM} />
-      <g className="cat-face__eyes" fill={PINK}>
+      <path
+        d="M5 9.5 6.2 3l4.3 3.6h3L17.8 3 19 9.5c1 1.2 1.5 2.7 1.5 4.3C20.5 18 16.7 21 12 21s-8.5-3-8.5-7.2c0-1.6.5-3.1 1.5-4.3Z"
+        style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 0.9, strokeLinejoin: "round" }}
+      />
+      <path d="M5.6 9 6.6 3.9 9.9 6.7Z" style={{ fill: "var(--face-ear-left, var(--face))" }} />
+      <path d="M14.1 6.7 17.4 3.9 18.4 9Z" style={{ fill: "var(--face-ear-right, var(--face))" }} />
+      <g className="cat-face__eyes" style={{ fill: "var(--face-eye)" }}>
         <ellipse cx="9" cy="13" rx="1.3" ry="1.6" />
         <ellipse cx="15" cy="13" rx="1.3" ry="1.6" />
       </g>
-      <path d="M11.2 15.6h1.6L12 16.6Z" fill={PINK} />
-      <g stroke={PLUM} strokeWidth="0.9" strokeLinecap="round" opacity="0.85">
+      <path d="M11.2 15.6h1.6L12 16.6Z" style={{ fill: "var(--face-eye)" }} />
+      <g strokeWidth="0.9" strokeLinecap="round" opacity="0.85" style={{ stroke: "var(--face-whisker)" }}>
         <path d="M8 16.2 1.5 15.4M8 17.2 2 18.2M16 16.2l6.5-.8M16 17.2l6 1" />
       </g>
     </svg>
