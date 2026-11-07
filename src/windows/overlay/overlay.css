@@ -922,7 +922,7 @@ html.pressing .overlay--resize-corner * {
   box-shadow: 0 0 0 2px var(--plum-700);
 }
 
-/* "Kuyruğa ekle": the snapshot lifts off and drops into the badge. */
+/* "Kuyruğa ekle": the cat's tail wraps the snapshot and drags it into the badge. */
 .overlay__fly {
   position: absolute;
   z-index: 6;
@@ -931,6 +931,36 @@ html.pressing .overlay--resize-corner * {
   box-shadow: 0 18px 40px rgba(28, 10, 20, 0.45), 0 0 0 2px var(--pink-300);
   will-change: transform, opacity;
   pointer-events: none;
+}
+
+/* Colors sampled from the orange cat (cats/standing.png). Widths and stripe offsets: tail.ts. */
+.overlay__tail {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  fill: none;
+  stroke-linejoin: round;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 5px rgba(28, 10, 20, 0.35));
+}
+
+.overlay__tail-outline {
+  stroke: #c86008;
+  stroke-linecap: round;
+}
+
+.overlay__tail-body {
+  stroke: #f89838;
+  stroke-linecap: round;
+}
+
+.overlay__tail-stripes {
+  stroke: #f8c060;
+  stroke-linecap: butt;
+  stroke-dasharray: 11 25;
 }
 
 .overlay__fly img {

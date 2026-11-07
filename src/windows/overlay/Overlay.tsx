@@ -55,6 +55,7 @@ import { CameraIcon, CopyIcon, QueueAddIcon, SaveIcon, ScanTextIcon, TextModeIco
 import { OcrCard, type OcrState } from "./OcrCard";
 import { QrLinks } from "./QrLinks";
 import { Sidebar } from "./Sidebar";
+import { makeTailScene, playTail } from "./tail";
 
 /** Selections smaller than this (CSS px) count as a stray click. */
 const MIN_SELECTION = 3;
@@ -127,6 +128,7 @@ export function Overlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const tailRef = useRef<SVGSVGElement>(null);
 
   const setTextDraft = useCallback((next: TextDraft | null) => {
     textDraftRef.current = next;
@@ -214,39 +216,19 @@ export function Overlay() {
     return blob && new Uint8Array(await blob.arrayBuffer());
   }, [info, selection, shapes]);
 
-  /** Throws the selection into the badge: lifts, arcs and shrinks into the bottom-right. */
+  /** The cat's tail wraps the selection and drags it into the badge. */
   const flyToBadge = useCallback(async () => {
     if (!info || !selection || info.flyX == null || info.flyY == null) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const scale = info.width / window.innerWidth;
     setFlying({ rect: selection, drawings: shapes.length > 0 ? (canvasRef.current?.toDataURL() ?? null) : null });
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
     const el = flyRef.current;
-    if (!el) return;
-    const from = { x: selection.x + selection.width / 2, y: selection.y + selection.height / 2 };
-    const dx = info.flyX / scale - from.x;
-    const dy = info.flyY / scale - from.y;
-    const end = Math.min(1, 36 / Math.max(selection.width, selection.height));
-    const mid = (1 + end) / 2;
-    const animation = el.animate(
-      [
-        { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1, borderRadius: "4px" },
-        // A short lift first, so it reads as picked up rather than shrinking.
-        { transform: "translate(0, -14px) scale(1.03) rotate(-1.5deg)", opacity: 1, offset: 0.18 },
-        {
-          transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 90}px) scale(${mid}) rotate(-6deg)`,
-          opacity: 1,
-          offset: 0.55,
-        },
-        {
-          transform: `translate(${dx}px, ${dy}px) scale(${end}) rotate(-10deg)`,
-          opacity: 0.15,
-          borderRadius: "30%",
-        },
-      ],
-      { duration: 620, easing: "cubic-bezier(0.45, 0, 0.7, 0.4)", fill: "forwards" },
-    );
-    await animation.finished.catch(() => undefined);
+    const tail = tailRef.current;
+    if (!el || !tail) return;
+    const target = { x: info.flyX / scale, y: info.flyY / scale };
+    await playTail(el, tail, makeTailScene(selection, target, viewSize(), Math.random() < 0.5 ? 1 : -1));
   }, [info, selection, shapes.length]);
 
   const finish = useCallback(
@@ -583,6 +565,8 @@ export function Overlay() {
           )}
         </div>
       )}
+
+      {flying && <svg ref={tailRef} className="overlay__tail" aria-hidden="true" />}
 
       {flying ? (
         <div className="overlay__dim overlay__dim--fly" />
