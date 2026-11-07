@@ -4,6 +4,8 @@ Kedi temalı, sıralı ekran görüntüsü ve pano kuyruğu aracı (Windows 10/1
 
 Ekran görüntülerini ve kopyaladığın metinleri sıraya diz, sonra tek Ctrl+V ile hepsini alındıkları sırayla yapıştır.
 
+**[Web sitesi ve indirme](https://umutugrasan.github.io/catail/)** · Ücretsiz ve açık kaynak ([MIT](LICENSE))
+
 - **Yakalama:** bölge / tam ekran, çizim araçları, panoya kopyalama, PNG kaydetme, metin tanıma (OCR) ve çeviri, ekrandaki QR kodları okuyup bağlantıyı açma.
 - **Kuyruk:** seçim ekranından ekran görüntüleri, **Metin modu**nda her Ctrl+C sıraya eklenir. Kuyruk doluyken Ctrl+V hepsini sırayla yapıştırır; 10 saniye içinde geri alınabilir.
 - **Kedi teması:** pastel pembe arayüz, pati imleçleri (basılı tutunca pati yumruk olur), geri al düğmesinin yanında kutuda bekleyen kedi, temizleyince çöpten atlayan kedi.
@@ -14,7 +16,7 @@ Tüm veriler yereldir, telemetri yoktur.
 
 ## Kurulum
 
-[Releases](https://github.com/umutugrasan/catail/releases) sayfasından `Catail_<sürüm>_x64-setup.exe` dosyasını indirip çalıştır. Kurulum kullanıcı klasörüne yapılır, yönetici izni istemez. Uygulama sistem tepsisine yerleşir; ayarlar için tepsi simgesine sağ tıkla → **Ayarlar** (ya da Başlat menüsünden Catail'i tekrar aç). Yeni sürümler uygulamanın içinden kurulabilir (Ayarlar → Güncellemeler).
+[Web sitesinden](https://umutugrasan.github.io/catail/) ya da [Releases](https://github.com/umutugrasan/catail/releases) sayfasından `Catail_<sürüm>_x64-setup.exe` dosyasını indirip çalıştır. Kurulum kullanıcı klasörüne yapılır, yönetici izni istemez. Uygulama sistem tepsisine yerleşir; ayarlar için tepsi simgesine sağ tıkla → **Ayarlar** (ya da Başlat menüsünden Catail'i tekrar aç). Yeni sürümler uygulamanın içinden kurulabilir (Ayarlar → Güncellemeler).
 
 Kurulum dosyası henüz kod imzalı değildir; Windows "bilinmeyen yayımcı" uyarısı gösterirse **Ek bilgi → Yine de çalıştır**. Ayrıntılar ve sürüm çıkarma adımları: [docs/release.md](docs/release.md).
 
@@ -130,3 +132,11 @@ cargo build --release
 Program 3 saniye geri sayar; bu sürede hedef pencereye tıklayın. Yapıştırma bitince önceki pano içeriği geri yüklenir. Sıralı modda Esc yapıştırmayı durdurur.
 
 Test listesi: [docs/paste-matrix.md](docs/paste-matrix.md)
+
+## Web sitesi
+
+Sitenin kaynağı `website/` klasöründe ([ayrıntılar](website/README.md)). Bu klasördeki değişiklikler `main`'e gidince GitHub Pages'e kendiliğinden yayınlanır: https://umutugrasan.github.io/catail/
+
+## Lisans
+
+[MIT](LICENSE). Ücretsiz kullanabilir, değiştirebilir ve dağıtabilirsin; yalnızca telif ve lisans metni kopyalarda kalmalı. Yazılım "olduğu gibi" sunulur, hiçbir garanti verilmez.
