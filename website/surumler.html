@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="tr" data-cat="orange">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catail sürümleri</title>
+    <meta name="description" content="Catail'in yayımlanmış tüm sürümleri, sürüm notları ve doğrudan indirme bağlantıları." />
+    <meta name="theme-color" content="#f7b3cf" />
+    <link rel="icon" href="assets/icon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="assets/icon-128.png" />
+    <script>
+      document.documentElement.classList.add("js");
+      try {
+        var cat = localStorage.getItem("catail.site.cat");
+        if (/^(orange|gray|white|calico|black)$/.test(cat)) document.documentElement.dataset.cat = cat;
+      } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="releases.css" />
+    <script type="module" src="app.js"></script>
+    <script type="module" src="releases-page.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#liste">Sürüm listesine geç</a>
+
+    <header class="nav">
+      <a class="nav__brand" href="index.html" aria-label="Catail ana sayfa">
+        <img src="assets/icon-128.png" alt="" width="36" height="36" />
+        <span>Catail</span>
+      </a>
+      <nav class="nav__links" aria-label="Site">
+        <a href="index.html#temalar">Kediler</a>
+        <a href="index.html#nasil">Nasıl çalışır</a>
+        <a href="index.html#ozellikler">Özellikler</a>
+        <a href="surumler.html" aria-current="page">Sürümler</a>
+        <a href="index.html#kod">Kaynak kodu</a>
+      </nav>
+      <a class="btn btn--small" data-download href="https://github.com/umutugrasan/catail/releases/latest">İndir</a>
+    </header>
+
+    <main class="rel wrap">
+      <div class="rel__head">
+        <p class="eyebrow">Sürüm geçmişi</p>
+        <h1>Tüm sürümler</h1>
+        <p class="lead">
+          Her sürümün kurulum dosyası burada. En yenisini kurman yeterli; eski bir sürüme dönmek istersen onu da
+          buradan indirebilirsin. Kurulu Catail yeni sürümleri kendisi de haber verir.
+        </p>
+      </div>
+
+      <p class="rel__status" data-status>Sürümler yükleniyor…</p>
+      <ol class="rel__list" id="liste" data-list></ol>
+
+      <p class="rel__foot">
+        Eski sürümler de imzasız. Windows uyarı verirse ne yapacağın
+        <a href="index.html#smartscreen">ana sayfada anlatılıyor</a>.
+      </p>
+    </main>
+
+    <footer class="foot">
+      <span class="boxcat foot__cat" aria-hidden="true"><span class="boxcat__head"></span><span class="boxcat__front"></span></span>
+      <div class="wrap foot__row">
+        <span>Catail, Umut Uğraşan tarafından yapıldı.</span>
+        <span class="foot__links">
+          <a href="https://github.com/umutugrasan/catail">GitHub</a>
+          <a href="surumler.html">Sürümler</a>
+          <a href="https://github.com/umutugrasan/catail/issues">Hata bildir</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

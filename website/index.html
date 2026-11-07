@@ -29,7 +29,9 @@
       href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800&display=swap"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="scenes.css" />
     <script type="module" src="app.js"></script>
+    <script type="module" src="scenes.js"></script>
   </head>
   <body>
     <a class="skip" href="#indir">İndirmeye geç</a>
@@ -40,9 +42,10 @@
         <span>Catail</span>
       </a>
       <nav class="nav__links" aria-label="Sayfa bölümleri">
+        <a href="#temalar">Kediler</a>
         <a href="#nasil">Nasıl çalışır</a>
         <a href="#ozellikler">Özellikler</a>
-        <a href="#temalar">Kediler</a>
+        <a href="surumler.html">Sürümler</a>
         <a href="#kod">Kaynak kodu</a>
       </nav>
       <a class="btn btn--small" data-download href="https://github.com/umutugrasan/catail/releases/latest">İndir</a>
@@ -55,10 +58,18 @@
           <h1>Ekran görüntülerini sıraya diz, <mark>tek Ctrl+V</mark> ile yapıştır.</h1>
           <p class="lead">
             ChatGPT'ye, WhatsApp'a ya da bir belgeye on görsel mi atacaksın? Pencereler arasında gidip gelme.
-            Catail aldığın görüntüleri ve kopyaladığın metinleri sırayla tutar, sonra hepsini aynı sırayla bırakır.
+            Catail aldığın görüntüleri, kopyaladığın metinleri ve dosyaları sırayla tutar, sonra hepsini aynı sırayla bırakır.
           </p>
-          <div class="hero__actions">
-            <a class="btn btn--big" data-download href="https://github.com/umutugrasan/catail/releases/latest">
+        </div>
+
+        <div class="get">
+          <button class="cat cat--hero" type="button" data-hop aria-label="Kediye dokun, zıplasın">
+            <span class="cat__body"></span>
+            <span class="cat__foot cat__foot--left"></span>
+            <span class="cat__foot cat__foot--right"></span>
+          </button>
+          <div class="get__card">
+            <a class="btn btn--big get__main" data-download href="https://github.com/umutugrasan/catail/releases/latest">
               <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M3 5.1 10.4 4v7.3H3zM11.4 3.9 21 2.5v8.8h-9.6zM3 12.3h7.4v7.3L3 18.5zM11.4 12.3H21v9.2l-9.6-1.4z" />
               </svg>
@@ -67,172 +78,19 @@
                 <small data-download-meta>En son sürüm</small>
               </span>
             </a>
-            <a class="btn btn--ghost" href="https://github.com/umutugrasan/catail">GitHub'da gör</a>
-          </div>
-          <p class="hero__note">Yönetici izni istemez. Telemetri yok. <a href="#smartscreen">Windows uyarısı çıkarsa</a></p>
-          <p class="mobile-note" data-mobile-note hidden>
-            Catail bir Windows uygulaması. Kurmak için bu sayfayı bilgisayarından aç.
-          </p>
-        </div>
-
-        <div class="hero__stage">
-          <button class="cat cat--hero" type="button" data-hop aria-label="Kediye dokun, zıplasın">
-            <span class="cat__body"></span>
-            <span class="cat__foot cat__foot--left"></span>
-            <span class="cat__foot cat__foot--right"></span>
-          </button>
-
-          <div class="demo" data-demo>
-            <div class="demo__bar">
-              <span class="demo__title">Sohbet</span>
-              <span class="demo__controls" aria-hidden="true"><i></i><i></i><i></i></span>
+            <div class="get__row">
+              <a class="btn btn--ghost" href="https://github.com/umutugrasan/catail">GitHub'da gör</a>
+              <a class="btn btn--ghost" href="surumler.html">Tüm sürümler</a>
             </div>
-            <div class="demo__body">
-              <div class="chat" data-chat aria-label="Hedef uygulama: yapıştırılanlar burada görünür">
-                <p class="chat__empty" data-chat-empty>Yapıştırılanlar buraya düşer.</p>
-              </div>
-              <aside class="queue" aria-label="Catail kuyruğu">
-                <div class="queue__head">
-                  <img src="assets/icon-128.png" alt="" width="20" height="20" />
-                  <strong>Kuyruk</strong>
-                  <span class="queue__count" data-count>3</span>
-                </div>
-                <ol class="queue__cards" data-cards>
-                  <li class="card card--image"><span class="card__n">1</span><span class="thumb thumb--chart"></span></li>
-                  <li class="card card--text"><span class="card__n">2</span>Toplantı 14.00'te</li>
-                  <li class="card card--image"><span class="card__n">3</span><span class="thumb thumb--error"></span></li>
-                </ol>
-                <div class="undo" data-undo hidden>
-                  <span class="boxcat boxcat--small" aria-hidden="true">
-                    <span class="boxcat__head"></span><span class="boxcat__front"></span>
-                  </span>
-                  <button class="undo__btn" type="button" data-undo-btn>Geri al</button>
-                  <span class="undo__time"><i data-undo-bar></i></span>
-                </div>
-              </aside>
-            </div>
-            <div class="demo__keys">
-              <button class="key-btn" type="button" data-add="image"><kbd>PrtSc</kbd><span>Görüntü al</span></button>
-              <button class="key-btn" type="button" data-add="text"><kbd>Ctrl+C</kbd><span>Metin kopyala</span></button>
-              <button class="key-btn key-btn--go" type="button" data-paste><kbd>Ctrl+V</kbd><span>Hepsini yapıştır</span></button>
-            </div>
-            <p class="visually-hidden" aria-live="polite" data-status></p>
-          </div>
-          <p class="hero__hint">Deneme alanı: düğmelere bas ya da klavyede Ctrl+V'ye dokun.</p>
-        </div>
-      </section>
-
-      <section class="steps" id="nasil">
-        <div class="wrap">
-          <h2>Üç adımda bitiyor</h2>
-          <ol class="steps__list">
-            <li>
-              <span class="steps__n">1</span>
-              <h3>Topla</h3>
-              <p>
-                <kbd>PrtSc</kbd> ile alanı seç, kuyruğa ekle. Metin modundaysan her <kbd>Ctrl+C</kbd> de sıraya girer.
-              </p>
-            </li>
-            <li>
-              <span class="steps__n">2</span>
-              <h3>Düzenle</h3>
-              <p>Rozete tıkla, kuyruk açılsın. Kartları sürükleyerek yerini değiştir, istemediğini sil.</p>
-            </li>
-            <li>
-              <span class="steps__n">3</span>
-              <h3>Bırak</h3>
-              <p>
-                Kuyruk doluyken <kbd>Ctrl+V</kbd> hepsini aldığın sırayla yapıştırır. Panonda ne varsa sonra yerine döner.
-              </p>
-            </li>
-          </ol>
-        </div>
-      </section>
-
-      <section class="features wrap" id="ozellikler">
-        <h2>Küçük ama işi bilen bir kedi</h2>
-        <div class="bento">
-          <article class="tile tile--wide tile--pink">
-            <h3>Yakala, üstüne çiz</h3>
-            <p>
-              Dikdörtgen, ok, kalem, fosforlu kalem, metin ve bulanıklaştırma. Çizimler kopyaladığın, kaydettiğin ve
-              kuyruğa eklediğin görüntüye tam çözünürlükte işlenir.
+            <ul class="get__facts">
+              <li>Windows 10 ve 11</li>
+              <li>Yönetici izni istemez</li>
+              <li>Telemetri yok</li>
+            </ul>
+            <p class="hero__note"><a href="#smartscreen">Windows uyarısı çıkarsa ne yapmalı?</a></p>
+            <p class="mobile-note" data-mobile-note hidden>
+              Catail bir Windows uygulaması. Kurmak için bu sayfayı bilgisayarından aç.
             </p>
-            <div class="tools" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2" /></svg>
-              <svg viewBox="0 0 24 24"><path d="M5 19 19 5M10 5h9v9" /></svg>
-              <svg viewBox="0 0 24 24"><path d="m4 20 1-4L16 5l3 3L8 19z" /></svg>
-              <svg viewBox="0 0 24 24"><path d="M6 6h12M12 6v13" /></svg>
-              <svg viewBox="0 0 24 24"><path d="M5 5h4v4H5zM15 5h4v4h-4zM10 10h4v4h-4zM5 15h4v4H5zM15 15h4v4h-4z" /></svg>
-            </div>
-          </article>
-
-          <article class="tile tile--undo">
-            <div class="tile__text">
-              <h3>On saniye pişmanlık hakkı</h3>
-              <p>Yanlış yere mi yapıştırdın? Kutudaki kedi 10 saniye bekler, Geri al'a basınca kuyruk aynen döner.</p>
-            </div>
-            <span class="boxcat" aria-hidden="true"><span class="boxcat__head"></span><span class="boxcat__front"></span></span>
-          </article>
-
-          <article class="tile">
-            <h3>Metin modu</h3>
-            <p>Açıkken her Ctrl+C sıraya girer. Şifre yöneticilerinin kopyaladıkları alınmaz.</p>
-          </article>
-
-          <article class="tile">
-            <h3>Görüntüdeki yazıyı al</h3>
-            <p>Windows'un kendi OCR motoruyla, internetsiz, Türkçe dahil. Çıkan metni düzenle, kopyala ya da kuyruğa ekle.</p>
-          </article>
-
-          <article class="tile">
-            <h3>QR kodları oku</h3>
-            <p>Seçim ekranı açılınca ekrandaki kodlar cihazda okunur. Alan adı kalın yazılır, sahte adres göze batar.</p>
-          </article>
-
-          <article class="tile tile--dark">
-            <h3>Verilerin sende</h3>
-            <p>
-              Telemetri yok, hesap yok. İnternete çıkan iki şey var: yeni sürüm denetimi ve yalnızca Çevir'e bastığında
-              Google Çeviri'ye giden metin.
-            </p>
-          </article>
-
-          <article class="tile">
-            <h3>Uygulamana uyum sağlar</h3>
-            <p>Toplu ya da tek tek yapıştırma. Toplu görseli sevmeyen uygulamalar için kural yazılabilir.</p>
-          </article>
-
-          <article class="tile">
-            <h3>ZIP ya da PDF</h3>
-            <p>Kuyruğu olduğu gibi kaydet: görseller PNG, metinler TXT, her şey sırayla numaralı.</p>
-          </article>
-
-          <article class="tile">
-            <h3>Kısayollar senin</h3>
-            <p>Hepsini değiştirebilirsin. Win+Shift+S'yi bile devralır.</p>
-          </article>
-
-          <article class="tile tile--full tile--langs">
-            <h3>16 dil konuşur</h3>
-            <p class="langs" lang="mul">Türkçe English Deutsch Français Español Italiano Português Nederlands Polski Русский Українська العربية 日本語 简体中文 한국어 Bahasa&nbsp;Indonesia</p>
-          </article>
-
-        </div>
-      </section>
-
-      <section class="gallery" id="ekranlar">
-        <div class="wrap">
-          <h2>İçeriden görünüş</h2>
-          <div class="gallery__grid">
-            <figure class="shot">
-              <img src="assets/shots/settings.png" width="1240" height="650" loading="lazy" alt="Ayarlar penceresinde kedi seçimi" />
-              <figcaption>Ayarlar. Kediler, kısayollar, yapıştırma yöntemi.</figcaption>
-            </figure>
-            <figure class="shot">
-              <img src="assets/shots/overlay.png" width="1480" height="430" loading="lazy" alt="Seçim ekranının üstünde kulaklı ve bıyıklı mod çubuğu" />
-              <figcaption>Seçim ekranı. Ekran görüntüsü ya da metin modu.</figcaption>
-            </figure>
           </div>
         </div>
       </section>
@@ -267,6 +125,379 @@
             <span class="cat"><span class="cat__body"></span><span class="cat__foot cat__foot--left"></span><span class="cat__foot cat__foot--right"></span></span>
             <span>Siyah kedi</span>
           </button>
+        </div>
+      </section>
+
+      <section class="steps" id="nasil">
+        <div class="wrap">
+          <h2>Üç adımda bitiyor</h2>
+          <ol class="steps__list">
+            <li>
+              <span class="steps__n">1</span>
+              <h3>Topla</h3>
+              <p>
+                <kbd>PrtSc</kbd> ile alanı seç, kuyruğa ekle. Metin modundaysan her <kbd>Ctrl+C</kbd> de sıraya girer.
+              </p>
+            </li>
+            <li>
+              <span class="steps__n">2</span>
+              <h3>Düzenle</h3>
+              <p>Rozete tıkla, kuyruk açılsın. Kartları sürükleyerek yerini değiştir, istemediğini sil.</p>
+            </li>
+            <li>
+              <span class="steps__n">3</span>
+              <h3>Bırak</h3>
+              <p>
+                Kuyruk doluyken <kbd>Ctrl+V</kbd> hepsini aldığın sırayla yapıştırır. Panonda ne varsa sonra yerine döner.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="features wrap" id="ozellikler">
+        <h2>Küçük ama işi bilen bir kedi</h2>
+        <p class="features__lead">Her biri uygulamada olduğu gibi. Arkana yaslan, kendi kendine oynuyorlar.</p>
+        <div class="scenes">
+
+          <!-- The queue, played by itself. -->
+          <figure class="scene scene--w4">
+            <div class="demo" data-demo aria-hidden="true">
+              <div class="demo__bar">
+                <span class="demo__title">Sohbet</span>
+                <span class="demo__controls"><i></i><i></i><i></i></span>
+              </div>
+              <div class="demo__body">
+                <div class="chat" data-chat>
+                  <p class="chat__empty" data-chat-empty>Yapıştırılanlar buraya düşer.</p>
+                </div>
+                <div class="queue">
+                  <div class="queue__head">
+                    <img src="assets/icon-128.png" alt="" width="20" height="20" />
+                    <strong>Kuyruk</strong>
+                    <span class="queue__count" data-count>3</span>
+                  </div>
+                  <ol class="queue__cards" data-cards>
+                    <li class="card card--image"><span class="card__n">1</span><span class="thumb thumb--chart"></span></li>
+                    <li class="card card--text"><span class="card__n">2</span>Toplantı 14.00'te</li>
+                    <li class="card card--image"><span class="card__n">3</span><span class="thumb thumb--error"></span></li>
+                  </ol>
+                  <div class="undo" data-undo hidden>
+                    <span class="boxcat boxcat--small"><span class="boxcat__head"></span><span class="boxcat__front"></span></span>
+                    <span class="undo__btn">Geri al <b>✕</b></span>
+                    <span class="undo__time"><i data-undo-bar></i></span>
+                  </div>
+                </div>
+              </div>
+              <div class="demo__keys">
+                <span class="key-btn" data-key="image"><kbd>PrtSc</kbd><span>Görüntü al</span></span>
+                <span class="key-btn" data-key="text"><kbd>Ctrl+C</kbd><span>Metin kopyala</span></span>
+                <span class="key-btn key-btn--go" data-key="paste"><kbd>Ctrl+V</kbd><span>Hepsini yapıştır</span></span>
+              </div>
+            </div>
+            <figcaption>
+              <h3>Topla, tek Ctrl+V ile bırak</h3>
+              <p>Görüntüleri ve metinleri istediğin kadar sıraya koy. Ctrl+V hepsini aldığın sırayla yapıştırır, panon sonra eski haline döner.</p>
+            </figcaption>
+          </figure>
+
+          <!-- The cat on the badge. -->
+          <figure class="scene scene--w2">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Masaüstü</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-seat" data-seat>
+                <div class="desk"><span><i></i>Belgeler</span><span><i></i>Ekran görüntüleri</span></div>
+                <span class="sc-seat__fly" data-seat-fly></span>
+                <span class="sc-seat__zz"><b>z</b><b>z</b><b>Z</b></span>
+                <span class="ptr sc-seat__ptr" data-seat-ptr></span>
+                <div class="bdg sc-seat__bdg">
+                  <span class="scat" data-seat-cat>
+                    <i class="scat__s" style="--k: 0.35; --t: 36%; --b: 47%"></i>
+                    <i class="scat__s" style="--k: 0.85; --t: 51%; --b: 31%"></i>
+                    <i class="scat__s" style="--k: 1; --t: 67%; --b: 15%"></i>
+                    <i class="scat__s" style="--k: 0.8; --t: 83%; --b: 0%"></i>
+                    <i class="scat__head" data-seat-head></i>
+                    <span class="cat__foot cat__foot--left"></span>
+                    <span class="cat__foot cat__foot--right"></span>
+                  </span>
+                  <span class="pill" data-seat-pill>Kuyruk: 0</span>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <h3>Rozette bir kedi oturur</h3>
+              <p>Kuyruk büyüdükçe tombullaşır. Bir süre dokunmazsan uyuyakalır, uyanıkken başıyla imlecini izler.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Capture and draw. -->
+          <figure class="scene scene--w3" style="--loop: 9s; --freeze: -4.6s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Seçim ekranı</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-cap">
+                <div class="page">
+                  <i class="page__h"></i><i class="page__l"></i><i class="page__l page__l--s"></i>
+                  <span class="thumb thumb--chart page__img"></span>
+                  <i class="page__l"></i><i class="page__l page__l--m"></i>
+                </div>
+                <div class="sc-cap__sel">
+                  <svg class="sc-cap__arrow" viewBox="0 0 100 60" preserveAspectRatio="none"><path pathLength="100" d="M12 50 C 30 46, 52 34, 74 18 M62 16 L76 16 L72 30" /></svg>
+                  <i class="sc-cap__box"></i>
+                  <span class="tail sc-cap__add">Kuyruğa ekle</span>
+                </div>
+                <div class="toolbar sc-cap__bar">
+                  <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2" /></svg>
+                  <svg class="is-on" viewBox="0 0 24 24"><path d="M5 19 19 5M10 5h9v9" /></svg>
+                  <svg viewBox="0 0 24 24"><path d="m4 20 1-4L16 5l3 3L8 19z" /></svg>
+                  <svg viewBox="0 0 24 24"><path d="M6 6h12M12 6v13" /></svg>
+                  <svg viewBox="0 0 24 24"><path d="M5 5h4v4H5zM15 5h4v4h-4zM10 10h4v4h-4zM5 15h4v4H5zM15 15h4v4h-4z" /></svg>
+                </div>
+                <div class="bdg sc-corner">
+                  <span class="pill pill--swap"><span class="sc-cap__n0">Kuyruk: 2</span><span class="sc-cap__n1">Kuyruk: 3</span></span>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <h3>Yakala, üstüne çiz</h3>
+              <p>Alanı seç; ok, kutu, kalem, metin ya da bulanıklaştırma ekle. Çizimler görüntüye tam çözünürlükte işlenir.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Undo. -->
+          <figure class="scene scene--w3" style="--loop: 9s; --freeze: -3.6s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Sohbet</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-undo">
+                <div class="sc-undo__chat">
+                  <span class="msg2 sc-undo__m1"><span class="thumb thumb--chart"></span></span>
+                  <span class="msg2 msg2--text sc-undo__m2">Fatura no: 2481</span>
+                  <span class="msg2 sc-undo__m3"><span class="thumb thumb--table"></span></span>
+                </div>
+                <div class="bdg sc-corner">
+                  <span class="sc-undo__box">
+                    <span class="boxcat"><span class="boxcat__head"></span><span class="boxcat__front"></span></span>
+                    <span class="pill pill--undo">Geri al <b>3</b><i class="sc-undo__time"></i></span>
+                  </span>
+                  <span class="pill sc-undo__back">Kuyruk: 3</span>
+                </div>
+                <span class="ptr sc-undo__ptr"></span>
+              </div>
+            </div>
+            <figcaption>
+              <h3>On saniye pişmanlık hakkı</h3>
+              <p>Yanlış yere mi yapıştırdın? Kedi kutusunda bekler. Geri al'a basarsan kuyruk aynen döner, süre biterse kutuyu parçalar.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Text mode. -->
+          <figure class="scene scene--w2" style="--loop: 8s; --freeze: -3.4s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Belge</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-text">
+                <p class="sc-text__p"><span class="sc-text__a">Toplantı Perşembe 14.00'te.</span> Sunumu getirmeyi unutma. <span class="sc-text__b">Fatura no: 2481</span></p>
+                <kbd class="sc-text__key">Ctrl+C</kbd>
+                <span class="mcard sc-text__c1">Toplantı Perşembe…</span>
+                <span class="mcard sc-text__c2">Fatura no: 2481</span>
+                <div class="bdg sc-corner">
+                  <span class="pill pill--swap"><span class="sc-text__n0">Metin modu · 0</span><span class="sc-text__n1">Metin modu · 1</span><span class="sc-text__n2">Metin modu · 2</span></span>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <h3>Metin modu</h3>
+              <p>Açıkken her Ctrl+C sıraya girer. Şifre yöneticilerinin kopyaladıkları alınmaz.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Files. -->
+          <figure class="scene scene--w2" style="--loop: 9s; --freeze: -2.2s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Dosya Gezgini</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-file">
+                <div class="files">
+                  <span class="file sc-file__pdf"><i class="doc doc--pdf">PDF</i>rapor.pdf</span>
+                  <span class="file sc-file__doc"><i class="doc doc--doc">W</i>sunum.docx</span>
+                  <span class="file"><i class="doc doc--xls">X</i>tablo.xlsx</span>
+                </div>
+                <span class="doc doc--pdf sc-file__drag">PDF</span>
+                <span class="menu sc-file__menu"><span>Aç</span><span class="is-on">Kuyruğa ekle</span><span>Kopyala</span></span>
+                <span class="doc doc--doc sc-file__fly">W</span>
+                <span class="ptr sc-file__ptr"></span>
+                <div class="bdg sc-corner">
+                  <span class="pill pill--swap sc-file__pill"><span class="sc-file__n0">Kuyruk: 0</span><span class="sc-file__drop">Bırak, kuyruğa girsin</span><span class="sc-file__n1">Kuyruk: 1</span><span class="sc-file__n2">Kuyruk: 2</span></span>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <h3>PDF, Word, ne olursa</h3>
+              <p>Dosyayı rozete sürükle ya da Gezgin'de sağ tıklayıp Kuyruğa ekle de. Yapıştırırken dosyanın kendisi gider.</p>
+            </figcaption>
+          </figure>
+
+          <!-- OCR. -->
+          <figure class="scene scene--w2" style="--loop: 8s; --freeze: -5.6s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Yazıyı al</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-ocr">
+                <div class="sc-ocr__photo">
+                  <span class="sc-ocr__note"><b>Perşembe 14.00</b><br />Sunum: 3. kat</span>
+                  <i class="sc-ocr__scan"></i>
+                </div>
+                <div class="sc-ocr__out">
+                  <span class="sc-ocr__label">Metin</span>
+                  <span class="sc-ocr__line sc-ocr__l1">Perşembe 14.00</span>
+                  <span class="sc-ocr__line sc-ocr__l2">Sunum: 3. kat</span>
+                  <span class="sc-ocr__btns"><span>Kopyala</span><span class="sc-ocr__add">Kuyruğa ekle</span></span>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <h3>Görüntüdeki yazıyı al</h3>
+              <p>Windows'un kendi OCR motoruyla, internetsiz, Türkçe dahil. Çıkan metni düzenle, kopyala ya da kuyruğa ekle.</p>
+            </figcaption>
+          </figure>
+
+          <!-- QR. -->
+          <figure class="scene scene--w2" style="--loop: 7s; --freeze: -4s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Seçim ekranı</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-qr">
+                <div class="sc-qr__code">
+                  <svg viewBox="-1 -1 23 23"><path d="M0 0h7v1h-7zM8 0h2v1h-2zM11 0h1v1h-1zM14 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h2v1h-2zM11 1h2v1h-2zM14 1h1v1h-1zM20 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h3v1h-3zM12 2h1v1h-1zM14 2h1v1h-1zM16 2h3v1h-3zM20 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM12 3h1v1h-1zM14 3h1v1h-1zM16 3h3v1h-3zM20 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h1v1h-1zM11 4h2v1h-2zM14 4h1v1h-1zM16 4h3v1h-3zM20 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h2v1h-2zM11 5h1v1h-1zM14 5h1v1h-1zM20 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h7v1h-7zM9 7h1v1h-1zM11 7h2v1h-2zM0 8h1v1h-1zM2 8h2v1h-2zM5 8h3v1h-3zM10 8h1v1h-1zM15 8h1v1h-1zM17 8h2v1h-2zM20 8h1v1h-1zM1 9h1v1h-1zM7 9h1v1h-1zM11 9h1v1h-1zM14 9h1v1h-1zM16 9h1v1h-1zM0 10h2v1h-2zM3 10h6v1h-6zM10 10h3v1h-3zM14 10h2v1h-2zM20 10h1v1h-1zM0 11h2v1h-2zM4 11h2v1h-2zM7 11h2v1h-2zM11 11h4v1h-4zM0 12h1v1h-1zM5 12h4v1h-4zM10 12h11v1h-11zM10 13h5v1h-5zM17 13h1v1h-1zM19 13h2v1h-2zM0 14h7v1h-7zM8 14h2v1h-2zM11 14h2v1h-2zM15 14h1v1h-1zM17 14h1v1h-1zM0 15h1v1h-1zM6 15h1v1h-1zM9 15h3v1h-3zM15 15h2v1h-2zM0 16h1v1h-1zM2 16h3v1h-3zM6 16h1v1h-1zM10 16h1v1h-1zM12 16h5v1h-5zM19 16h1v1h-1zM0 17h1v1h-1zM2 17h3v1h-3zM6 17h1v1h-1zM10 17h5v1h-5zM18 17h1v1h-1zM0 18h1v1h-1zM2 18h3v1h-3zM6 18h1v1h-1zM8 18h1v1h-1zM13 18h2v1h-2zM16 18h1v1h-1zM19 18h2v1h-2zM0 19h1v1h-1zM6 19h1v1h-1zM10 19h3v1h-3zM15 19h1v1h-1zM19 19h1v1h-1zM0 20h7v1h-7zM8 20h2v1h-2zM14 20h1v1h-1zM17 20h4v1h-4z" /></svg>
+                  <i class="sc-qr__corners"></i>
+                  <i class="sc-qr__beam"></i>
+                </div>
+                <span class="sc-qr__chip"><span>https://<b>ornek.com</b>/menu</span><span class="sc-qr__go">Aç</span></span>
+                <span class="ptr sc-qr__ptr"></span>
+              </div>
+            </div>
+            <figcaption>
+              <h3>QR kodları oku</h3>
+              <p>Seçim ekranı açılınca ekrandaki kodlar cihazda okunur. Alan adı kalın yazılır, sahte adres göze batar.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Export. -->
+          <figure class="scene scene--w2" style="--loop: 9s; --freeze: -6.4s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Kuyruk</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-zip">
+                <div class="sc-zip__cards">
+                  <span class="mcard mcard--img sc-zip__c1"><span class="thumb thumb--chart"></span></span>
+                  <span class="mcard sc-zip__c2">Toplantı 14.00</span>
+                  <span class="mcard mcard--img sc-zip__c3"><span class="thumb thumb--code"></span></span>
+                </div>
+                <span class="sc-zip__save">Kaydet ▾</span>
+                <span class="menu sc-zip__menu"><span class="is-on">ZIP</span><span>PDF</span></span>
+                <span class="sc-zip__bundle"><i class="sc-zip__icon">ZIP</i>kuyruk.zip</span>
+                <span class="sc-zip__list"><span>001.png</span><span>002.txt</span><span>003.png</span></span>
+                <span class="ptr sc-zip__ptr"></span>
+              </div>
+            </div>
+            <figcaption>
+              <h3>ZIP ya da PDF</h3>
+              <p>Kuyruğu olduğu gibi kaydet: görseller PNG, metinler TXT, her şey sırayla numaralı. Ya da her öğe bir sayfa olsun.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Shortcuts. -->
+          <figure class="scene scene--w2" style="--loop: 8s; --freeze: -5.2s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Kısayollar</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-keys">
+                <div class="sc-keys__row sc-keys__edit">
+                  <span>Bölge yakala</span>
+                  <span class="sc-keys__field">
+                    <span class="sc-keys__old"><kbd>PrtSc</kbd></span>
+                    <span class="sc-keys__wait">Bir tuşa bas…</span>
+                    <span class="sc-keys__new"><kbd class="sc-keys__k1">Win</kbd><kbd class="sc-keys__k2">Shift</kbd><kbd class="sc-keys__k3">S</kbd></span>
+                    <span class="sc-keys__ok">✓</span>
+                  </span>
+                </div>
+                <div class="sc-keys__row"><span>Tam ekran</span><span class="sc-keys__field"><kbd>Shift</kbd><kbd>PrtSc</kbd></span></div>
+                <div class="sc-keys__row"><span>Kuyruğu temizle</span><span class="sc-keys__field"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>Alt</kbd><kbd>X</kbd></span></div>
+              </div>
+            </div>
+            <figcaption>
+              <h3>Kısayollar senin</h3>
+              <p>Hepsini değiştirebilirsin. Win+Shift+S'yi bile devralır.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Paste modes. -->
+          <figure class="scene scene--w3" style="--loop: 10s; --freeze: -8.2s">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span>Yapıştırma</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-mode">
+                <kbd class="sc-mode__key">Ctrl+V</kbd>
+                <span class="seg"><i class="seg__knob"></i><span class="sc-mode__a">Toplu</span><span class="sc-mode__b">Tek tek</span></span>
+                <div class="sc-mode__chat">
+                  <span class="msg2 msg2--group sc-mode__all">
+                    <span class="thumb thumb--chart"></span><span class="thumb thumb--table"></span><span class="thumb thumb--error"></span>
+                  </span>
+                  <span class="msg2 sc-mode__o1"><span class="thumb thumb--chart"></span></span>
+                  <span class="msg2 sc-mode__o2"><span class="thumb thumb--table"></span></span>
+                  <span class="msg2 sc-mode__o3"><span class="thumb thumb--error"></span></span>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <h3>Uygulamana uyum sağlar</h3>
+              <p>Hepsini tek seferde ya da tek tek yapıştırır. Toplu görseli sevmeyen uygulamalar için kural yazılabilir.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Languages. -->
+          <figure class="scene scene--w3 scene--solo">
+            <div class="win" aria-hidden="true">
+              <div class="win__bar"><span data-lang-name>Türkçe</span><span class="win__dots"><i></i><i></i><i></i></span></div>
+              <div class="win__body sc-lang">
+                <span class="tail sc-lang__btn" data-lang-word>Kuyruğa ekle</span>
+                <p class="langs" lang="mul">Türkçe English Deutsch Français Español Italiano Português Nederlands Polski Русский Українська العربية 日本語 简体中文 한국어 Bahasa&nbsp;Indonesia</p>
+              </div>
+            </div>
+            <figcaption>
+              <h3>16 dil konuşur</h3>
+              <p>Windows hangi dildeyse o dille açılır. İstersen ayarlardan değiştir.</p>
+            </figcaption>
+          </figure>
+
+          <!-- Privacy. -->
+          <figure class="scene scene--w6 scene--dark" style="--loop: 6s; --freeze: -1s">
+            <div class="sc-home" aria-hidden="true">
+              <div class="sc-home__pc">
+                <span class="sc-home__label">Bilgisayarın</span>
+                <span class="mcard mcard--img sc-home__c1"><span class="thumb thumb--chart"></span></span>
+                <span class="mcard sc-home__c2">Fatura no</span>
+                <span class="mcard mcard--img sc-home__c3"><span class="thumb thumb--code"></span></span>
+              </div>
+              <span class="sc-home__wall"></span>
+              <span class="sc-home__cloud">☁<b>✕</b></span>
+            </div>
+            <figcaption>
+              <h3>Verilerin sende</h3>
+              <p>
+                Telemetri yok, hesap yok. Kuyruk bilgisayarında durur. İnternete çıkan iki şey var: yeni sürüm denetimi ve
+                yalnızca Çevir'e bastığında Google Çeviri'ye giden metin.
+              </p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="gallery" id="ekranlar">
+        <div class="wrap">
+          <h2>İçeriden görünüş</h2>
+          <div class="gallery__grid">
+            <figure class="shot">
+              <img src="assets/shots/settings.png" width="1240" height="650" loading="lazy" alt="Ayarlar penceresinde kedi seçimi" />
+              <figcaption>Ayarlar. Kediler, kısayollar, yapıştırma yöntemi.</figcaption>
+            </figure>
+            <figure class="shot">
+              <img src="assets/shots/overlay.png" width="1480" height="430" loading="lazy" alt="Seçim ekranının üstünde kulaklı ve bıyıklı mod çubuğu" />
+              <figcaption>Seçim ekranı. Ekran görüntüsü ya da metin modu.</figcaption>
+            </figure>
+          </div>
         </div>
       </section>
 
@@ -318,7 +549,7 @@ npm run tauri dev</code></pre>
             <li>Sistem tepsisine yerleşir, ayarları oradan açılır</li>
             <li>Yeni sürümler uygulamanın içinden kurulabilir</li>
           </ul>
-          <p class="download__all"><a href="https://github.com/umutugrasan/catail/releases">Tüm sürümler ve sürüm notları</a></p>
+          <p class="download__all"><a href="surumler.html">Tüm sürümler ve sürüm notları</a></p>
         </div>
 
         <div class="smart" id="smartscreen">
@@ -390,7 +621,7 @@ npm run tauri dev</code></pre>
         <span>Catail, Umut Uğraşan tarafından yapıldı.</span>
         <span class="foot__links">
           <a href="https://github.com/umutugrasan/catail">GitHub</a>
-          <a href="https://github.com/umutugrasan/catail/releases">Sürümler</a>
+          <a href="surumler.html">Sürümler</a>
           <a href="https://github.com/umutugrasan/catail/issues">Hata bildir</a>
         </span>
       </div>

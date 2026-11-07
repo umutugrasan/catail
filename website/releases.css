@@ -1,0 +1,143 @@
+/* The releases page. */
+
+.rel {
+  padding-block: 56px 110px;
+}
+
+.rel__head h1 {
+  margin-top: 14px;
+}
+
+.rel__head .lead {
+  max-width: 60ch;
+}
+
+.rel__status {
+  margin-top: 32px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.rel__list {
+  display: grid;
+  gap: 18px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relcard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "head get"
+    "facts get"
+    "notes notes";
+  align-items: center;
+  gap: 4px 24px;
+  padding: 22px 24px;
+  background: var(--surface);
+  border: var(--stroke);
+  border-radius: var(--radius);
+  animation: drop-in 300ms var(--pop) backwards;
+}
+
+.relcard--new {
+  background: var(--bg-2);
+  box-shadow: var(--lift);
+}
+
+.relcard__head {
+  grid-area: head;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.relcard__title {
+  font-size: 28px;
+}
+
+.relcard__tag {
+  padding: 3px 12px;
+  background: var(--accent);
+  color: var(--on-brand);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.relcard__facts {
+  grid-area: facts;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.relcard__notes {
+  grid-area: notes;
+  display: grid;
+  gap: 4px;
+  margin: 12px 0 0;
+  padding: 14px 0 0;
+  border-top: 2px dashed var(--bg-3);
+  list-style: none;
+  font-size: 16px;
+}
+
+.relcard__notes li {
+  position: relative;
+  padding-left: 24px;
+}
+
+.relcard__notes li::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 0.4em;
+  width: 14px;
+  height: 14px;
+  background: var(--brand);
+  -webkit-mask: url("assets/paw.svg") center / contain no-repeat;
+  mask: url("assets/paw.svg") center / contain no-repeat;
+}
+
+[data-cat="gray"] .relcard__notes li::before,
+[data-cat="white"] .relcard__notes li::before {
+  background: var(--ink);
+}
+
+.relcard__get {
+  grid-area: get;
+}
+
+.rel__foot {
+  margin-top: 28px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.nav__links a[aria-current="page"] {
+  background: var(--bg-2);
+}
+
+@media (max-width: 720px) {
+  .rel {
+    padding-block: 36px 110px;
+  }
+
+  .relcard {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "head"
+      "facts"
+      "notes"
+      "get";
+    padding: 18px;
+  }
+
+  .relcard__get {
+    margin-top: 14px;
+  }
+}

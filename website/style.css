@@ -19,6 +19,7 @@
   --cat-body: url("assets/cats/orange/body.png");
   --cat-foot-left: url("assets/cats/orange/foot-left.png");
   --cat-foot-right: url("assets/cats/orange/foot-right.png");
+  --ptr-img: image-set(url("assets/cursors/orange/pointer.png") 1x, url("assets/cursors/orange/pointer@2x.png") 2x);
   color-scheme: light;
 }
 
@@ -40,6 +41,7 @@
   --cat-body: url("assets/cats/gray/body.png");
   --cat-foot-left: url("assets/cats/gray/foot-left.png");
   --cat-foot-right: url("assets/cats/gray/foot-right.png");
+  --ptr-img: image-set(url("assets/cursors/gray/pointer.png") 1x, url("assets/cursors/gray/pointer@2x.png") 2x);
   color-scheme: light;
 }
 
@@ -61,6 +63,7 @@
   --cat-body: url("assets/cats/white/body.png");
   --cat-foot-left: url("assets/cats/white/foot-left.png");
   --cat-foot-right: url("assets/cats/white/foot-right.png");
+  --ptr-img: image-set(url("assets/cursors/white/pointer.png") 1x, url("assets/cursors/white/pointer@2x.png") 2x);
   color-scheme: light;
 }
 
@@ -82,6 +85,7 @@
   --cat-body: url("assets/cats/calico/body.png");
   --cat-foot-left: url("assets/cats/calico/foot-left.png");
   --cat-foot-right: url("assets/cats/calico/foot-right.png");
+  --ptr-img: image-set(url("assets/cursors/calico/pointer.png") 1x, url("assets/cursors/calico/pointer@2x.png") 2x);
   color-scheme: light;
 }
 
@@ -104,6 +108,7 @@
   --cat-body: url("assets/cats/black/body.png");
   --cat-foot-left: url("assets/cats/black/foot-left.png");
   --cat-foot-right: url("assets/cats/black/foot-right.png");
+  --ptr-img: image-set(url("assets/cursors/black/pointer.png") 1x, url("assets/cursors/black/pointer@2x.png") 2x);
   color-scheme: dark;
 }
 
@@ -440,16 +445,7 @@ h1 mark {
   line-height: 1.55;
 }
 
-.hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px 16px;
-  margin-top: 28px;
-}
-
 .hero__note {
-  margin-top: 16px;
   color: var(--muted);
   font-size: 15px;
   font-weight: 600;
@@ -464,17 +460,75 @@ h1 mark {
   font-weight: 700;
 }
 
-.hero__stage {
+/* The download card, with the cat sitting on top of it. */
+.get {
   position: relative;
-  padding-top: 76px;
+  padding-top: 92px;
 }
 
-.hero__hint {
-  margin-top: 14px;
-  color: var(--muted);
+.get__card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 16px;
+  padding: 26px;
+  background: var(--surface);
+  border: var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: 7px 7px 0 var(--line);
+}
+
+.get__main {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.get__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.get__row .btn {
+  padding-inline: 12px;
+}
+
+.get__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.get__facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 9px;
+  background: var(--bg-2);
+  border-radius: 999px;
   font-size: 14.5px;
-  font-weight: 600;
-  text-align: center;
+  font-weight: 700;
+}
+
+.get__facts li::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  background: var(--brand);
+  -webkit-mask: url("assets/paw.svg") center / contain no-repeat;
+  mask: url("assets/paw.svg") center / contain no-repeat;
+}
+
+[data-cat="gray"] .get__facts li::before,
+[data-cat="white"] .get__facts li::before {
+  background: var(--ink);
+}
+
+.get .hero__note {
+  margin: 0;
 }
 
 /* ---------- Cats ---------- */
@@ -520,8 +574,8 @@ h1 mark {
 
 .cat--hero {
   position: absolute;
-  top: 2px;
-  right: 76px;
+  top: 0;
+  right: 56px;
   z-index: 2;
   width: 118px;
   transform-origin: 50% 100%;
@@ -800,7 +854,7 @@ h1 mark {
 
 .is-ghost {
   position: fixed;
-  z-index: 30;
+  z-index: 15;
   margin: 0;
   list-style: none;
   pointer-events: none;
@@ -988,111 +1042,10 @@ h1 mark {
   opacity: 0.92;
 }
 
-/* ---------- Bento ---------- */
+/* ---------- Features ---------- */
 
 .features {
   padding-block: 84px 72px;
-}
-
-.bento {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 32px;
-}
-
-.tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 20px;
-  background: var(--surface);
-  border: var(--stroke);
-  border-radius: var(--radius);
-  font-size: 16px;
-  line-height: 1.5;
-  transition: transform 160ms var(--pop), box-shadow 160ms var(--out), opacity 420ms var(--out), translate 420ms var(--out);
-}
-
-.tile:hover {
-  transform: translate(-1px, -2px) rotate(-0.4deg);
-  box-shadow: var(--lift);
-}
-
-.tile--wide {
-  grid-column: span 2;
-}
-
-.tile--full {
-  grid-column: 1 / -1;
-}
-
-.tile--pink {
-  background: var(--accent);
-  color: var(--on-brand);
-}
-
-.tile--dark {
-  background: var(--band);
-  color: var(--on-band);
-  grid-row: span 2;
-  justify-content: flex-end;
-}
-
-.tile--dark h3 {
-  font-size: 30px;
-  line-height: 1.05;
-}
-
-.tile--undo {
-  grid-column: span 2;
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  padding-right: 12px;
-  padding-bottom: 12px;
-  background: var(--bg-2);
-}
-
-.tile__text {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-bottom: 8px;
-}
-
-.tile--undo .boxcat {
-  flex: none;
-  width: 170px;
-}
-
-.tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 8px;
-}
-
-.tools svg {
-  width: 42px;
-  height: 42px;
-  padding: 9px;
-  background: var(--surface);
-  fill: none;
-  stroke: var(--line);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  border: 2px solid var(--line);
-  border-radius: 12px;
-}
-
-[data-cat="black"] .tools svg {
-  background: var(--bg);
-  stroke: var(--brand);
 }
 
 .langs {
@@ -1483,9 +1436,9 @@ h1 mark {
   translate: 0 18px;
 }
 
-.tile,
 .pick,
 .shot,
+.scene,
 .steps__list li {
   transition-property: transform, box-shadow, opacity, translate;
 }
@@ -1497,17 +1450,6 @@ h1 mark {
 }
 
 /* ---------- Narrower screens ---------- */
-
-@media (max-width: 1080px) {
-  .bento {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .tile--dark {
-    grid-row: auto;
-    grid-column: span 2;
-  }
-}
 
 @media (max-width: 960px) {
   .hero {
@@ -1549,18 +1491,17 @@ h1 mark {
     font-size: 17px;
   }
 
-  .hero__stage {
-    padding-top: 62px;
+  .get {
+    padding-top: 70px;
+  }
+
+  .get__card {
+    padding: 18px;
   }
 
   .cat--hero {
     width: 92px;
-    right: 66px;
-  }
-
-  .hero__actions .btn--big {
-    width: 100%;
-    justify-content: flex-start;
+    right: 36px;
   }
 
   .demo__body {
@@ -1607,21 +1548,6 @@ h1 mark {
     padding-block: 56px;
   }
 
-  .bento {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .tile--wide,
-  .tile--full,
-  .tile--undo,
-  .tile--dark {
-    grid-column: auto;
-  }
-
-  .tile--undo .boxcat {
-    width: 118px;
-  }
-
   .gallery__grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1655,9 +1581,10 @@ h1 mark {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
+  /* The scenes stop on a chosen frame instead, in scenes.css. */
+  :not(.scene *),
+  :not(.scene *)::before,
+  :not(.scene *)::after {
     animation: none !important;
     transition: none !important;
   }
