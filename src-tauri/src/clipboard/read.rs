@@ -1,12 +1,15 @@
-//! Turns what the user copied into a queue item: text first, then an image.
+//! Turns what the user copied into a queue item: files, then text, then an image.
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use image::RgbaImage;
 
 pub enum Copied {
     Text(String),
     Image(RgbaImage),
+    /// Files picked in Explorer and the like, in the order the list has them.
+    Files(Vec<PathBuf>),
 }
 
 pub struct Clip {
@@ -27,6 +30,7 @@ pub struct FormatIds {
 const CF_UNICODETEXT: u32 = 13;
 const CF_DIB: u32 = 8;
 const CF_DIBV5: u32 = 17;
+const CF_HDROP: u32 = 15;
 
 /// Reads the clipboard for the watcher. `None` when it's excluded or holds nothing usable.
 #[cfg(windows)]
@@ -63,6 +67,20 @@ pub fn classify(formats: &HashMap<u32, Vec<u8>>, ids: &FormatIds) -> Option<Copi
         || hidden_from_history
     {
         return None;
+    }
+
+    // A file list that comes with a picture is about the picture: some browsers' "Copy image"
+    // adds a temp file they delete later. Beside plain text, the files are what was copied.
+    let has_image = [ids.png, CF_DIBV5, CF_DIB]
+        .iter()
+        .any(|f| formats.contains_key(f));
+    if !has_image {
+        if let Some(bytes) = formats.get(&CF_HDROP) {
+            let paths = super::files::parse_hdrop(bytes);
+            if !paths.is_empty() {
+                return Some(Copied::Files(paths));
+            }
+        }
     }
 
     if let Some(bytes) = formats.get(&CF_UNICODETEXT) {
@@ -178,6 +196,51 @@ mod tests {
             (CF_DIB, build_dib(&img)),
         ]);
         assert!(matches!(classify(&f, &IDS), Some(Copied::Text(t)) if t == "hi"));
+    }
+
+    fn hdrop(paths: &[&str]) -> (u32, Vec<u8>) {
+        let paths: Vec<&std::path::Path> = paths.iter().map(std::path::Path::new).collect();
+        (CF_HDROP, crate::clipboard::files::build_hdrop(&paths))
+    }
+
+    #[test]
+    fn a_file_list_becomes_files_in_order() {
+        let f = formats(&[hdrop(&[r"C:\a.pdf", r"C:\b.docx"])]);
+        let Some(Copied::Files(paths)) = classify(&f, &IDS) else {
+            panic!("expected files");
+        };
+        assert_eq!(
+            paths,
+            [PathBuf::from(r"C:\a.pdf"), PathBuf::from(r"C:\b.docx")]
+        );
+    }
+
+    #[test]
+    fn files_win_over_text() {
+        let f = formats(&[
+            hdrop(&[r"C:\a.pdf"]),
+            (CF_UNICODETEXT, encode_unicode_text(r"C:\a.pdf")),
+        ]);
+        assert!(matches!(classify(&f, &IDS), Some(Copied::Files(_))));
+    }
+
+    #[test]
+    fn a_picture_wins_over_its_temp_file() {
+        let img = RgbaImage::from_pixel(1, 1, Rgba([1, 2, 3, 255]));
+        let f = formats(&[hdrop(&[r"C:\Temp\img.png"]), (CF_DIB, build_dib(&img))]);
+        assert!(matches!(classify(&f, &IDS), Some(Copied::Image(_))));
+    }
+
+    #[test]
+    fn excluded_file_lists_are_ignored() {
+        let f = formats(&[hdrop(&[r"C:\a.pdf"]), (IDS.exclude_from_monitoring, vec![])]);
+        assert!(classify(&f, &IDS).is_none());
+    }
+
+    #[test]
+    fn an_empty_file_list_falls_through() {
+        let f = formats(&[hdrop(&[]), (CF_UNICODETEXT, encode_unicode_text("hi"))]);
+        assert!(matches!(classify(&f, &IDS), Some(Copied::Text(_))));
     }
 
     #[test]

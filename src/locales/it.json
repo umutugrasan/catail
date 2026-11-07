@@ -72,13 +72,17 @@
     "copy_failed": "Impossibile copiare l’immagine: {error}",
     "save_failed": "Impossibile salvare l’immagine: {error}",
     "queue_add_failed": "Impossibile aggiungere l’immagine alla coda: {error}",
+    "folders_skipped": "{count} elementi non aggiunti perché non sono file (una cartella o non più presenti).",
     "queue_empty": "La coda è vuota. Seleziona un’area con Stamp e premi «Crea una coda», oppure scegli «Modalità testo» in alto.",
     "paste_cancelled": "Incolla interrotto: {done}/{total} elementi incollati. La coda viene mantenuta.",
     "paste_failed": "Incolla non riuscito: {error}",
+    "files_missing": "{count} file non più presenti, saltati: {names}",
     "release_keys": "I tasti della scorciatoia non sono stati rilasciati, incolla annullato.",
     "update_available_title": "Aggiornamento disponibile",
     "update_available_body": "Catail {version} è pronto. Installalo da Impostazioni → Aggiornamenti.",
     "export_done": "Coda salvata: {path}",
+    "export_zip_unreadable": "{count} file non leggibili, non inclusi nello ZIP.",
+    "export_pdf_left_out": "{count} file non inclusi nel PDF: un PDF contiene solo immagini e testo. Scegli ZIP per i file.",
     "export_failed": "Impossibile salvare la coda: {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Automatico",
     "paste_mode_batch": "Tutto insieme",
     "paste_mode_sequential": "Uno alla volta",
-    "paste_mode_auto_help": "Solo immagini: tutte insieme (o secondo la regola dell’app). Solo testo: unito. Coda mista: un elemento alla volta.",
-    "paste_mode_batch_help": "Le immagini vanno sempre come un elenco di file e i testi uniti, in un solo incolla.",
+    "paste_mode_auto_help": "Solo immagini e file: tutto insieme (o secondo la regola dell'app); solo testo: unito; una coda mista va elemento per elemento.",
+    "paste_mode_batch_help": "Immagini e file vanno sempre come un unico elenco di file, i testi uniti, in un solo incolla.",
     "paste_mode_sequential_help": "Ogni elemento viene messo negli appunti e incollato da solo. Più lento, ma funziona ovunque; Esc lo ferma.",
     "sequential_delay": "Pausa tra gli elementi nell’incolla uno alla volta (ms)",
     "batch_restore_delay": "Attesa prima di ripristinare gli appunti dopo l’incolla in blocco (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Premi Invio tra i testi (nelle chat ogni testo diventa un messaggio)",
     "clear_after_paste": "Svuota la coda dopo l’incolla",
     "app_rules": "Regole per app",
-    "app_rules_help": "Scegli l’incolla uno alla volta per le app che prendono solo la prima immagine di un gruppo. Scrivi il nome del programma come in Gestione attività (es. whatsapp.exe).",
+    "app_rules_help": "Scegli l'incolla sequenziale per le app che accettano solo la prima immagine o il primo file di un incolla in blocco. Scrivi il nome del programma come in Gestione attività (es. whatsapp.exe).",
     "rule_process": "Programma",
     "rule_mode": "Metodo",
     "rule_delay": "Pausa (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Immagini in PNG, testi in TXT",
     "export_pdf": "Una pagina per elemento",
     "zoom": "Ingrandisci e modifica",
-    "title_short": "Coda"
+    "title_short": "Coda",
+    "drop_hint": "Rilascia per aggiungere alla coda",
+    "pdf_preview": "Anteprima del PDF"
   },
   "ocr": {
     "no_language": "Windows non ha un pacchetto lingua per il riconoscimento del testo. Aggiungilo in Impostazioni → Data/ora e lingua → Lingua.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Esporta la coda",
     "zip_filter": "Archivio ZIP",
-    "pdf_filter": "Documento PDF"
+    "pdf_filter": "Documento PDF",
+    "pdf_only_files": "Non ci sono immagini o testo da mettere in un PDF. Scegli ZIP per i file."
   },
   "preview": {
     "close": "Chiudi (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "Continua a modificare",
     "save_failed": "Salvataggio non riuscito. L'elemento potrebbe non essere più in coda.",
     "load_failed": "Impossibile aprire l'immagine.",
-    "edit_text": "Modifica testo"
+    "edit_text": "Modifica testo",
+    "pdf_loading": "Apertura del PDF…",
+    "pdf_failed": "Impossibile aprire il PDF. Il file potrebbe essere stato spostato o danneggiato.",
+    "pdf_password": "Questo PDF è protetto da password e non può essere mostrato.",
+    "pdf_zoom_in": "Ingrandisci (+)",
+    "pdf_zoom_out": "Riduci (-)"
   }
 }

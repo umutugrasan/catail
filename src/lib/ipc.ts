@@ -20,11 +20,15 @@ export interface OverlayInfo {
 
 export interface QueueItemView {
   id: string;
-  kind: "image" | "text";
+  kind: "image" | "text" | "file";
   /** Start of the text, for text items. */
   preview: string | null;
   /** Whole text, for exporting. */
   fullText: string | null;
+  /** For file items. */
+  fileName: string | null;
+  filePath: string | null;
+  fileSize: number | null;
   sourceApp: string | null;
   /** Goes up with every edit. */
   revision: number;
@@ -154,6 +158,8 @@ export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { i
 export const queueRestore = () => invoke<void>("queue_restore");
 /** The revision makes an edited image a new address, so it isn't shown from the old one. */
 export const queueImageUrl = (id: string, revision: number) => `${convertFileSrc(`${id}.png`, "queue")}?v=${revision}`;
+/** A queued PDF file, for the preview window. */
+export const queuePdfUrl = (id: string) => convertFileSrc(`${id}.pdf`, "queue");
 /** Saves an edited image over its queue item; the PNG goes as a raw body. */
 export const queueEditImage = (id: string, png: Uint8Array) =>
   invoke<void>("queue_edit_image", png, { headers: { "x-id": id } });
@@ -224,6 +230,8 @@ export const BadgeEvents = {
   update: "badge:update",
   /** The panel's bin was clicked; a cat leaps from there into the box. */
   leap: "badge:leap",
+  /** Files are being dragged over the badge (true) or have left it (false). */
+  dropHover: "badge:drop-hover",
 } as const;
 
 export const PreviewEvents = {
@@ -239,4 +247,6 @@ export const PanelEvents = {
   update: "panel:update",
   opened: "panel:opened",
   close: "panel:close",
+  /** Files are being dragged over the panel (true) or have left it (false). */
+  dropHover: "panel:drop-hover",
 } as const;

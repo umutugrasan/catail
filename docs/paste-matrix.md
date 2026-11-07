@@ -46,6 +46,20 @@ Her testten önce panoya bir metin kopyala (ör. `ESKI-PANO`). Test bittikten so
 | Gmail | Chrome | | | | | |
 | Paint | Uygulama | | | | | |
 
+## Dosya yapıştırma (0.9.0)
+
+Kuyruktaki PDF ve DOCX dosyaları CF_HDROP ile yapıştırılır; hedef uygulama dosya yapıştırmayı kabul etmiyorsa yapıştırılamaz. Her satır gerçek uygulamada elle denenir, sonuç buraya işlenir.
+
+Deneme: Gezgin'de bir PDF ve bir DOCX seçip sağ tıkla, **Kuyruğa ekle**; hedefe tıkla, Ctrl+V.
+
+| Uygulama | Ortam | PDF + DOCX birlikte | Tek dosya | Dosya + metin karışık | Not |
+|---|---|---|---|---|---|
+| ChatGPT | Chrome | | | | |
+| WhatsApp Desktop | Uygulama | | | | |
+| Gmail | Chrome | | | | |
+| Gezgin | Klasör | | | | |
+| Word | Uygulama | | | | |
+
 ## Ek kontroller
 
 - [ ] Mod B sırasında **Esc**'e basınca yapıştırma duruyor ve "Cancelled" mesajı çıkıyor.

@@ -1,6 +1,6 @@
 //! The capture queue. Screenshots join it from the overlay toolbar; in text mode (picked on
-//! the overlay's top bar) every Ctrl+C joins it too. While it has items, Ctrl+V pastes the
-//! whole queue instead of the clipboard.
+//! the overlay's top bar) every Ctrl+C joins it too, files included, and files can be dropped
+//! on the panel. While it has items, Ctrl+V pastes the whole queue instead of the clipboard.
 
 pub mod item;
 pub mod store;
@@ -14,7 +14,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use image::RgbaImage;
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, DragDropEvent, Emitter, Manager, Runtime, WebviewWindow, WindowEvent};
 
 use crate::clipboard::{self, Clip, Copied};
 use crate::i18n::{t, t_with};
@@ -55,6 +55,60 @@ pub fn add_text<R: Runtime>(app: &AppHandle<R>, text: String, source_app: Option
         .push(QueueItem::text(text, source_app));
     withdraw_undo(app);
     changed(app);
+}
+
+/// Queues files in the given order, by path. Whatever isn't a file (folders) is left out and
+/// the user is told.
+pub fn add_files<R: Runtime>(app: &AppHandle<R>, paths: Vec<PathBuf>, source_app: Option<String>) {
+    remember(content_hash_paths(&paths));
+    let state = app.state::<AppState>();
+    let (added, left_out) = {
+        let mut queue = state.queue.lock().unwrap();
+        let total = paths.len();
+        let added = paths
+            .into_iter()
+            .filter(|path| queue.push_file(path.clone(), source_app.clone()))
+            .count();
+        (added, total - added)
+    };
+    if added > 0 {
+        withdraw_undo(app);
+        changed(app);
+    }
+    if left_out > 0 {
+        let msg = t_with(
+            "notify.folders_skipped",
+            &[("count", &left_out.to_string())],
+        );
+        notify::show(app, &t("app.name"), &msg);
+    }
+}
+
+/// Lets files dragged from other apps onto this window join the queue. `hover_event` tells the
+/// window when files are over it, so it can show that a drop would work.
+pub fn accept_file_drops<R: Runtime>(window: &WebviewWindow<R>, hover_event: &'static str) {
+    let app = window.app_handle().clone();
+    let label = window.label().to_owned();
+    window.on_window_event(move |event| {
+        let WindowEvent::DragDrop(drop) = event else {
+            return;
+        };
+        match drop {
+            DragDropEvent::Enter { .. } => {
+                let _ = app.emit_to(label.as_str(), hover_event, true);
+            }
+            DragDropEvent::Leave => {
+                let _ = app.emit_to(label.as_str(), hover_event, false);
+            }
+            DragDropEvent::Drop { paths, .. } => {
+                let _ = app.emit_to(label.as_str(), hover_event, false);
+                let (app, paths) = (app.clone(), paths.clone());
+                // Looking at each file can be slow on a network drive.
+                std::thread::spawn(move || add_files(&app, paths, None));
+            }
+            _ => {}
+        }
+    });
 }
 
 /// Something new joined the queue: the user has moved on, so "Geri al" for the last paste or
@@ -208,6 +262,15 @@ pub fn on_clipboard_changed<R: Runtime>(app: &AppHandle<R>) {
                 add_image(app, &img)
             }
         }
+        Ok(Some(Clip {
+            content: Copied::Files(paths),
+            source_app,
+        })) => {
+            if !is_recent_duplicate(content_hash_paths(&paths)) {
+                add_files(app, paths, source_app);
+            }
+            Ok(())
+        }
         Ok(None) => Ok(()),
         Err(e) => Err(e),
     };
@@ -233,6 +296,12 @@ fn is_recent_duplicate(hash: u64) -> bool {
 fn content_hash_text(text: &str) -> u64 {
     let mut h = DefaultHasher::new();
     text.hash(&mut h);
+    h.finish()
+}
+
+fn content_hash_paths(paths: &[PathBuf]) -> u64 {
+    let mut h = DefaultHasher::new();
+    paths.hash(&mut h);
     h.finish()
 }
 

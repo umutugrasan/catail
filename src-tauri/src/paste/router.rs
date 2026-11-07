@@ -1,6 +1,6 @@
 //! Picks how to paste the queue: one file list, one joined text, or item by item.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::queue::item::{QueueItem, QueueItemKind};
@@ -10,11 +10,12 @@ use crate::settings::{PasteMode, Settings};
 pub enum Step {
     Image(PathBuf),
     Text(String),
+    File(PathBuf),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Plan {
-    /// Mode A: every image as one CF_HDROP list, one Ctrl+V.
+    /// Mode A: every image and file as one CF_HDROP list, one Ctrl+V.
     Batch(Vec<PathBuf>),
     /// All texts joined with the separator, one Ctrl+V.
     JoinedText(String),
@@ -29,7 +30,7 @@ pub enum Plan {
 /// `foreground` is the target window's executable name, used to look up `app_rules`.
 /// `items` must not be empty.
 pub fn plan(items: &[QueueItem], settings: &Settings, foreground: Option<&str>) -> Plan {
-    let all_images = items.iter().all(|i| i.kind == QueueItemKind::Image);
+    let no_texts = items.iter().all(|i| i.kind != QueueItemKind::Text);
     let all_texts = items.iter().all(|i| i.kind == QueueItemKind::Text);
     let rule = foreground.and_then(|p| settings.rule_for(p));
     let delay_ms = rule
@@ -41,7 +42,10 @@ pub fn plan(items: &[QueueItem], settings: &Settings, foreground: Option<&str>) 
         delay: Duration::from_millis(delay_ms.into()),
         enter_between_texts: settings.send_enter_between_texts,
     };
-    let batch = || Plan::Batch(items.iter().filter_map(|i| i.image_path.clone()).collect());
+    let batch = || {
+        let paths = items.iter().filter_map(QueueItem::path_to_paste);
+        Plan::Batch(paths.map(Path::to_path_buf).collect())
+    };
     let joined = || {
         let texts: Vec<&str> = items.iter().filter_map(|i| i.text.as_deref()).collect();
         Plan::JoinedText(texts.join(&settings.text_separator))
@@ -50,7 +54,7 @@ pub fn plan(items: &[QueueItem], settings: &Settings, foreground: Option<&str>) 
     match settings.paste_mode {
         PasteMode::Sequential => sequential(),
         // A file list can't carry text, so forced batch only applies to pure queues.
-        PasteMode::Batch if all_images => batch(),
+        PasteMode::Batch if no_texts => batch(),
         PasteMode::Batch if all_texts => joined(),
         PasteMode::Batch => sequential(),
         PasteMode::Auto if all_texts => {
@@ -60,7 +64,7 @@ pub fn plan(items: &[QueueItem], settings: &Settings, foreground: Option<&str>) 
                 joined()
             }
         }
-        PasteMode::Auto if !all_images => sequential(),
+        PasteMode::Auto if !no_texts => sequential(),
         PasteMode::Auto => match rule.map(|r| r.mode) {
             Some(PasteMode::Sequential) => sequential(),
             _ => batch(),
@@ -72,7 +76,20 @@ fn step(item: &QueueItem) -> Option<Step> {
     match item.kind {
         QueueItemKind::Image => item.image_path.clone().map(Step::Image),
         QueueItemKind::Text => item.text.clone().map(Step::Text),
+        QueueItemKind::File => item.file_path.clone().map(Step::File),
     }
+}
+
+/// Splits off the file items whose file is gone (`exists` is false for it): they can't be
+/// pasted, and the user is told. Returns what can be pasted, in order, and what can't.
+pub fn split_missing(
+    items: Vec<QueueItem>,
+    exists: impl Fn(&Path) -> bool,
+) -> (Vec<QueueItem>, Vec<QueueItem>) {
+    items.into_iter().partition(|item| match item.kind {
+        QueueItemKind::File => item.file_path.as_deref().is_some_and(&exists),
+        QueueItemKind::Image | QueueItemKind::Text => true,
+    })
 }
 
 #[cfg(test)]
@@ -86,6 +103,10 @@ mod tests {
 
     fn txt(text: &str) -> QueueItem {
         QueueItem::text(text.into(), None)
+    }
+
+    fn file(name: &str) -> QueueItem {
+        QueueItem::file(PathBuf::from(name), 1, None)
     }
 
     fn whatsapp_rule(delay_ms: Option<u32>) -> Settings {
@@ -171,6 +192,87 @@ mod tests {
                 Step::Image("1.png".into()),
                 Step::Text("t".into()),
                 Step::Image("2.png".into())
+            ]
+        );
+    }
+
+    #[test]
+    fn images_and_files_go_as_one_list_in_order() {
+        let plan = plan(
+            &[file("a.pdf"), img("1.png"), file("b.docx")],
+            &Settings::default(),
+            Some("chrome.exe"),
+        );
+        assert_eq!(
+            plan,
+            Plan::Batch(vec!["a.pdf".into(), "1.png".into(), "b.docx".into()])
+        );
+    }
+
+    #[test]
+    fn text_among_files_goes_item_by_item() {
+        let Plan::Sequential { steps, .. } = plan(
+            &[file("a.pdf"), txt("t"), img("1.png")],
+            &Settings::default(),
+            None,
+        ) else {
+            panic!("expected sequential");
+        };
+        assert_eq!(
+            steps,
+            [
+                Step::File("a.pdf".into()),
+                Step::Text("t".into()),
+                Step::Image("1.png".into())
+            ]
+        );
+    }
+
+    #[test]
+    fn app_rule_and_forced_modes_apply_to_files() {
+        let Plan::Sequential { steps, .. } = plan(
+            &[file("a.pdf"), file("b.pdf")],
+            &whatsapp_rule(None),
+            Some("whatsapp.exe"),
+        ) else {
+            panic!("expected sequential");
+        };
+        assert_eq!(
+            steps,
+            [Step::File("a.pdf".into()), Step::File("b.pdf".into())]
+        );
+
+        let forced = Settings {
+            paste_mode: PasteMode::Sequential,
+            ..Settings::default()
+        };
+        assert!(matches!(
+            plan(&[file("a.pdf")], &forced, None),
+            Plan::Sequential { .. }
+        ));
+        let batch = Settings {
+            paste_mode: PasteMode::Batch,
+            ..whatsapp_rule(None)
+        };
+        assert!(matches!(
+            plan(&[file("a.pdf")], &batch, Some("whatsapp.exe")),
+            Plan::Batch(_)
+        ));
+    }
+
+    #[test]
+    fn only_gone_files_are_split_off() {
+        let items = vec![file("kayip.pdf"), txt("t"), img("1.png"), file("var.pdf")];
+        let (available, missing) = split_missing(items, |p| p == Path::new("var.pdf"));
+        assert_eq!(missing.len(), 1);
+        assert_eq!(missing[0].file_name().as_deref(), Some("kayip.pdf"));
+        let kinds: Vec<QueueItemKind> = available.iter().map(|i| i.kind).collect();
+        assert_eq!(
+            kinds,
+            [
+                QueueItemKind::Text,
+                QueueItemKind::Image,
+                QueueItemKind::File
             ]
         );
     }

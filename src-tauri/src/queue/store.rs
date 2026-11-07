@@ -59,6 +59,19 @@ impl QueueStore {
         self.items.push(item);
     }
 
+    /// Queues the user's file by its path; nothing is copied. Returns false for anything that
+    /// isn't a file right now (a folder, or something already gone).
+    pub fn push_file(&mut self, path: PathBuf, source_app: Option<String>) -> bool {
+        match std::fs::metadata(&path) {
+            Ok(meta) if meta.is_file() => {
+                self.items
+                    .push(QueueItem::file(path, meta.len(), source_app));
+                true
+            }
+            _ => false,
+        }
+    }
+
     /// Swaps an image item's picture for its edited version, keeping its place in the queue.
     /// The old file goes right away: an edit may have blurred or cropped something out of it.
     /// Returns whether the item was found.
@@ -170,6 +183,8 @@ impl QueueStore {
     }
 }
 
+/// Only ever `image_path`, a PNG Catail wrote itself. A file item's `file_path` is the user's
+/// own file and stays where it is.
 fn remove_file(item: &QueueItem) {
     if let Some(path) = &item.image_path {
         let _ = std::fs::remove_file(path);
@@ -365,6 +380,84 @@ mod tests {
         assert!(store.replace_text(id, "yeni".into()));
         assert_eq!(store.items()[0].text.as_deref(), Some("yeni"));
         assert_eq!(store.items()[0].revision, 1);
+    }
+
+    fn users_file(root: &Path, name: &str) -> PathBuf {
+        std::fs::create_dir_all(root).unwrap();
+        let path = root.join(name);
+        std::fs::write(&path, b"12345").unwrap();
+        path
+    }
+
+    #[test]
+    fn files_join_by_path_with_their_size() {
+        let root = temp_root("file-join");
+        let path = users_file(&root, "rapor.pdf");
+        let mut store = QueueStore::new(&root.join("queue"), "s1");
+
+        assert!(store.push_file(path.clone(), Some("explorer.exe".into())));
+
+        let item = &store.items()[0];
+        assert_eq!(item.kind, QueueItemKind::File);
+        assert_eq!(item.file_path.as_deref(), Some(path.as_path()));
+        assert_eq!(item.file_size, Some(5));
+        assert_eq!(item.file_name().as_deref(), Some("rapor.pdf"));
+        assert_eq!(item.path_to_paste(), Some(path.as_path()));
+        assert!(item.image_path.is_none());
+        // Nothing was copied into the queue's own folder.
+        assert!(!store.session_dir().exists());
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn folders_and_missing_paths_are_not_queued() {
+        let root = temp_root("file-reject");
+        std::fs::create_dir_all(&root).unwrap();
+        let mut store = QueueStore::new(&root.join("queue"), "s1");
+
+        assert!(!store.push_file(root.clone(), None));
+        assert!(!store.push_file(root.join("yok.pdf"), None));
+        assert_eq!(store.len(), 0);
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn leaving_the_queue_never_deletes_the_users_file() {
+        let root = temp_root("file-keep");
+        let path = users_file(&root, "tez.docx");
+        let mut store = QueueStore::new(&root.join("queue"), "s1");
+
+        store.push_file(path.clone(), None);
+        let id = store.items()[0].id;
+        assert!(store.remove(id));
+        assert!(path.is_file(), "remove must not touch it");
+
+        store.push_file(path.clone(), None);
+        assert!(store.undo_last());
+        assert!(path.is_file(), "undo must not touch it");
+
+        store.push_file(path.clone(), None);
+        store.set_aside_all();
+        store.discard_set_aside();
+        assert!(path.is_file(), "clear must not touch it");
+
+        remove_stale_sessions(&root.join("queue"), "s1");
+        assert!(path.is_file());
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn files_cannot_be_edited() {
+        let root = temp_root("file-edit");
+        let path = users_file(&root, "a.pdf");
+        let mut store = QueueStore::new(&root.join("queue"), "s1");
+        store.push_file(path.clone(), None);
+        let id = store.items()[0].id;
+
+        assert!(!store.replace_text(id, "x".into()));
+        assert!(!store.replace_image(id, &RgbaImage::new(1, 1)).unwrap());
+        assert_eq!(std::fs::read(&path).unwrap(), b"12345");
+        std::fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]

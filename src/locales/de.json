@@ -72,13 +72,17 @@
     "copy_failed": "Bild konnte nicht kopiert werden: {error}",
     "save_failed": "Bild konnte nicht gespeichert werden: {error}",
     "queue_add_failed": "Bild konnte nicht zur Warteschlange hinzugefügt werden: {error}",
+    "folders_skipped": "{count} Element(e) wurden nicht hinzugefügt, weil sie keine Dateien sind (ein Ordner oder nicht mehr vorhanden).",
     "queue_empty": "Die Warteschlange ist leer. Wähle mit der Druck-Taste einen Bereich und klicke auf „Warteschlange starten“, oder wähle oben „Textmodus“.",
     "paste_cancelled": "Einfügen gestoppt: {done}/{total} Elemente eingefügt. Die Warteschlange bleibt erhalten.",
     "paste_failed": "Einfügen fehlgeschlagen: {error}",
+    "files_missing": "{count} Datei(en) sind nicht mehr vorhanden und wurden übersprungen: {names}",
     "release_keys": "Die Tasten des Kürzels wurden nicht losgelassen, das Einfügen wurde abgebrochen.",
     "update_available_title": "Update verfügbar",
     "update_available_body": "Catail {version} ist bereit. Installiere es unter Einstellungen → Updates.",
     "export_done": "Warteschlange gespeichert: {path}",
+    "export_zip_unreadable": "{count} Datei(en) konnten nicht gelesen werden und fehlen in der ZIP-Datei.",
+    "export_pdf_left_out": "{count} Datei(en) fehlen im PDF: Ein PDF enthält nur Bilder und Text. Wähle ZIP für Dateien.",
     "export_failed": "Warteschlange konnte nicht gespeichert werden: {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Automatisch",
     "paste_mode_batch": "Alles auf einmal",
     "paste_mode_sequential": "Einzeln",
-    "paste_mode_auto_help": "Nur Bilder: alle auf einmal (oder wie die App-Regel es sagt). Nur Text: zusammengefügt. Gemischt: ein Element nach dem anderen.",
-    "paste_mode_batch_help": "Bilder immer als eine Dateiliste, Texte zusammengefügt, in einem Schritt.",
+    "paste_mode_auto_help": "Nur Bilder und Dateien: alle auf einmal (oder nach App-Regel); nur Text: zusammengefügt; eine gemischte Warteschlange wird einzeln eingefügt.",
+    "paste_mode_batch_help": "Bilder und Dateien werden immer als eine Dateiliste, Texte zusammengefügt in einem Schritt eingefügt.",
     "paste_mode_sequential_help": "Jedes Element wird einzeln in die Zwischenablage gelegt und eingefügt. Langsamer, funktioniert aber überall; Esc stoppt.",
     "sequential_delay": "Pause zwischen Elementen beim einzelnen Einfügen (ms)",
     "batch_restore_delay": "Wartezeit vor dem Wiederherstellen der Zwischenablage nach dem gemeinsamen Einfügen (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Zwischen Texten Enter drücken (in Chat-Apps wird jeder Text eine eigene Nachricht)",
     "clear_after_paste": "Warteschlange nach dem Einfügen leeren",
     "app_rules": "App-Regeln",
-    "app_rules_help": "Für Apps, die beim gemeinsamen Einfügen nur das erste Bild nehmen, das einzelne Einfügen wählen. Programmname wie im Task-Manager (z. B. whatsapp.exe).",
+    "app_rules_help": "Wähle sequenzielles Einfügen für Apps, die beim Sammeleinfügen nur das erste Bild oder die erste Datei annehmen. Schreibe den Programmnamen wie im Task-Manager (z. B. whatsapp.exe).",
     "rule_process": "Programm",
     "rule_mode": "Methode",
     "rule_delay": "Pause (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Bilder als PNG, Texte als TXT",
     "export_pdf": "Eine Seite pro Element",
     "zoom": "Vergrößern und bearbeiten",
-    "title_short": "Warteschlange"
+    "title_short": "Warteschlange",
+    "drop_hint": "Zum Hinzufügen ablegen",
+    "pdf_preview": "PDF-Vorschau"
   },
   "ocr": {
     "no_language": "Windows hat kein Sprachpaket für die Texterkennung. Füge eines unter Einstellungen → Zeit und Sprache → Sprache hinzu.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Warteschlange exportieren",
     "zip_filter": "ZIP-Archiv",
-    "pdf_filter": "PDF-Dokument"
+    "pdf_filter": "PDF-Dokument",
+    "pdf_only_files": "Es gibt keine Bilder oder Texte für ein PDF. Wähle ZIP für Dateien."
   },
   "preview": {
     "close": "Schließen (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "Weiter bearbeiten",
     "save_failed": "Speichern fehlgeschlagen. Das Element ist vielleicht nicht mehr in der Warteschlange.",
     "load_failed": "Das Bild konnte nicht geöffnet werden.",
-    "edit_text": "Text bearbeiten"
+    "edit_text": "Text bearbeiten",
+    "pdf_loading": "PDF wird geöffnet…",
+    "pdf_failed": "Das PDF konnte nicht geöffnet werden. Die Datei wurde vielleicht verschoben oder ist beschädigt.",
+    "pdf_password": "Dieses PDF ist passwortgeschützt und kann nicht angezeigt werden.",
+    "pdf_zoom_in": "Vergrößern (+)",
+    "pdf_zoom_out": "Verkleinern (-)"
   }
 }

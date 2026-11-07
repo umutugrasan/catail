@@ -1,6 +1,6 @@
 //! File lists on the clipboard (CF_HDROP), as Explorer's "Copy" produces.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 
@@ -45,6 +45,34 @@ pub fn build_hdrop(paths: &[&Path]) -> Vec<u8> {
     buf
 }
 
+/// Reads a CF_HDROP payload back into paths, in order. Anything malformed yields what could be
+/// read up to there, so a bad list can't take the watcher down.
+pub fn parse_hdrop(bytes: &[u8]) -> Vec<PathBuf> {
+    let u32_at = |o: usize| Some(u32::from_le_bytes(bytes.get(o..o + 4)?.try_into().ok()?));
+    let (Some(offset), Some(wide)) = (u32_at(0), u32_at(16)) else {
+        return Vec::new();
+    };
+    let Some(list) = bytes.get(offset as usize..) else {
+        return Vec::new();
+    };
+    if wide == 0 {
+        // Very old programs. Their code page is unknown: a wrong guess gives a path that
+        // doesn't exist, which the queue turns away.
+        return list
+            .split(|&b| b == 0)
+            .take_while(|name| !name.is_empty())
+            .map(|name| PathBuf::from(String::from_utf8_lossy(name).into_owned()))
+            .collect();
+    }
+    let (pairs, _) = list.as_chunks::<2>();
+    let units: Vec<u16> = pairs.iter().map(|&p| u16::from_le_bytes(p)).collect();
+    units
+        .split(|&u| u == 0)
+        .take_while(|name| !name.is_empty())
+        .map(|name| PathBuf::from(String::from_utf16_lossy(name)))
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,6 +83,42 @@ mod tests {
         assert!(rest.is_empty());
         let units: Vec<u16> = pairs.iter().map(|&p| u16::from_le_bytes(p)).collect();
         String::from_utf16(&units).unwrap()
+    }
+
+    #[test]
+    fn hdrop_reads_back_in_order() {
+        let paths = [
+            Path::new(r"C:\Masaüstü\rapor.pdf"),
+            Path::new(r"\\sunucu\pay\tez.docx"),
+        ];
+        let parsed = parse_hdrop(&build_hdrop(&paths));
+        assert_eq!(parsed, paths.map(Path::to_path_buf));
+    }
+
+    #[test]
+    fn hdrop_with_narrow_paths() {
+        let mut buf = vec![0u8; 20];
+        buf[0] = 20;
+        buf.extend_from_slice(b"C:\\a.txt\0C:\\b.txt\0\0");
+        assert_eq!(
+            parse_hdrop(&buf),
+            [PathBuf::from(r"C:\a.txt"), PathBuf::from(r"C:\b.txt")]
+        );
+    }
+
+    #[test]
+    fn broken_hdrop_gives_nothing() {
+        assert!(parse_hdrop(&[]).is_empty());
+        assert!(parse_hdrop(&[1, 2, 3]).is_empty());
+        // Offset past the end of the data.
+        let mut buf = vec![0u8; 20];
+        buf[0] = 200;
+        assert!(parse_hdrop(&buf).is_empty());
+        // Header only, no list.
+        let mut empty = vec![0u8; 20];
+        empty[0] = 20;
+        empty[16] = 1;
+        assert!(parse_hdrop(&empty).is_empty());
     }
 
     #[test]

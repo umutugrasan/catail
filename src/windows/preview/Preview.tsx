@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { onWindowEvent, PreviewEvents, previewClose, previewCurrent, queueItems, type QueueItemView } from "../../lib/ipc";
 import { ImageEditor } from "./ImageEditor";
+import { PdfViewer } from "./PdfViewer";
 import { TextEditor } from "./TextEditor";
 
 /** Keep in sync with the exit animation in preview.css. */
@@ -43,6 +44,10 @@ export function Preview() {
   }, []);
 
   if (!item) return null;
+
+  if (item.kind === "file") {
+    return <PdfViewer key={openCount} item={item} closing={closing} onClose={close} />;
+  }
 
   return item.kind === "image" ? (
     <ImageEditor key={openCount} item={item} closing={closing} onClose={close} />

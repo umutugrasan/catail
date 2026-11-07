@@ -72,13 +72,17 @@
     "copy_failed": "Impossible de copier l’image : {error}",
     "save_failed": "Impossible d’enregistrer l’image : {error}",
     "queue_add_failed": "Impossible d’ajouter l’image à la file : {error}",
+    "folders_skipped": "{count} élément(s) non ajouté(s) car ce ne sont pas des fichiers (dossier ou élément disparu).",
     "queue_empty": "La file est vide. Sélectionnez une zone avec Impr. écran et cliquez sur « Démarrer une file », ou choisissez « Mode texte » en haut.",
     "paste_cancelled": "Collage arrêté : {done}/{total} éléments collés. La file est conservée.",
     "paste_failed": "Échec du collage : {error}",
+    "files_missing": "{count} fichier(s) introuvable(s), ignoré(s) : {names}",
     "release_keys": "Les touches du raccourci n’ont pas été relâchées, le collage est annulé.",
     "update_available_title": "Mise à jour disponible",
     "update_available_body": "Catail {version} est prêt. Installez-le depuis Paramètres → Mises à jour.",
     "export_done": "File enregistrée : {path}",
+    "export_zip_unreadable": "{count} fichier(s) illisible(s), absent(s) du ZIP.",
+    "export_pdf_left_out": "{count} fichier(s) absent(s) du PDF : un PDF ne contient que des images et du texte. Choisis ZIP pour les fichiers.",
     "export_failed": "Impossible d’enregistrer la file : {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Automatique",
     "paste_mode_batch": "Tout d’un coup",
     "paste_mode_sequential": "Un par un",
-    "paste_mode_auto_help": "Images seules : toutes d’un coup (ou selon la règle de l’application). Texte seul : réuni. File mixte : un élément à la fois.",
-    "paste_mode_batch_help": "Les images partent toujours en une liste de fichiers et les textes réunis, en un seul collage.",
+    "paste_mode_auto_help": "Seulement des images et des fichiers : tout d'un coup (ou selon la règle de l'application) ; seulement du texte : réuni ; file mixte : élément par élément.",
+    "paste_mode_batch_help": "Les images et les fichiers partent toujours en une seule liste de fichiers, les textes réunis, en un seul collage.",
     "paste_mode_sequential_help": "Chaque élément est mis dans le presse-papiers et collé séparément. Plus lent, mais fonctionne partout ; Échap arrête.",
     "sequential_delay": "Pause entre les éléments en collage un par un (ms)",
     "batch_restore_delay": "Attente avant de restaurer le presse-papiers après un collage groupé (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Appuyer sur Entrée entre les textes (chaque texte devient un message dans les messageries)",
     "clear_after_paste": "Vider la file après le collage",
     "app_rules": "Règles par application",
-    "app_rules_help": "Choisissez le collage un par un pour les applications qui ne prennent que la première image d’un lot. Nom du programme comme dans le Gestionnaire des tâches (ex. whatsapp.exe).",
+    "app_rules_help": "Choisis le collage séquentiel pour les applications qui ne prennent que la première image ou le premier fichier d'un collage groupé. Écris le nom du programme comme dans le Gestionnaire des tâches (ex. whatsapp.exe).",
     "rule_process": "Programme",
     "rule_mode": "Méthode",
     "rule_delay": "Pause (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Images en PNG, textes en TXT",
     "export_pdf": "Une page par élément",
     "zoom": "Agrandir et modifier",
-    "title_short": "File"
+    "title_short": "File",
+    "drop_hint": "Dépose pour ajouter à la file",
+    "pdf_preview": "Aperçu du PDF"
   },
   "ocr": {
     "no_language": "Windows n’a pas de module linguistique pour la reconnaissance de texte. Ajoutez-en un dans Paramètres → Heure et langue → Langue.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Exporter la file",
     "zip_filter": "Archive ZIP",
-    "pdf_filter": "Document PDF"
+    "pdf_filter": "Document PDF",
+    "pdf_only_files": "Aucune image ni aucun texte à mettre dans un PDF. Choisis ZIP pour les fichiers."
   },
   "preview": {
     "close": "Fermer (Échap)",
@@ -213,6 +220,11 @@
     "keep_editing": "Continuer à modifier",
     "save_failed": "Échec de l'enregistrement. L'élément n'est peut-être plus dans la file.",
     "load_failed": "Impossible d'ouvrir l'image.",
-    "edit_text": "Modifier le texte"
+    "edit_text": "Modifier le texte",
+    "pdf_loading": "Ouverture du PDF…",
+    "pdf_failed": "Impossible d'ouvrir le PDF. Le fichier a peut-être été déplacé ou est endommagé.",
+    "pdf_password": "Ce PDF est protégé par un mot de passe et ne peut pas être affiché.",
+    "pdf_zoom_in": "Zoom avant (+)",
+    "pdf_zoom_out": "Zoom arrière (-)"
   }
 }

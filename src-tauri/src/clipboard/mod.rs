@@ -1,6 +1,6 @@
 //! Clipboard access. Platform plumbing lives in per-OS modules behind the same functions.
 
-mod files;
+pub(crate) mod files;
 mod read;
 mod snapshot;
 #[cfg(windows)]

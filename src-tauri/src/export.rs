@@ -1,6 +1,8 @@
-//! Saves the queue as a ZIP (numbered PNG/TXT files) or a PDF (one page per item).
+//! Saves the queue as a ZIP (numbered PNG/TXT files, plus the user's own files under their own
+//! names) or a PDF (one page per image or text; files can't be a page and are left out).
 
 use std::collections::HashMap;
+use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
@@ -15,13 +17,14 @@ const JPEG_QUALITY: u8 = 90;
 /// Pages are sized from pixels at 96 DPI (1 px = 0.75 pt).
 const POINTS_PER_PIXEL: f64 = 0.75;
 
-/// `001.png`, `002.txt`, … in queue order.
-pub fn write_zip(items: &[QueueItem], path: &Path) -> Result<()> {
-    let file =
-        std::fs::File::create(path).with_context(|| format!("cannot create {}", path.display()))?;
+/// `001.png`, `002.txt`, `003-rapor.pdf`, … in queue order. Returns how many files couldn't be
+/// read (moved, deleted, locked) and so aren't in the archive.
+pub fn write_zip(items: &[QueueItem], path: &Path) -> Result<usize> {
+    let file = File::create(path).with_context(|| format!("cannot create {}", path.display()))?;
     let mut zip = zip::ZipWriter::new(file);
     let options = zip::write::SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated);
+    let mut unreadable = 0;
     for (i, item) in items.iter().enumerate() {
         let n = i + 1;
         match item.kind {
@@ -43,20 +46,35 @@ pub fn write_zip(items: &[QueueItem], path: &Path) -> Result<()> {
                 zip.start_file(format!("{n:03}.txt"), options)?;
                 zip.write_all(item.text.as_deref().unwrap_or_default().as_bytes())?;
             }
+            QueueItemKind::File => {
+                let source = item.file_path.as_ref().and_then(|p| File::open(p).ok());
+                let Some(mut source) = source else {
+                    unreadable += 1;
+                    continue;
+                };
+                let name = item.file_name().unwrap_or_else(|| "dosya".into());
+                let size = source.metadata().map_or(0, |m| m.len());
+                zip.start_file(
+                    format!("{n:03}-{name}"),
+                    options.large_file(size >= u64::from(u32::MAX)),
+                )?;
+                std::io::copy(&mut source, &mut zip)?;
+            }
         }
     }
     zip.finish()?;
-    Ok(())
+    Ok(unreadable)
 }
 
-/// One page per item. Text items are rendered to images by the panel (it has the fonts) and
-/// passed in `text_pages`, keyed by item id.
+/// One page per image or text. Text items are rendered to images by the panel (it has the fonts)
+/// and passed in `text_pages`, keyed by item id. Returns how many file items were left out.
 pub fn write_pdf(
     items: &[QueueItem],
     text_pages: &HashMap<Uuid, RgbaImage>,
     path: &Path,
-) -> Result<()> {
+) -> Result<usize> {
     let mut pages = Vec::with_capacity(items.len());
+    let mut left_out = 0;
     for item in items {
         let img = match item.kind {
             QueueItemKind::Image => {
@@ -72,11 +90,16 @@ pub fn write_pdf(
                 Some(page) => page.clone(),
                 None => continue,
             },
+            QueueItemKind::File => {
+                left_out += 1;
+                continue;
+            }
         };
         pages.push(PdfPage::from_image(&img)?);
     }
     std::fs::write(path, build_pdf(&pages))
-        .with_context(|| format!("cannot write {}", path.display()))
+        .with_context(|| format!("cannot write {}", path.display()))?;
+    Ok(left_out)
 }
 
 pub struct PdfPage {
@@ -238,6 +261,55 @@ mod tests {
     }
 
     #[test]
+    fn zip_holds_the_original_file_under_its_name() {
+        let dir = std::env::temp_dir().join(format!("catail-export-file-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let original = dir.join("rapor ğ.pdf");
+        std::fs::write(&original, b"%PDF-icerik").unwrap();
+        let items = vec![
+            QueueItem::text("metin".into(), None),
+            QueueItem::file(original.clone(), 11, None),
+            QueueItem::file(dir.join("kayip.docx"), 1, None),
+        ];
+        let zip_path = dir.join("out.zip");
+
+        assert_eq!(write_zip(&items, &zip_path).unwrap(), 1);
+
+        let mut archive = zip::ZipArchive::new(File::open(&zip_path).unwrap()).unwrap();
+        assert_eq!(archive.len(), 2);
+        let mut bytes = Vec::new();
+        archive
+            .by_name("002-rapor ğ.pdf")
+            .unwrap()
+            .read_to_end(&mut bytes)
+            .unwrap();
+        assert_eq!(bytes, b"%PDF-icerik");
+        drop(archive);
+        assert!(original.is_file());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn pdf_leaves_files_out_and_counts_them() {
+        let dir = std::env::temp_dir().join(format!("catail-export-pdf-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let png = dir.join("a.png");
+        RgbaImage::new(2, 2).save(&png).unwrap();
+        let items = vec![
+            QueueItem::file(dir.join("a.docx"), 1, None),
+            QueueItem::image(png),
+            QueueItem::file(dir.join("b.docx"), 1, None),
+        ];
+        let pdf_path = dir.join("out.pdf");
+
+        assert_eq!(write_pdf(&items, &HashMap::new(), &pdf_path).unwrap(), 2);
+
+        let pdf = std::fs::read(&pdf_path).unwrap();
+        assert!(text_of(&pdf).contains("/Count 1"));
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
     fn zip_numbers_items_in_order() {
         let dir = std::env::temp_dir().join(format!("catail-export-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
@@ -250,7 +322,7 @@ mod tests {
         let zip_path = dir.join("out.zip");
         write_zip(&items, &zip_path).unwrap();
 
-        let mut archive = zip::ZipArchive::new(std::fs::File::open(&zip_path).unwrap()).unwrap();
+        let mut archive = zip::ZipArchive::new(File::open(&zip_path).unwrap()).unwrap();
         assert_eq!(archive.by_index(0).unwrap().name().unwrap(), "001.txt");
         assert_eq!(archive.by_index(1).unwrap().name().unwrap(), "002.png");
         let mut text = String::new();

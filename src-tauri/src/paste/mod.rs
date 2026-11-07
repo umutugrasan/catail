@@ -39,8 +39,14 @@ use router::Plan;
 const MODIFIER_RELEASE_TIMEOUT: Duration = Duration::from_secs(3);
 
 enum Outcome {
-    Done,
-    Cancelled { done: usize, total: usize },
+    /// `missing`: names of the files that were skipped because they're gone.
+    Done {
+        missing: Vec<String>,
+    },
+    Cancelled {
+        done: usize,
+        total: usize,
+    },
     Empty,
 }
 
@@ -61,7 +67,14 @@ pub fn run<R: Runtime>(app: &AppHandle<R>) {
     queue::changed(app);
 
     let message = match result {
-        Ok(Outcome::Done) => return,
+        Ok(Outcome::Done { missing }) if missing.is_empty() => return,
+        Ok(Outcome::Done { missing }) => t_with(
+            "notify.files_missing",
+            &[
+                ("count", &missing.len().to_string()),
+                ("names", &shown_names(&missing)),
+            ],
+        ),
         Ok(Outcome::Empty) => t("notify.queue_empty"),
         Ok(Outcome::Cancelled { done, total }) => t_with(
             "notify.paste_cancelled",
@@ -72,11 +85,22 @@ pub fn run<R: Runtime>(app: &AppHandle<R>) {
     notify::show(app, &t("app.name"), &message);
 }
 
+/// The first few names; a long list wouldn't fit a notification.
+fn shown_names(names: &[String]) -> String {
+    const SHOWN: usize = 3;
+    let mut text = names[..names.len().min(SHOWN)].join(", ");
+    if names.len() > SHOWN {
+        text.push_str(", …");
+    }
+    text
+}
+
 fn paste<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<Outcome> {
-    let items = state.queue.lock().unwrap().items().to_vec();
-    if items.is_empty() {
+    let queued = state.queue.lock().unwrap().items().to_vec();
+    if queued.is_empty() {
         return Ok(Outcome::Empty);
     }
+    let ids: Vec<Uuid> = queued.iter().map(|i| i.id).collect();
     let settings = state.settings.lock().unwrap().clone();
 
     if !platform::wait_for_modifiers_released(MODIFIER_RELEASE_TIMEOUT) {
@@ -84,23 +108,31 @@ fn paste<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<Outcome> {
     }
     badge::refresh(app); // shows the "pasting" state
 
+    // Checked as late as possible: a file can be moved or deleted while it waits in the queue.
+    let (items, missing) = router::split_missing(queued, std::path::Path::is_file);
+    let missing: Vec<String> = missing.iter().filter_map(|i| i.file_name()).collect();
+
     let foreground = platform::foreground_process_name();
     let total = items.len();
     let restore_delay = Duration::from_millis(settings.batch_restore_delay_ms.into());
-    let pasted = match router::plan(&items, &settings, foreground.as_deref()) {
-        Plan::Batch(paths) => {
-            batch::paste_files(&paths, restore_delay)?;
-            total
+    let pasted = if items.is_empty() {
+        0
+    } else {
+        match router::plan(&items, &settings, foreground.as_deref()) {
+            Plan::Batch(paths) => {
+                batch::paste_files(&paths, restore_delay)?;
+                total
+            }
+            Plan::JoinedText(text) => {
+                batch::paste_text(&text, restore_delay)?;
+                total
+            }
+            Plan::Sequential {
+                steps,
+                delay,
+                enter_between_texts,
+            } => sequential::paste(&steps, delay, enter_between_texts)?,
         }
-        Plan::JoinedText(text) => {
-            batch::paste_text(&text, restore_delay)?;
-            total
-        }
-        Plan::Sequential {
-            steps,
-            delay,
-            enter_between_texts,
-        } => sequential::paste(&steps, delay, enter_between_texts)?,
     };
 
     if pasted < total {
@@ -110,11 +142,11 @@ fn paste<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<Outcome> {
         });
     }
     if settings.clear_queue_after_paste {
-        // Only the pasted items: anything captured meanwhile stays queued.
-        let ids: Vec<Uuid> = items.iter().map(|i| i.id).collect();
+        // Only what this paste dealt with, gone files included: they'd otherwise hold Ctrl+V
+        // forever. Anything captured meanwhile stays queued.
         queue::set_aside_pasted(app, &ids);
         // Pasting finishes the job: Ctrl+C goes back to normal.
         state.text_mode.store(false, Ordering::SeqCst);
     }
-    Ok(Outcome::Done)
+    Ok(Outcome::Done { missing })
 }

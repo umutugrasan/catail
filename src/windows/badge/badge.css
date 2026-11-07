@@ -122,6 +122,11 @@ body,
   transform: scale(0.97);
 }
 
+/* Files being dragged over the badge. */
+.badge--drop {
+  border: 2px dashed var(--tint-500);
+}
+
 /* Gentle pulse while pasting. */
 .badge--pasting .cat-face {
   animation: pulse 900ms var(--ease-in-out) infinite;

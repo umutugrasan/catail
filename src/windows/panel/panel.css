@@ -226,6 +226,63 @@ button {
   -webkit-box-orient: vertical;
 }
 
+/* A click opens a PDF. */
+.panel__tile--pdf {
+  cursor: var(--paw);
+}
+
+/* A file's card: type on the sheet icon, then its name and size. */
+.panel__file {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  padding: 3px 4px 0;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.panel__file-icon {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  color: var(--ink-500);
+}
+
+/* Sits on the sheet's lower half, wider than the sheet if it has to be. */
+.panel__file-type {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  padding: 0 2px;
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--ink-900);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.panel__file-name {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.panel__file-size {
+  margin-top: 1px;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
 .panel__index {
   position: absolute;
   top: 4px;
@@ -482,4 +539,20 @@ button {
 
 .panel__footer > [data-label]:last-child:hover::after {
   translate: 0 0;
+}
+
+/* Files being dragged over the panel. */
+.panel--drop {
+  outline: 2px dashed var(--tint-500);
+  outline-offset: -3px;
+}
+
+.panel__drop-hint {
+  margin: 0;
+  padding: 2px 8px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
 }

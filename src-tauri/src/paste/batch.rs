@@ -8,7 +8,7 @@ use anyhow::Result;
 use super::keys::Keys;
 use crate::clipboard::{self, ClipboardGuard};
 
-/// Pastes all images as one file list, in queue order.
+/// Pastes all images and files as one file list, in queue order.
 pub fn paste_files(paths: &[PathBuf], restore_delay: Duration) -> Result<()> {
     let _guard = ClipboardGuard::capture()?;
     let paths: Vec<&Path> = paths.iter().map(PathBuf::as_path).collect();

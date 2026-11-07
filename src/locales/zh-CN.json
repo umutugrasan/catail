@@ -72,13 +72,17 @@
     "copy_failed": "无法复制图片：{error}",
     "save_failed": "无法保存图片：{error}",
     "queue_add_failed": "无法将图片加入队列：{error}",
+    "folders_skipped": "{count} 项不是文件(文件夹或已不存在),未加入队列。",
     "queue_empty": "队列为空。按 PrintScreen 选择区域后点击“创建队列”，或在顶部选择“文本模式”。",
     "paste_cancelled": "已停止粘贴：已粘贴 {done}/{total} 项。队列已保留。",
     "paste_failed": "粘贴失败：{error}",
+    "files_missing": "{count} 个文件已不存在,已跳过:{names}",
     "release_keys": "快捷键未松开，已取消粘贴。",
     "update_available_title": "有可用更新",
     "update_available_body": "Catail {version} 已就绪。可在“设置 → 更新”中安装。",
     "export_done": "队列已保存：{path}",
+    "export_zip_unreadable": "{count} 个文件无法读取,未包含在 ZIP 中。",
+    "export_pdf_left_out": "{count} 个文件未包含在 PDF 中:PDF 只包含图片和文本。文件请选择 ZIP。",
     "export_failed": "无法保存队列：{error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "自动",
     "paste_mode_batch": "一次全部",
     "paste_mode_sequential": "逐个",
-    "paste_mode_auto_help": "只有图片：一次全部（或按应用规则）。只有文字：合并。混合队列：逐项粘贴。",
-    "paste_mode_batch_help": "图片始终作为一个文件列表、文字合并在一起，一次粘贴完成。",
+    "paste_mode_auto_help": "只有图片和文件时一次全部粘贴(如有应用规则则按规则);只有文本时合并粘贴;混合队列逐项粘贴。",
+    "paste_mode_batch_help": "图片和文件总是作为一个文件列表,文本合并后,一次粘贴。",
     "paste_mode_sequential_help": "每一项单独放入剪贴板并粘贴。较慢，但在任何应用中都可用；按 Esc 停止。",
     "sequential_delay": "逐个粘贴时每项之间的间隔（毫秒）",
     "batch_restore_delay": "一次全部粘贴后恢复剪贴板前的等待（毫秒）",
@@ -117,7 +121,7 @@
     "send_enter": "文字之间发送 Enter（在聊天应用中每段文字成为单独一条消息）",
     "clear_after_paste": "粘贴后清空队列",
     "app_rules": "应用规则",
-    "app_rules_help": "对于一次粘贴只接收第一张图片的应用，请选择逐个粘贴。程序名按任务管理器中的写法填写（例如 whatsapp.exe）。",
+    "app_rules_help": "对于批量粘贴时只接收第一张图片或第一个文件的应用,请选择逐项粘贴。程序名按任务管理器中的写法填写(如 whatsapp.exe)。",
     "rule_process": "程序",
     "rule_mode": "方式",
     "rule_delay": "间隔（毫秒）",
@@ -180,7 +184,9 @@
     "export_zip": "图片为 PNG，文字为 TXT",
     "export_pdf": "每项一页",
     "zoom": "放大并编辑",
-    "title_short": "队列"
+    "title_short": "队列",
+    "drop_hint": "松开以加入队列",
+    "pdf_preview": "预览 PDF"
   },
   "ocr": {
     "no_language": "Windows 中没有用于文字识别的语言包。请在“设置 → 时间和语言 → 语言”中添加。",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "导出队列",
     "zip_filter": "ZIP 压缩包",
-    "pdf_filter": "PDF 文档"
+    "pdf_filter": "PDF 文档",
+    "pdf_only_files": "没有可放入 PDF 的图片或文本。文件请选择 ZIP。"
   },
   "preview": {
     "close": "关闭 (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "继续编辑",
     "save_failed": "无法保存。该项目可能已不在队列中。",
     "load_failed": "无法打开图片。",
-    "edit_text": "编辑文本"
+    "edit_text": "编辑文本",
+    "pdf_loading": "正在打开 PDF…",
+    "pdf_failed": "无法打开 PDF。文件可能已被移动或已损坏。",
+    "pdf_password": "此 PDF 受密码保护,无法显示。",
+    "pdf_zoom_in": "放大 (+)",
+    "pdf_zoom_out": "缩小 (-)"
   }
 }

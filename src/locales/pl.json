@@ -72,13 +72,17 @@
     "copy_failed": "Nie udało się skopiować obrazu: {error}",
     "save_failed": "Nie udało się zapisać obrazu: {error}",
     "queue_add_failed": "Nie udało się dodać obrazu do kolejki: {error}",
+    "folders_skipped": "Nie dodano elementów ({count}), ponieważ nie są plikami (folder lub już nie istnieją).",
     "queue_empty": "Kolejka jest pusta. Zaznacz obszar klawiszem PrtSc i kliknij „Utwórz kolejkę” albo wybierz u góry „Tryb tekstu”.",
     "paste_cancelled": "Wklejanie przerwane: wklejono {done}/{total}. Kolejka została zachowana.",
     "paste_failed": "Wklejanie nie powiodło się: {error}",
+    "files_missing": "Pominięto pliki, których już nie ma ({count}): {names}",
     "release_keys": "Klawisze skrótu nie zostały puszczone, wklejanie anulowano.",
     "update_available_title": "Dostępna aktualizacja",
     "update_available_body": "Catail {version} jest gotowy. Zainstaluj go w Ustawienia → Aktualizacje.",
     "export_done": "Kolejka zapisana: {path}",
+    "export_zip_unreadable": "Nie udało się odczytać plików ({count}), więc nie ma ich w ZIP.",
+    "export_pdf_left_out": "Plików ({count}) nie ma w PDF: PDF zawiera tylko obrazy i tekst. Dla plików wybierz ZIP.",
     "export_failed": "Nie udało się zapisać kolejki: {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Automatycznie",
     "paste_mode_batch": "Wszystko naraz",
     "paste_mode_sequential": "Po jednym",
-    "paste_mode_auto_help": "Same obrazy: wszystkie naraz (lub wg reguły aplikacji). Sam tekst: połączony. Kolejka mieszana: po jednym elemencie.",
-    "paste_mode_batch_help": "Obrazy zawsze jako jedna lista plików, teksty połączone, w jednym wklejeniu.",
+    "paste_mode_auto_help": "Same obrazy i pliki: wszystko naraz (lub według reguły aplikacji); sam tekst: połączony; kolejka mieszana: element po elemencie.",
+    "paste_mode_batch_help": "Obrazy i pliki zawsze jako jedna lista plików, teksty połączone, jednym wklejeniem.",
     "paste_mode_sequential_help": "Każdy element trafia osobno do schowka i jest wklejany osobno. Wolniej, ale działa wszędzie; Esc przerywa.",
     "sequential_delay": "Przerwa między elementami przy wklejaniu po jednym (ms)",
     "batch_restore_delay": "Czas przed przywróceniem schowka po wklejeniu wszystkiego naraz (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Wysyłaj Enter między tekstami (w komunikatorach każdy tekst to osobna wiadomość)",
     "clear_after_paste": "Opróżnij kolejkę po wklejeniu",
     "app_rules": "Reguły aplikacji",
-    "app_rules_help": "Wybierz wklejanie po jednym dla aplikacji, które z paczki biorą tylko pierwszy obraz. Wpisz nazwę programu jak w Menedżerze zadań (np. whatsapp.exe).",
+    "app_rules_help": "Wybierz wklejanie sekwencyjne dla aplikacji, które przy wklejaniu zbiorczym przyjmują tylko pierwszy obraz lub plik. Wpisz nazwę programu jak w Menedżerze zadań (np. whatsapp.exe).",
     "rule_process": "Program",
     "rule_mode": "Sposób",
     "rule_delay": "Przerwa (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Obrazy jako PNG, teksty jako TXT",
     "export_pdf": "Jedna strona na element",
     "zoom": "Powiększ i edytuj",
-    "title_short": "Kolejka"
+    "title_short": "Kolejka",
+    "drop_hint": "Upuść, aby dodać do kolejki",
+    "pdf_preview": "Podgląd PDF"
   },
   "ocr": {
     "no_language": "Windows nie ma pakietu językowego do rozpoznawania tekstu. Dodaj go w Ustawienia → Czas i język → Język.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Eksportuj kolejkę",
     "zip_filter": "Archiwum ZIP",
-    "pdf_filter": "Dokument PDF"
+    "pdf_filter": "Dokument PDF",
+    "pdf_only_files": "Nie ma obrazów ani tekstu do PDF. Dla plików wybierz ZIP."
   },
   "preview": {
     "close": "Zamknij (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "Edytuj dalej",
     "save_failed": "Nie udało się zapisać. Element mógł opuścić kolejkę.",
     "load_failed": "Nie udało się otworzyć obrazu.",
-    "edit_text": "Edytuj tekst"
+    "edit_text": "Edytuj tekst",
+    "pdf_loading": "Otwieranie PDF…",
+    "pdf_failed": "Nie udało się otworzyć PDF. Plik mógł zostać przeniesiony lub jest uszkodzony.",
+    "pdf_password": "Ten PDF jest chroniony hasłem i nie można go wyświetlić.",
+    "pdf_zoom_in": "Powiększ (+)",
+    "pdf_zoom_out": "Pomniejsz (-)"
   }
 }

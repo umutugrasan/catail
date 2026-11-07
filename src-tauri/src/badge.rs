@@ -20,6 +20,13 @@ const URL: &str = "src/windows/badge/index.html";
 pub const EVENT_UPDATE: &str = "badge:update";
 /// The panel's bin was clicked: a cat is on its way from there into the box.
 pub const EVENT_LEAP: &str = "badge:leap";
+/// Files are being dragged over the badge (true) or have left it (false).
+pub const EVENT_DROP_HOVER: &str = "badge:drop-hover";
+
+/// Where a window that takes file drops starts life. A webview built hidden never registers its
+/// drop target on the browser windows that end up under the mouse, so a later show leaves it
+/// deaf to drops. These windows are built visible, out of sight, and hidden right after.
+pub const OFF_SCREEN: f64 = -32000.0;
 
 /// Logical size and distance from the work-area corner.
 const WIDTH: f64 = 260.0;
@@ -177,7 +184,7 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
     if let Some(window) = app.get_webview_window(LABEL) {
         return Ok(window);
     }
-    WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App(URL.into()))
+    let window = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App(URL.into()))
         .title("Catail")
         .inner_size(WIDTH, HEIGHT)
         .decorations(false)
@@ -188,9 +195,13 @@ fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {
         .shadow(false)
         .focusable(false)
         .focused(false)
-        .visible(false)
+        .visible(true)
+        .position(OFF_SCREEN, OFF_SCREEN)
         .build()
-        .context("cannot create badge window")
+        .context("cannot create badge window")?;
+    window.hide()?;
+    crate::queue::accept_file_drops(&window, EVENT_DROP_HOVER);
+    Ok(window)
 }
 
 /// Where the panel's bin is, seen from the badge window, in logical px: the spot the cat

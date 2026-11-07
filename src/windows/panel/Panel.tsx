@@ -17,7 +17,8 @@ import {
   type ExportFormat,
   type QueueItemView,
 } from "../../lib/ipc";
-import { CloseIcon, PasteIcon, SaveIcon, TrashIcon, ZoomIcon } from "../overlay/icons";
+import { CloseIcon, FileIcon, PasteIcon, SaveIcon, TrashIcon, ZoomIcon } from "../overlay/icons";
+import { extensionLabel, formatSize, isPdf } from "./fileCard";
 import { cellAt, cellPosition, moveItem, type Grid } from "./reorder";
 import { renderTextPage } from "./textPage";
 
@@ -31,6 +32,20 @@ const REMOVE_MS = 200;
 type Drag = { id: string; moved: boolean; grabX: number; grabY: number; x: number; y: number };
 type Export = { kind: "idle" } | { kind: "menu" } | { kind: "busy" } | { kind: "error"; message: string };
 
+function FileCard({ item }: { item: QueueItemView }) {
+  const name = item.fileName ?? "";
+  return (
+    <span className="panel__file">
+      <span className="panel__file-icon">
+        <FileIcon />
+        <span className="panel__file-type">{extensionLabel(name)}</span>
+      </span>
+      <span className="panel__file-name">{name}</span>
+      {item.fileSize !== null && <span className="panel__file-size">{formatSize(item.fileSize)}</span>}
+    </span>
+  );
+}
+
 export function Panel() {
   const [items, setItems] = useState<QueueItemView[]>([]);
   const [drag, setDragState] = useState<Drag | null>(null);
@@ -43,6 +58,8 @@ export function Panel() {
   const [removing, setRemoving] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState<Export>({ kind: "idle" });
   const [clearing, setClearing] = useState(false);
+  // Files from another app are being dragged over the panel.
+  const [dropHover, setDropHover] = useState(false);
 
   const setDrag = (next: Drag | null) => {
     dragRef.current = next;
@@ -72,6 +89,7 @@ export function Panel() {
         setOpenCount((n) => n + 1);
       }),
       onWindowEvent(PanelEvents.close, close),
+      onWindowEvent<boolean>(PanelEvents.dropHover, setDropHover),
     ];
     return () => subscriptions.forEach((s) => void s.then((u) => u()));
   }, [close]);
@@ -143,13 +161,16 @@ export function Panel() {
 
   const onTilePointerUp = () => {
     if (drag?.moved) void queueReorder(items.map((item) => item.id));
+    // A click rather than a drag: a PDF opens. Other tiles have their zoom button for that.
+    const clicked = drag && !drag.moved ? items.find((item) => item.id === drag.id) : null;
+    if (clicked && isPdf(clicked.fileName)) void previewOpen(clicked.id);
     setDrag(null);
   };
 
   const rows = Math.ceil(items.length / GRID.columns);
 
   return (
-    <main key={openCount} className={`panel${closing ? " panel--closing" : ""}`}>
+    <main key={openCount} className={`panel${closing ? " panel--closing" : ""}${dropHover ? " panel--drop" : ""}`}>
       <header className="panel__header">
         <h1>
           <CatFace size={16} />
@@ -184,26 +205,29 @@ export function Panel() {
               >
                 {/* Stagger the entrance a little; capped so long queues don't wait. */}
                 <div
-                  className={`panel__tile panel__tile--${item.kind}`}
+                  className={`panel__tile panel__tile--${item.kind}${isPdf(item.fileName) ? " panel__tile--pdf" : ""}`}
                   style={{ animationDelay: `${Math.min(index, 10) * 30}ms` }}
-                  title={item.sourceApp ?? undefined}
+                  title={item.filePath ?? item.sourceApp ?? undefined}
                 >
-                  {item.kind === "image" ? (
+                  {item.kind === "image" && (
                     <img src={queueImageUrl(item.id, item.revision)} alt="" draggable={false} />
-                  ) : (
-                    <span className="panel__text">{item.preview}</span>
                   )}
+                  {item.kind === "text" && <span className="panel__text">{item.preview}</span>}
+                  {item.kind === "file" && <FileCard item={item} />}
                   <span className="panel__index">{index + 1}</span>
                   <span className="panel__actions">
-                    <button
-                      type="button"
-                      className="panel__tile-button"
-                      title={t("panel.zoom")}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={() => void previewOpen(item.id)}
-                    >
-                      <ZoomIcon />
-                    </button>
+                    {/* Other files are the user's own; Catail has nothing to show in them. */}
+                    {(item.kind !== "file" || isPdf(item.fileName)) && (
+                      <button
+                        type="button"
+                        className="panel__tile-button"
+                        title={t(item.kind === "file" ? "panel.pdf_preview" : "panel.zoom")}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={() => void previewOpen(item.id)}
+                      >
+                        <ZoomIcon />
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="panel__tile-button panel__tile-button--danger"
@@ -220,6 +244,8 @@ export function Panel() {
           })}
         </ol>
       </div>
+
+      {dropHover && <p className="panel__drop-hint">{t("panel.drop_hint")}</p>}
 
       {exporting.kind === "error" && <p className="panel__error">{exporting.message}</p>}
 

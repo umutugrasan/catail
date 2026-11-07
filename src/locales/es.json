@@ -72,13 +72,17 @@
     "copy_failed": "No se pudo copiar la imagen: {error}",
     "save_failed": "No se pudo guardar la imagen: {error}",
     "queue_add_failed": "No se pudo añadir la imagen a la cola: {error}",
+    "folders_skipped": "{count} elemento(s) no se añadieron porque no son archivos (una carpeta o ya no existen).",
     "queue_empty": "La cola está vacía. Selecciona un área con Impr Pant y pulsa «Crear una cola», o elige «Modo texto» arriba.",
     "paste_cancelled": "Pegado detenido: {done}/{total} elementos pegados. La cola se conserva.",
     "paste_failed": "Error al pegar: {error}",
+    "files_missing": "{count} archivo(s) ya no están y se omitieron: {names}",
     "release_keys": "No se soltaron las teclas del atajo; se canceló el pegado.",
     "update_available_title": "Actualización disponible",
     "update_available_body": "Catail {version} está listo. Instálalo desde Configuración → Actualizaciones.",
     "export_done": "Cola guardada: {path}",
+    "export_zip_unreadable": "{count} archivo(s) no se pudieron leer y no están en el ZIP.",
+    "export_pdf_left_out": "{count} archivo(s) no están en el PDF: un PDF solo contiene imágenes y texto. Elige ZIP para los archivos.",
     "export_failed": "No se pudo guardar la cola: {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Automático",
     "paste_mode_batch": "Todo a la vez",
     "paste_mode_sequential": "Uno a uno",
-    "paste_mode_auto_help": "Solo imágenes: todas a la vez (o según la regla de la aplicación). Solo texto: unido. Cola mixta: un elemento cada vez.",
-    "paste_mode_batch_help": "Las imágenes van siempre como una lista de archivos y los textos unidos, en un solo pegado.",
+    "paste_mode_auto_help": "Solo imágenes y archivos: todo de una vez (o según la regla de la aplicación); solo texto: unido; una cola mixta va elemento por elemento.",
+    "paste_mode_batch_help": "Las imágenes y los archivos van siempre como una sola lista de archivos, los textos unidos, en un solo pegado.",
     "paste_mode_sequential_help": "Cada elemento se pone en el portapapeles y se pega por separado. Más lento, pero funciona en todas partes; Esc lo detiene.",
     "sequential_delay": "Pausa entre elementos al pegar uno a uno (ms)",
     "batch_restore_delay": "Espera antes de restaurar el portapapeles tras pegar todo a la vez (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Pulsar Intro entre textos (en apps de chat cada texto es un mensaje)",
     "clear_after_paste": "Vaciar la cola después de pegar",
     "app_rules": "Reglas por aplicación",
-    "app_rules_help": "Elige el pegado uno a uno para las aplicaciones que solo toman la primera imagen de un lote. Escribe el nombre como en el Administrador de tareas (p. ej. whatsapp.exe).",
+    "app_rules_help": "Elige el pegado secuencial para las aplicaciones que solo aceptan la primera imagen o el primer archivo de un pegado por lotes. Escribe el nombre del programa como en el Administrador de tareas (p. ej. whatsapp.exe).",
     "rule_process": "Programa",
     "rule_mode": "Método",
     "rule_delay": "Pausa (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Imágenes en PNG, textos en TXT",
     "export_pdf": "Una página por elemento",
     "zoom": "Ampliar y editar",
-    "title_short": "Cola"
+    "title_short": "Cola",
+    "drop_hint": "Suelta para añadir a la cola",
+    "pdf_preview": "Vista previa del PDF"
   },
   "ocr": {
     "no_language": "Windows no tiene un paquete de idioma para el reconocimiento de texto. Añade uno en Configuración → Hora e idioma → Idioma.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Exportar la cola",
     "zip_filter": "Archivo ZIP",
-    "pdf_filter": "Documento PDF"
+    "pdf_filter": "Documento PDF",
+    "pdf_only_files": "No hay imágenes ni texto para el PDF. Elige ZIP para los archivos."
   },
   "preview": {
     "close": "Cerrar (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "Seguir editando",
     "save_failed": "No se pudo guardar. Puede que el elemento ya no esté en la cola.",
     "load_failed": "No se pudo abrir la imagen.",
-    "edit_text": "Editar texto"
+    "edit_text": "Editar texto",
+    "pdf_loading": "Abriendo el PDF…",
+    "pdf_failed": "No se pudo abrir el PDF. Es posible que el archivo se haya movido o esté dañado.",
+    "pdf_password": "Este PDF está protegido con contraseña y no se puede mostrar.",
+    "pdf_zoom_in": "Acercar (+)",
+    "pdf_zoom_out": "Alejar (-)"
   }
 }

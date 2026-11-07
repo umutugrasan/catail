@@ -72,13 +72,17 @@
     "copy_failed": "Görsel panoya kopyalanamadı: {error}",
     "save_failed": "Görsel kaydedilemedi: {error}",
     "queue_add_failed": "Görsel kuyruğa eklenemedi: {error}",
+    "folders_skipped": "{count} öğe dosya olmadığı için (klasör ya da artık yok) kuyruğa eklenmedi.",
     "queue_empty": "Kuyruk boş. PrintScreen ile alan seçip \"Kuyruk oluştur\"a basın ya da üstten \"Metin modu\"nu seçin.",
     "paste_cancelled": "Yapıştırma durduruldu: {done}/{total} öğe yapıştırıldı. Kuyruk korunuyor.",
     "paste_failed": "Yapıştırma başarısız: {error}",
+    "files_missing": "{count} dosya artık yerinde değil, atlandı: {names}",
     "release_keys": "Kısayol tuşları bırakılmadı, yapıştırma iptal edildi.",
     "update_available_title": "Güncelleme var",
     "update_available_body": "Catail {version} hazır. Ayarlar → Güncellemeler bölümünden kurabilirsin.",
     "export_done": "Kuyruk kaydedildi: {path}",
+    "export_zip_unreadable": "{count} dosya okunamadığı için ZIP'e eklenmedi.",
+    "export_pdf_left_out": "{count} dosya PDF'e eklenmedi: PDF yalnız görsel ve metin içerir, dosyalar için ZIP'i seç.",
     "export_failed": "Kuyruk kaydedilemedi: {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Otomatik",
     "paste_mode_batch": "Toplu",
     "paste_mode_sequential": "Sıralı",
-    "paste_mode_auto_help": "Yalnız görsel varsa hepsi tek seferde (uygulama kuralı varsa ona göre), yalnız metin varsa birleştirilerek, karışık kuyrukta tek tek yapıştırılır.",
-    "paste_mode_batch_help": "Görseller her zaman tek dosya listesi olarak, metinler birleştirilerek tek seferde yapıştırılır.",
+    "paste_mode_auto_help": "Yalnız görsel ve dosya varsa hepsi tek seferde (uygulama kuralı varsa ona göre), yalnız metin varsa birleştirilerek, karışık kuyrukta tek tek yapıştırılır.",
+    "paste_mode_batch_help": "Görseller ve dosyalar her zaman tek dosya listesi olarak, metinler birleştirilerek tek seferde yapıştırılır.",
     "paste_mode_sequential_help": "Her öğe tek tek panoya konup yapıştırılır. Yavaş ama her uygulamada çalışır; Esc durdurur.",
     "sequential_delay": "Sıralı yapıştırmada öğeler arası bekleme (ms)",
     "batch_restore_delay": "Toplu yapıştırmadan sonra panoyu geri yükleme beklemesi (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Metinler arasında Enter gönder (sohbet uygulamalarında her metni ayrı mesaj yapar)",
     "clear_after_paste": "Yapıştırdıktan sonra kuyruğu boşalt",
     "app_rules": "Uygulama kuralları",
-    "app_rules_help": "Toplu yapıştırmada yalnızca ilk görseli alan uygulamalar için sıralı yapıştırmayı seç. Program adı görev yöneticisindeki gibi yazılır (ör. whatsapp.exe).",
+    "app_rules_help": "Toplu yapıştırmada yalnızca ilk görseli ya da dosyayı alan uygulamalar için sıralı yapıştırmayı seç. Program adı görev yöneticisindeki gibi yazılır (ör. whatsapp.exe).",
     "rule_process": "Program",
     "rule_mode": "Yöntem",
     "rule_delay": "Bekleme (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Görseller PNG, metinler TXT olarak",
     "export_pdf": "Her öğe bir sayfa",
     "zoom": "Büyüt ve düzenle",
-    "title_short": "Kuyruk"
+    "title_short": "Kuyruk",
+    "drop_hint": "Kuyruğa eklemek için bırak",
+    "pdf_preview": "PDF'i önizle"
   },
   "ocr": {
     "no_language": "Windows'ta metin tanıma için dil paketi yok. Ayarlar → Zaman ve dil → Dil bölümünden Türkçe ya da İngilizce dil paketini ekle.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Kuyruğu dışa aktar",
     "zip_filter": "ZIP arşivi",
-    "pdf_filter": "PDF belgesi"
+    "pdf_filter": "PDF belgesi",
+    "pdf_only_files": "PDF'e eklenecek görsel ya da metin yok. Dosyalar için ZIP'i seç."
   },
   "preview": {
     "close": "Kapat (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "Düzenlemeye dön",
     "save_failed": "Kaydedilemedi. Öğe kuyruktan kalkmış olabilir.",
     "load_failed": "Görsel açılamadı.",
-    "edit_text": "Metni düzenle"
+    "edit_text": "Metni düzenle",
+    "pdf_loading": "PDF açılıyor…",
+    "pdf_failed": "PDF açılamadı. Dosya taşınmış ya da bozuk olabilir.",
+    "pdf_password": "Bu PDF parolalı olduğu için gösterilemiyor.",
+    "pdf_zoom_in": "Yakınlaştır (+)",
+    "pdf_zoom_out": "Uzaklaştır (-)"
   }
 }

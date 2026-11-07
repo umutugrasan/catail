@@ -19,6 +19,7 @@ mod process;
 mod qr;
 mod queue;
 mod settings;
+mod shell_menu;
 mod state;
 mod translate;
 mod tray;
@@ -37,11 +38,22 @@ fn main() {
     let session = session_name(chrono::Local::now(), std::process::id());
     let settings = Settings::load();
     i18n::set_language(settings.language.as_deref());
+    // Explorer's "Kuyruğa ekle" can be what started the app.
+    let args: Vec<String> = std::env::args_os()
+        .map(|arg| arg.to_string_lossy().into_owned())
+        .collect();
+    let files_at_start = shell_menu::paths_to_enqueue(&args);
 
     tauri::Builder::default()
         // Must be registered first so a second launch exits before doing anything else.
-        // Launching again (e.g. from the Start menu) opens the settings of the running copy.
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        // Launching again (e.g. from the Start menu) opens the settings of the running copy,
+        // and Explorer's "Kuyruğa ekle" queues the file there.
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            // Right here, not on a thread: launches arrive in selection order, one at a time.
+            if let Some(paths) = shell_menu::paths_to_enqueue(&args) {
+                queue::add_files(app, paths, None);
+                return;
+            }
             let app = app.clone();
             std::thread::spawn(move || tray::open_settings(&app));
         }))
@@ -107,6 +119,7 @@ fn main() {
         .setup(move |app| {
             // Single-instance has already exited any second copy, so older folders are stale.
             remove_stale_sessions(&temp_root, &session);
+            shell_menu::register();
             tray::build(app.handle())?;
             #[cfg(windows)]
             hotkeys::start_hook(app.handle());
@@ -121,6 +134,9 @@ fn main() {
             std::thread::spawn(move || {
                 overlay::prewarm(&handle);
                 badge::prewarm(&handle);
+                if let Some(paths) = files_at_start {
+                    queue::add_files(&handle, paths, None);
+                }
             });
             Ok(())
         })

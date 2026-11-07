@@ -2,12 +2,12 @@
 
 Kedi temalı, sıralı ekran görüntüsü ve pano kuyruğu aracı (Windows 10/11).
 
-Ekran görüntülerini ve kopyaladığın metinleri sıraya diz, sonra tek Ctrl+V ile hepsini alındıkları sırayla yapıştır.
+Ekran görüntülerini, kopyaladığın metinleri ve PDF, DOCX gibi dosyaları sıraya diz, sonra tek Ctrl+V ile hepsini alındıkları sırayla yapıştır.
 
 **[Web sitesi ve indirme](https://umutugrasan.github.io/catail/)** · Ücretsiz ve açık kaynak ([MIT](LICENSE))
 
 - **Yakalama:** bölge / tam ekran, çizim araçları, panoya kopyalama, PNG kaydetme, metin tanıma (OCR) ve çeviri, ekrandaki QR kodları okuyup bağlantıyı açma.
-- **Kuyruk:** seçim ekranından ekran görüntüleri, **Metin modu**nda her Ctrl+C sıraya eklenir. Kuyruk doluyken Ctrl+V hepsini sırayla yapıştırır; 10 saniye içinde geri alınabilir.
+- **Kuyruk:** seçim ekranından ekran görüntüleri, **Metin modu**nda her Ctrl+C sıraya eklenir. Dosyalar için mod gerekmez: Gezgin'de dosyaya sağ tıklayıp **Kuyruğa ekle** de (Windows 11'de "Daha fazla seçenek göster" altında), kuyruk açıksa rozete ya da panele sürükleyip bırak. Kuyruk doluyken Ctrl+V hepsini sırayla yapıştırır; 10 saniye içinde geri alınabilir.
 - **Kedi teması:** pastel pembe arayüz, pati imleçleri (basılı tutunca pati yumruk olur), geri al düğmesinin yanında kutuda bekleyen kedi, temizleyince çöpten atlayan kedi.
 
 Arayüz 16 dilde: Türkçe, English, Deutsch, Français, Español, Italiano, Português, Nederlands, Polski, Русский, Українська, العربية, 日本語, 简体中文, 한국어, Bahasa Indonesia.
@@ -51,7 +51,7 @@ Seçili alanı içinden tutup taşıyabilir, kenarlarından ve köşelerinden tu
 
 PrintScreen ile alan seçtikten sonra alttaki ikon düğmeleri: **Kopyala · Kaydet · Metni al · Kuyruk oluştur / Kuyruğa ekle · Kuyruğu temizle**, ✕ ile iptal. Adları üzerine gelince görünür.
 
-PrintScreen ekranının en üstünde **Ekran görüntüsü · Metin modu** seçenekleri var. **Metin modu**nu seçince ekran kapanır ve sağ altta "Metin modu · Kuyruk: N" görünür; bundan sonra Ctrl+C ile kopyaladığın her metin/görsel kuyruğa eklenir. Şifre yöneticilerinin kopyaladıkları alınmaz.
+PrintScreen ekranının en üstünde **Ekran görüntüsü · Metin modu** seçenekleri var. **Metin modu**nu seçince ekran kapanır ve sağ altta "Metin modu · Kuyruk: N" görünür; bundan sonra Ctrl+C ile kopyaladığın her metin, görsel ve dosya kuyruğa eklenir (klasörler eklenmez). Şifre yöneticilerinin kopyaladıkları alınmaz.
 
 Kuyrukta bir şey varken **Ctrl+V** normal yapıştırma yerine kuyruğun tamamını sırayla yapıştırır; ardından kuyruk boşalır, metin modu kapanır ve Ctrl+C / Ctrl+V yeniden normal çalışır. "Kuyruğu temizle" de metin modunu kapatır.
 
@@ -61,7 +61,7 @@ Yapıştırdıktan ya da temizledikten sonra rozetin yerinde 10 saniye boyunca *
 
 ## Kuyruk paneli
 
-Sağ alttaki rozete tıklayınca yukarı doğru dar bir panel açılır: kuyruktaki görseller ve metinler iki sütunlu kare kartlar halinde sırayla dizilir. Kartları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), büyüteçle görseli büyük gör, çöp kutusuyla tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
+Sağ alttaki rozete tıklayınca yukarı doğru dar bir panel açılır: kuyruktaki görseller, metinler ve dosyalar iki sütunlu kare kartlar halinde sırayla dizilir (dosya kartında tür, ad ve boyut görünür; PDF kartına tıklayınca önizleme açılır, temanın renklerinde; dosyalar düzenlenemez). Gezgin'den dosya sürükleyip panele ya da rozete bırakabilirsin. Kartları sürükleyerek sırayı değiştir (yapıştırma bu sırayla yapılır), büyüteçle görseli büyük gör, çöp kutusuyla tek öğeyi sil, **Yapıştır** ile kuyruğu az önce kullandığın uygulamaya yapıştır, **Temizle** ile hepsini sil. Panel odak almaz; yapıştırma hedef uygulamaya gider.
 
 ## Metin tanıma ve çeviri
 
@@ -73,7 +73,7 @@ PrintScreen ile seçim ekranı açılınca ekrandaki QR kodlar telefon kamerası
 
 ## Kuyruğu kaydetme
 
-Kuyruk panelindeki **Kaydet** menüsü kuyruğu **ZIP** (görseller PNG, metinler TXT, sırayla numaralı) ya da **PDF** (her öğe bir sayfa) olarak kaydeder.
+Kuyruk panelindeki **Kaydet** menüsü kuyruğu **ZIP** (görseller PNG, metinler TXT, dosyalar kendi adıyla, sırayla numaralı) ya da **PDF** (her görsel ve metin bir sayfa; dosyalar PDF'e girmez ve bu bildirilir) olarak kaydeder.
 
 ## Çizim araçları
 
@@ -81,14 +81,14 @@ Alan seçince sağında araç çubuğu çıkar: seç/taşı, şekiller (dikdört
 
 ## Yapıştırma yöntemleri
 
-- **Toplu:** Kuyruktaki tüm görseller tek bir dosya listesi olarak panoya konur ve tek Ctrl+V gönderilir. Yalnız görsel içeren kuyruklarda varsayılandır.
+- **Toplu:** Kuyruktaki tüm görseller ve dosyalar tek bir dosya listesi olarak panoya konur ve tek Ctrl+V gönderilir. Metin içermeyen kuyruklarda varsayılandır.
 - **Sıralı:** Her öğe tek tek panoya konup yapıştırılır (öğeler arası bekleme varsayılan 250 ms). Toplu yapıştırmada yalnızca ilk görseli alan uygulamalar için `%APPDATA%\Catail\settings.json` içindeki `app_rules` ile seçilebilir:
 
 ```json
 { "app_rules": [{ "process": "whatsapp.exe", "mode": "sequential", "delay_ms": 400 }] }
 ```
 
-Kuyruktaki görseller `%TEMP%\catail\<oturum>` altında tutulur ve uygulama kapanınca silinir.
+Kuyruktaki görseller `%TEMP%\catail\<oturum>` altında tutulur ve uygulama kapanınca silinir. Dosyalar kopyalanmaz: kuyruk yalnızca yolunu tutar, özgün dosyaya hiç dokunmaz. Yapıştırırken yerinde olmayan dosya atlanır ve bildirilir.
 
 Windows 11'de PrintScreen varsayılan olarak Ekran Alıntısı Aracı'nı açar. Catail'in yakalayabilmesi için Ayarlar → Erişilebilirlik → Klavye → "Ekran alıntısı aracını açmak için Print Screen tuşunu kullan" seçeneğini kapatıp Catail'i yeniden başlatın. Lightshot gibi PrintScreen kullanan başka araçlar açıksa kısayollar çakışır.
 

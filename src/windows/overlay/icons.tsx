@@ -235,3 +235,29 @@ export function SelectAllIcon() {
     </Icon>
   );
 }
+
+/** A sheet with a folded corner, with room for a short label under the fold. */
+export function FileIcon({ size = 26 }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="M6 3h8l5 5v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+      <path d="M14 3v5h5" />
+    </Icon>
+  );
+}
+
+export function PlusIcon() {
+  return (
+    <Icon size={16}>
+      <path d="M12 5v14M5 12h14" />
+    </Icon>
+  );
+}
+
+export function MinusIcon() {
+  return (
+    <Icon size={16}>
+      <path d="M5 12h14" />
+    </Icon>
+  );
+}

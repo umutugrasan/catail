@@ -11,6 +11,7 @@ use crate::badge::{self, BadgeState};
 use crate::capture::region::{self, SelectionRect};
 use crate::i18n::{t, t_with};
 use crate::panel::{self, ItemView};
+use crate::queue::item::QueueItemKind;
 use crate::settings::{Cat, Settings};
 use crate::state::AppState;
 use crate::translate::{self, Translation};
@@ -287,6 +288,7 @@ pub async fn settings_save(app: AppHandle, settings: Settings) -> Result<(), Str
         let before = crate::i18n::current();
         if crate::i18n::set_language(next.language.as_deref()) != before {
             tray::retitle(&app);
+            crate::shell_menu::register();
             // Every window reloads itself in the new language.
             let _ = app.emit(EVENT_LANGUAGE, crate::i18n::current());
         }
@@ -460,6 +462,11 @@ pub async fn queue_export(
     if items.is_empty() {
         return Ok(None);
     }
+    // A PDF can't hold files; don't ask where to save an empty one.
+    let only_files = items.iter().all(|i| i.kind == QueueItemKind::File);
+    if matches!(format, ExportFormat::Pdf) && only_files {
+        return Err(t("export.pdf_only_files"));
+    }
     // The panel is always on top and would cover the dialog.
     panel::hide(&app);
 
@@ -508,13 +515,18 @@ pub async fn queue_export(
     .map_err(|e| e.to_string())?;
 
     match result {
-        Ok(()) => {
+        Ok(left_out) => {
             let shown = path.display().to_string();
-            notify::show(
-                &app,
-                &t("app.name"),
-                &t_with("notify.export_done", &[("path", &shown)]),
-            );
+            let mut message = t_with("notify.export_done", &[("path", &shown)]);
+            if left_out > 0 {
+                let key = match format {
+                    ExportFormat::Zip => "notify.export_zip_unreadable",
+                    ExportFormat::Pdf => "notify.export_pdf_left_out",
+                };
+                message.push('\n');
+                message.push_str(&t_with(key, &[("count", &left_out.to_string())]));
+            }
+            notify::show(&app, &t("app.name"), &message);
             Ok(Some(shown))
         }
         Err(e) => Err(report(&app, "notify.export_failed", e)),

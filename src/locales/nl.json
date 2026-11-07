@@ -72,13 +72,17 @@
     "copy_failed": "Afbeelding kon niet worden gekopieerd: {error}",
     "save_failed": "Afbeelding kon niet worden opgeslagen: {error}",
     "queue_add_failed": "Afbeelding kon niet aan de wachtrij worden toegevoegd: {error}",
+    "folders_skipped": "{count} item(s) niet toegevoegd omdat het geen bestanden zijn (een map of niet meer aanwezig).",
     "queue_empty": "De wachtrij is leeg. Kies met PrtSc een gebied en klik op ‘Wachtrij starten’, of kies bovenaan ‘Tekstmodus’.",
     "paste_cancelled": "Plakken gestopt: {done}/{total} items geplakt. De wachtrij blijft bewaard.",
     "paste_failed": "Plakken mislukt: {error}",
+    "files_missing": "{count} bestand(en) zijn er niet meer en zijn overgeslagen: {names}",
     "release_keys": "De sneltoetsen werden niet losgelaten, het plakken is geannuleerd.",
     "update_available_title": "Update beschikbaar",
     "update_available_body": "Catail {version} staat klaar. Installeer het via Instellingen → Updates.",
     "export_done": "Wachtrij opgeslagen: {path}",
+    "export_zip_unreadable": "{count} bestand(en) konden niet worden gelezen en zitten niet in de ZIP.",
+    "export_pdf_left_out": "{count} bestand(en) zitten niet in de PDF: een PDF bevat alleen afbeeldingen en tekst. Kies ZIP voor bestanden.",
     "export_failed": "Wachtrij kon niet worden opgeslagen: {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Automatisch",
     "paste_mode_batch": "Alles tegelijk",
     "paste_mode_sequential": "Eén voor één",
-    "paste_mode_auto_help": "Alleen afbeeldingen: alles tegelijk (of volgens de app-regel). Alleen tekst: samengevoegd. Gemengd: één item per keer.",
-    "paste_mode_batch_help": "Afbeeldingen gaan altijd als één bestandslijst en teksten samengevoegd, in één keer.",
+    "paste_mode_auto_help": "Alleen afbeeldingen en bestanden: alles tegelijk (of volgens de app-regel); alleen tekst: samengevoegd; een gemengde wachtrij gaat item voor item.",
+    "paste_mode_batch_help": "Afbeeldingen en bestanden gaan altijd als één bestandslijst, teksten samengevoegd, in één keer plakken.",
     "paste_mode_sequential_help": "Elk item gaat apart naar het klembord en wordt apart geplakt. Trager, maar werkt overal; Esc stopt.",
     "sequential_delay": "Pauze tussen items bij één-voor-één plakken (ms)",
     "batch_restore_delay": "Wachttijd voor het herstellen van het klembord na alles-tegelijk plakken (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Enter tussen teksten sturen (in chat-apps wordt elke tekst een eigen bericht)",
     "clear_after_paste": "Wachtrij legen na het plakken",
     "app_rules": "App-regels",
-    "app_rules_help": "Kies één-voor-één plakken voor apps die bij alles-tegelijk alleen de eerste afbeelding nemen. Schrijf de programmanaam zoals in Taakbeheer (bv. whatsapp.exe).",
+    "app_rules_help": "Kies opeenvolgend plakken voor apps die bij bulkplakken alleen de eerste afbeelding of het eerste bestand aannemen. Schrijf de programmanaam zoals in Taakbeheer (bijv. whatsapp.exe).",
     "rule_process": "Programma",
     "rule_mode": "Methode",
     "rule_delay": "Pauze (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Afbeeldingen als PNG, teksten als TXT",
     "export_pdf": "Eén pagina per item",
     "zoom": "Vergroten en bewerken",
-    "title_short": "Wachtrij"
+    "title_short": "Wachtrij",
+    "drop_hint": "Laat los om toe te voegen",
+    "pdf_preview": "PDF-voorbeeld"
   },
   "ocr": {
     "no_language": "Windows heeft geen taalpakket voor tekstherkenning. Voeg er een toe via Instellingen → Tijd en taal → Taal.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Wachtrij exporteren",
     "zip_filter": "ZIP-archief",
-    "pdf_filter": "PDF-document"
+    "pdf_filter": "PDF-document",
+    "pdf_only_files": "Er zijn geen afbeeldingen of teksten voor een PDF. Kies ZIP voor bestanden."
   },
   "preview": {
     "close": "Sluiten (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "Verder bewerken",
     "save_failed": "Opslaan is mislukt. Het item staat misschien niet meer in de wachtrij.",
     "load_failed": "De afbeelding kan niet worden geopend.",
-    "edit_text": "Tekst bewerken"
+    "edit_text": "Tekst bewerken",
+    "pdf_loading": "PDF wordt geopend…",
+    "pdf_failed": "De PDF kon niet worden geopend. Het bestand is misschien verplaatst of beschadigd.",
+    "pdf_password": "Deze PDF is beveiligd met een wachtwoord en kan niet worden getoond.",
+    "pdf_zoom_in": "Inzoomen (+)",
+    "pdf_zoom_out": "Uitzoomen (-)"
   }
 }

@@ -25,6 +25,8 @@ export function Badge() {
   // Bumped whenever an item arrives, restarting the "caught it" bounce.
   const [bump, setBump] = useState(0);
   const lastCount = useRef(0);
+  // Files from another app are being dragged over the badge.
+  const [dropHover, setDropHover] = useState(false);
 
   useEffect(() => {
     if (state.count > lastCount.current) setBump((n) => n + 1);
@@ -38,6 +40,7 @@ export function Badge() {
       onWindowEvent<LeapStart>(BadgeEvents.leap, (start) => {
         leapPending.current = start;
       }),
+      onWindowEvent<boolean>(BadgeEvents.dropHover, setDropHover),
     ];
     return () => subscriptions.forEach((s) => void s.then((u) => u()));
   }, []);
@@ -76,6 +79,17 @@ export function Badge() {
     e.preventDefault();
     action();
   };
+
+  if (dropHover) {
+    return (
+      <div className="badge-wrap">
+        <span className="badge badge--drop">
+          <CatFace />
+          {t("panel.drop_hint")}
+        </span>
+      </div>
+    );
+  }
 
   if (state.undo && !state.pasting) {
     const { undo } = state;

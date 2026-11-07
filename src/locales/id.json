@@ -72,13 +72,17 @@
     "copy_failed": "Gambar tidak bisa disalin: {error}",
     "save_failed": "Gambar tidak bisa disimpan: {error}",
     "queue_add_failed": "Gambar tidak bisa ditambahkan ke antrean: {error}",
+    "folders_skipped": "{count} item tidak ditambahkan karena bukan file (folder atau sudah tidak ada).",
     "queue_empty": "Antrean kosong. Pilih area dengan PrintScreen lalu tekan \"Buat antrean\", atau pilih \"Mode teks\" di atas.",
     "paste_cancelled": "Penempelan dihentikan: {done}/{total} item sudah ditempel. Antrean tetap disimpan.",
     "paste_failed": "Penempelan gagal: {error}",
+    "files_missing": "{count} file sudah tidak ada dan dilewati: {names}",
     "release_keys": "Tombol pintasan tidak dilepas, penempelan dibatalkan.",
     "update_available_title": "Pembaruan tersedia",
     "update_available_body": "Catail {version} siap. Pasang dari Pengaturan → Pembaruan.",
     "export_done": "Antrean disimpan: {path}",
+    "export_zip_unreadable": "{count} file tidak dapat dibaca dan tidak ada di ZIP.",
+    "export_pdf_left_out": "{count} file tidak ada di PDF: PDF hanya berisi gambar dan teks. Pilih ZIP untuk file.",
     "export_failed": "Antrean tidak bisa disimpan: {error}"
   },
   "settings": {
@@ -104,8 +108,8 @@
     "paste_mode_auto": "Otomatis",
     "paste_mode_batch": "Sekaligus",
     "paste_mode_sequential": "Satu per satu",
-    "paste_mode_auto_help": "Hanya gambar: sekaligus (atau sesuai aturan aplikasi). Hanya teks: digabung. Antrean campuran: satu per satu.",
-    "paste_mode_batch_help": "Gambar selalu sebagai satu daftar berkas dan teks digabung, dalam satu kali tempel.",
+    "paste_mode_auto_help": "Hanya gambar dan file: sekaligus (atau sesuai aturan aplikasi); hanya teks: digabungkan; antrean campuran: satu per satu.",
+    "paste_mode_batch_help": "Gambar dan file selalu sebagai satu daftar file, teks digabungkan, dalam sekali tempel.",
     "paste_mode_sequential_help": "Setiap item ditaruh di papan klip dan ditempel sendiri. Lebih lambat, tapi bisa di semua aplikasi; Esc menghentikan.",
     "sequential_delay": "Jeda antar-item saat menempel satu per satu (ms)",
     "batch_restore_delay": "Waktu tunggu sebelum memulihkan papan klip setelah menempel sekaligus (ms)",
@@ -117,7 +121,7 @@
     "send_enter": "Kirim Enter di antara teks (di aplikasi obrolan setiap teks jadi pesan sendiri)",
     "clear_after_paste": "Kosongkan antrean setelah menempel",
     "app_rules": "Aturan aplikasi",
-    "app_rules_help": "Pilih tempel satu per satu untuk aplikasi yang hanya menerima gambar pertama saat ditempel sekaligus. Tulis nama program seperti di Pengelola Tugas (mis. whatsapp.exe).",
+    "app_rules_help": "Pilih tempel berurutan untuk aplikasi yang hanya menerima gambar atau file pertama saat tempel massal. Tulis nama program seperti di Task Manager (mis. whatsapp.exe).",
     "rule_process": "Program",
     "rule_mode": "Cara",
     "rule_delay": "Jeda (ms)",
@@ -180,7 +184,9 @@
     "export_zip": "Gambar sebagai PNG, teks sebagai TXT",
     "export_pdf": "Satu halaman per item",
     "zoom": "Perbesar dan edit",
-    "title_short": "Antrean"
+    "title_short": "Antrean",
+    "drop_hint": "Lepas untuk menambahkan ke antrean",
+    "pdf_preview": "Pratinjau PDF"
   },
   "ocr": {
     "no_language": "Windows tidak punya paket bahasa untuk pengenalan teks. Tambahkan di Pengaturan → Waktu & bahasa → Bahasa.",
@@ -203,7 +209,8 @@
   "export": {
     "dialog_title": "Ekspor antrean",
     "zip_filter": "Arsip ZIP",
-    "pdf_filter": "Dokumen PDF"
+    "pdf_filter": "Dokumen PDF",
+    "pdf_only_files": "Tidak ada gambar atau teks untuk PDF. Pilih ZIP untuk file."
   },
   "preview": {
     "close": "Tutup (Esc)",
@@ -213,6 +220,11 @@
     "keep_editing": "Lanjut mengedit",
     "save_failed": "Gagal menyimpan. Item mungkin sudah keluar dari antrean.",
     "load_failed": "Gambar tidak dapat dibuka.",
-    "edit_text": "Edit teks"
+    "edit_text": "Edit teks",
+    "pdf_loading": "Membuka PDF…",
+    "pdf_failed": "PDF tidak dapat dibuka. File mungkin telah dipindahkan atau rusak.",
+    "pdf_password": "PDF ini dilindungi kata sandi dan tidak dapat ditampilkan.",
+    "pdf_zoom_in": "Perbesar (+)",
+    "pdf_zoom_out": "Perkecil (-)"
   }
 }

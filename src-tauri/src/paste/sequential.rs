@@ -23,6 +23,7 @@ pub fn paste(steps: &[Step], delay: Duration, enter_between_texts: bool) -> Resu
         match step {
             Step::Image(path) => clipboard::write_png_file(path)?,
             Step::Text(text) => clipboard::write_text(text)?,
+            Step::File(path) => clipboard::write_files(&[path.as_path()])?,
         }
         keys.paste()?;
         std::thread::sleep(delay);
