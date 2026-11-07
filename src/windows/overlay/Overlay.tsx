@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
-import { CatEar, TRASH_JUMP_MS, TrashJump, Whiskers } from "../../lib/cats";
+import { fatness } from "../../lib/catSeat";
+import { CatEar, SeatCat, TRASH_JUMP_MS, TrashJump, Whiskers } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   captureDeliver,
@@ -55,7 +56,7 @@ import { CameraIcon, CopyIcon, QueueAddIcon, SaveIcon, ScanTextIcon, TextModeIco
 import { OcrCard, type OcrState } from "./OcrCard";
 import { QrLinks } from "./QrLinks";
 import { Sidebar } from "./Sidebar";
-import { makeTailScene, playTail } from "./tail";
+import { CAUGHT_AT, catTailRoot, isOnView, makeTailScene, playTail, TAIL_MS } from "./tail";
 
 /** Selections smaller than this (CSS px) count as a stray click. */
 const MIN_SELECTION = 3;
@@ -120,7 +121,13 @@ export function Overlay() {
   const [toolbarWidth, setToolbarWidth] = useState(TOOLBAR_FALLBACK_WIDTH);
   const [ocr, setOcr] = useState<OcrState | null>(null);
   /** Snapshot flying into the badge after "Kuyruğa ekle"; hides the rest of the UI. */
-  const [flying, setFlying] = useState<{ rect: Rect; drawings: string | null } | null>(null);
+  const [flying, setFlying] = useState<{
+    rect: Rect;
+    drawings: string | null;
+    /** The badge's cat, on this screen; its tail does the work. */
+    cat: Point | null;
+    fat: number;
+  } | null>(null);
   const flyRef = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
   const frameRef = useRef<HTMLImageElement>(null);
@@ -223,14 +230,25 @@ export function Overlay() {
     // The plain theme has no cat, so no tail: the capture just goes to the queue.
     if (document.documentElement.dataset.cat === "plain") return;
     const scale = info.width / window.innerWidth;
-    setFlying({ rect: selection, drawings: shapes.length > 0 ? (canvasRef.current?.toDataURL() ?? null) : null });
+    const target = { x: info.flyX / scale, y: info.flyY / scale };
+    const cat = isOnView(target, viewSize()) ? target : null;
+    setFlying({
+      rect: selection,
+      drawings: shapes.length > 0 ? (canvasRef.current?.toDataURL() ?? null) : null,
+      cat,
+      fat: fatness(info.queueCount),
+    });
+    // It swallows the capture and shows for it.
+    setTimeout(() => {
+      setFlying((current) => current && { ...current, fat: fatness(info.queueCount + 1) });
+    }, TAIL_MS * CAUGHT_AT);
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
     const el = flyRef.current;
     const tail = tailRef.current;
     if (!el || !tail) return;
-    const target = { x: info.flyX / scale, y: info.flyY / scale };
-    await playTail(el, tail, makeTailScene(selection, target, viewSize(), Math.random() < 0.5 ? 1 : -1));
+    const spin = Math.random() < 0.5 ? 1 : -1;
+    await playTail(el, tail, makeTailScene(selection, target, viewSize(), spin, cat ? catTailRoot(cat) : undefined));
   }, [info, selection, shapes.length]);
 
   const finish = useCallback(
@@ -569,6 +587,9 @@ export function Overlay() {
       )}
 
       {flying && <svg ref={tailRef} className="overlay__tail" aria-hidden="true" />}
+      {flying?.cat && (
+        <SeatCat className="overlay__cat" fat={flying.fat} style={{ left: flying.cat.x, top: flying.cat.y }} />
+      )}
 
       {flying ? (
         <div className="overlay__dim overlay__dim--fly" />

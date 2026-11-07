@@ -20,6 +20,8 @@ const URL: &str = "src/windows/badge/index.html";
 pub const EVENT_UPDATE: &str = "badge:update";
 /// The panel's bin was clicked: a cat is on its way from there into the box.
 pub const EVENT_LEAP: &str = "badge:leap";
+pub const EVENT_FETCH: &str = "badge:fetch";
+pub const EVENT_CAT_AWAY: &str = "badge:cat-away";
 /// Files are being dragged over the badge (true) or have left it (false).
 pub const EVENT_DROP_HOVER: &str = "badge:drop-hover";
 
@@ -29,7 +31,7 @@ pub const EVENT_DROP_HOVER: &str = "badge:drop-hover";
 pub const OFF_SCREEN: f64 = -32000.0;
 
 /// Logical size and distance from the work-area corner.
-const WIDTH: f64 = 260.0;
+const WIDTH: f64 = 300.0;
 const HEIGHT: f64 = 40.0;
 const MARGIN: f64 = 16.0;
 /// While the cat leaps from the panel's bin into the box, the (transparent) window reaches
@@ -134,7 +136,8 @@ pub fn aligned_x(corner: BadgeCorner, area_x: f64, area_w: f64, w: f64, margin: 
 }
 
 /// Where captures "fly" to when queued: the badge pill's center, in physical screen pixels.
-/// The pill is roughly 120 logical px wide, at the corner's side of its window.
+/// Where the badge's cat sits: left of a pill roughly 100 logical px wide, at the corner's side
+/// of the window, or at the very edge in a left corner.
 pub fn fly_target<R: Runtime>(app: &AppHandle<R>) -> Option<(f64, f64)> {
     let monitor = app.primary_monitor().ok()??;
     let scale = monitor.scale_factor();
@@ -143,9 +146,9 @@ pub fn fly_target<R: Runtime>(app: &AppHandle<R>) -> Option<(f64, f64)> {
     let (ax, ay) = (f64::from(area.position.x), f64::from(area.position.y));
     let (aw, ah) = (f64::from(area.size.width), f64::from(area.size.height));
     let x = match corner.side() {
-        -1 => ax + (MARGIN + 60.0) * scale,
-        0 => ax + aw / 2.0,
-        _ => ax + aw - (MARGIN + 60.0) * scale,
+        -1 => ax + (MARGIN + 20.0) * scale,
+        0 => ax + aw / 2.0 - 52.0 * scale,
+        _ => ax + aw - (MARGIN + 122.0) * scale,
     };
     let y = if corner.is_top() {
         ay + (MARGIN + HEIGHT / 2.0) * scale
@@ -248,6 +251,36 @@ pub fn leap<R: Runtime>(app: &AppHandle<R>) {
             place(&app, &window);
         }
     });
+}
+
+/// Gives the badge's content room to move past its usual height (the see-through window grows
+/// away from its corner), or takes it back. Never shows or hides the window.
+pub fn make_room<R: Runtime>(app: &AppHandle<R>, room: bool) {
+    if let Some(window) = app.get_webview_window(LABEL) {
+        place_sized(app, &window, if room { LEAP_HEIGHT } else { HEIGHT });
+    }
+}
+
+/// "Geri al" brought `count` items back: the badge's cat carries them over.
+pub fn fetch<R: Runtime>(app: &AppHandle<R>, count: usize) {
+    let _ = app.emit_to(LABEL, EVENT_FETCH, count);
+}
+
+/// The panel needs a cat for `ms`: the one on the badge goes up there.
+pub fn cat_away<R: Runtime>(app: &AppHandle<R>, ms: u64) {
+    let _ = app.emit_to(LABEL, EVENT_CAT_AWAY, ms);
+}
+
+/// The pointer, in logical px from the window's corner, for the cat's eyes to follow.
+pub fn cursor<R: Runtime>(app: &AppHandle<R>) -> Option<(f64, f64)> {
+    let window = app.get_webview_window(LABEL)?;
+    let scale = window.scale_factor().ok()?;
+    let pointer = app.cursor_position().ok()?;
+    let corner = window.outer_position().ok()?;
+    Some((
+        (pointer.x - f64::from(corner.x)) / scale,
+        (pointer.y - f64::from(corner.y)) / scale,
+    ))
 }
 
 /// In the chosen corner of the primary monitor's work area (above the taskbar).

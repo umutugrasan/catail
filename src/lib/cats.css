@@ -9,7 +9,10 @@
   content: var(--cat-head);
 }
 
-.leaping-cat__body {
+.leaping-cat__body,
+.cat-seat__tail,
+.cat-seat__strip,
+.cat-seat__head img {
   content: var(--cat-body);
 }
 
@@ -130,9 +133,83 @@
 }
 
 .box-cat__head img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* Cut along the ears' roots. The ears reach a little past the cut, so no seam shows. */
+.box-cat__skull {
+  clip-path: polygon(0 100%, 0 29.3%, 20.5% 29.3%, 33.9% 8.6%, 33.9% 0, 62% 0, 62% 8.6%, 76.6% 29.3%, 100% 29.3%, 100% 100%);
+}
+
+.box-cat__ear--left {
+  clip-path: polygon(0 0, 35.7% 0, 35.7% 10.2%, 22.2% 32%, 0 32%);
+  transform-origin: 27.2% 18.7%;
+}
+
+.box-cat__ear--right {
+  clip-path: polygon(60.2% 0, 100% 0, 100% 32%, 75% 32%, 60.2% 10.2%);
+  transform-origin: 69.3% 18.7%;
+}
+
+/* The light in its eyes shows where it is looking; the head leans along. */
+.box-cat__glint {
+  position: absolute;
+  top: 28.5%;
+  width: 5.2%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+  translate: calc(var(--look-x, 0) * 1.7px) calc(var(--look-y, 0) * 0.7px);
+  transition: translate 120ms linear;
+}
+
+.box-cat__glint--left {
+  left: 33.6%;
+}
+
+.box-cat__glint--right {
+  left: 57.6%;
+}
+
+/* The pointer on the cat: it perks up, its ears flick. */
+.undo__cat:hover .box-cat:not(.box-cat--shred) .box-cat__lid {
+  animation: lid-perk 220ms var(--ease-out) forwards;
+}
+
+@keyframes lid-perk {
+  to {
+    transform: scaleY(0.18);
+  }
+}
+
+.undo__cat:hover .box-cat__ear--left {
+  animation: ear-flick 1100ms var(--ease-in-out) infinite;
+}
+
+.undo__cat:hover .box-cat__ear--right {
+  --flick: 1;
+  animation: ear-flick 1100ms var(--ease-in-out) infinite 180ms;
+}
+
+@keyframes ear-flick {
+  0%,
+  34%,
+  100% {
+    transform: none;
+  }
+  8% {
+    transform: rotate(calc((var(--flick, -1)) * 16deg));
+  }
+  16% {
+    transform: rotate(calc((var(--flick, -1)) * -5deg));
+  }
+  25% {
+    transform: rotate(calc((var(--flick, -1)) * 11deg));
+  }
 }
 
 .box-cat__front {
@@ -141,6 +218,10 @@
 
 /* The head pops up out of the box: a peek, a little overshoot, then it settles. */
 .box-cat__head {
+  transform-origin: 50% 36%;
+  rotate: calc(var(--look-x, 0) * 6deg);
+  translate: calc(var(--look-x, 0) * 1.4px) 0;
+  transition: rotate 160ms linear, translate 160ms linear;
   animation: head-pop 560ms var(--ease-out) both 260ms;
 }
 
@@ -431,9 +512,786 @@
   }
 }
 
+/* "Geri al" is running out and the cat has had enough: its eyes narrow, it claws the box in
+   turns (one jolt per hit), the box bursts into pieces of itself and the cat hops away.
+   Timing: shred.ts, which also sets --burst. */
+.undo .box-cat.box-cat--shred {
+  animation: box-rage 875ms linear 395ms both;
+}
+
+@keyframes box-rage {
+  0%,
+  20%,
+  40%,
+  60%,
+  80%,
+  100% {
+    transform: none;
+  }
+  6% {
+    transform: rotate(-4deg) scale(1.03, 0.96);
+  }
+  26% {
+    transform: rotate(4deg) scale(1.03, 0.96);
+  }
+  46% {
+    transform: rotate(-5deg) scale(1.04, 0.95);
+  }
+  66% {
+    transform: rotate(5deg) scale(1.04, 0.95);
+  }
+  86% {
+    transform: rotate(-6deg) scale(1.05, 0.94);
+  }
+}
+
+.box-cat--shred .box-cat__head {
+  animation: head-rage 200ms var(--ease-out) both;
+}
+
+@keyframes head-rage {
+  to {
+    transform: translateY(-7%);
+  }
+}
+
+.box-cat--shred .box-cat__lid {
+  animation: lid-narrow 200ms var(--ease-out) forwards;
+}
+
+.box-cat--shred .box-cat__lid--right {
+  --lid-tilt: -14deg;
+}
+
+@keyframes lid-narrow {
+  to {
+    transform: rotate(var(--lid-tilt, 14deg)) scaleY(0.62);
+  }
+}
+
+/* Also when the box arrived with a leap, whose own animation would win otherwise. */
+.undo .box-cat.box-cat--shred .box-cat__front {
+  animation: shred-gone 1ms linear var(--burst) forwards;
+}
+
+@keyframes shred-gone {
+  to {
+    visibility: hidden;
+  }
+}
+
+.claw-paw {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  width: 30%;
+  aspect-ratio: 20 / 30;
+  overflow: visible;
+  animation: paw-swipe 350ms linear 2 325ms both;
+}
+
+.claw-paw--left {
+  left: 15%;
+  animation-delay: 150ms;
+  animation-iteration-count: 3;
+}
+
+.claw-paw--right {
+  right: 15%;
+  scale: -1 1;
+}
+
+.claw-paw__fur {
+  fill: var(--cat-lid);
+  stroke: var(--cat-lid-edge);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+}
+
+.claw-paw__toes {
+  fill: none;
+  stroke: var(--cat-lid-edge);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.claw-paw__claws {
+  fill: #fffaf0;
+  stroke: var(--cat-lid-edge);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+
+/* Up from behind the edge, a held breath, one fast slash down. */
+@keyframes paw-swipe {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-12px) rotate(-12deg);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-14px) rotate(-14deg);
+    animation-timing-function: cubic-bezier(0.6, 0, 1, 0.7);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(10px) rotate(10deg);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(11px) rotate(10deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(12px) rotate(10deg);
+  }
+}
+
+.box-shred__marks {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  animation: shred-gone 1ms linear var(--burst) forwards;
+}
+
+.box-shred__marks line {
+  fill: none;
+  stroke: #6e4417;
+  stroke-width: 11;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: claw-mark 80ms ease-in forwards;
+}
+
+@keyframes claw-mark {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.box-shred__shard {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+  animation-name: shard-fly;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.box-shred__chip {
+  position: absolute;
+  z-index: 4;
+  border-radius: 1px;
+  opacity: 0;
+  animation-name: chip-fly;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.box-shred__chip--0 {
+  background: #c98b4a;
+}
+
+.box-shred__chip--1 {
+  background: #e6b878;
+}
+
+.box-shred__chip--2 {
+  background: #80521f;
+}
+
+@keyframes shard-fly {
+  0% {
+    visibility: visible;
+    transform: none;
+    animation-timing-function: cubic-bezier(0.15, 0.7, 0.45, 1);
+  }
+  45% {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.55), var(--peak)) rotate(calc(var(--spin) * 0.45));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+  }
+  100% {
+    visibility: visible;
+    opacity: 0;
+    transform: translate(var(--dx), var(--land)) rotate(var(--spin)) scale(0.8);
+  }
+}
+
+@keyframes chip-fly {
+  0% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: cubic-bezier(0.15, 0.7, 0.45, 1);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.55), var(--peak)) rotate(calc(var(--spin) * 0.45));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--land)) rotate(var(--spin));
+  }
+}
+
+/* Out of the wreck, proud of it, and away. The art faces left; `scale` turns it the other way. */
+.box-cat .box-cat__victor {
+  position: absolute;
+  z-index: 3;
+  bottom: 0;
+  left: 50%;
+  --flip: calc(var(--hop-dir) * -1);
+  scale: var(--flip) 1;
+  transform-origin: 50% 100%;
+  animation-name: cat-victory;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
+/* `scale` mirrors this transform too: the distances then point right, and -50% must flip to
+   keep the cat centered on the box. */
+@keyframes cat-victory {
+  0% {
+    opacity: 0;
+    transform: translateX(calc(-50% * var(--flip))) scale(1.1, 0.78);
+    animation-timing-function: ease-out;
+  }
+  3% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 1;
+    transform: translateX(calc(-50% * var(--flip))) scale(0.92, 1.12);
+    animation-timing-function: ease-out;
+  }
+  58% {
+    opacity: 1;
+    transform: translate(calc(-50% * var(--flip) - 22px), var(--hop-peak)) rotate(-12deg) scale(1);
+    animation-timing-function: ease-in;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% * var(--flip) - 74px), var(--hop-land)) rotate(-20deg) scale(0.9);
+  }
+}
+
+/* The cat in its seat beside the badge. One picture, cut apart so its parts can move:
+   positions in percent of the picture (src/lib/cats/standing-body.png). */
+.cat-seat {
+  --fat: 0;
+  position: relative;
+  display: block;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin-inline: calc(var(--fat) * 8px);
+  transform-origin: 50% 100%;
+  transition: margin-inline 520ms var(--ease-pop);
+}
+
+.cat-seat img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cat-seat__body,
+.cat-seat__head {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.cat-seat__body {
+  transform-origin: 40% 100%;
+}
+
+.cat-seat__strip--whole {
+  clip-path: inset(36.5% 26% 0 0);
+  --share: 0.8;
+}
+
+/* Each strip widens by its share of the fatness (catSeat.ts). */
+.cat-seat__strip {
+  transform: scaleX(calc(1 + var(--fat) * var(--share) * 0.62));
+  transform-origin: 40% 50%;
+  transition: transform 520ms var(--ease-pop);
+}
+
+.cat-seat .leaping-cat__foot {
+  position: absolute;
+  inset: auto;
+  animation: none;
+  transition: translate 520ms var(--ease-pop);
+}
+
+.cat-seat .leaping-cat__foot--left {
+  top: 89.55%;
+  left: 25.9%;
+  width: 11.45%;
+  height: 10.45%;
+  translate: calc(var(--fat) * -3px) 0;
+}
+
+.cat-seat .leaping-cat__foot--right {
+  top: 90.15%;
+  left: 54.22%;
+  width: 12.65%;
+  height: 9.85%;
+  translate: calc(var(--fat) * 3px) 0;
+}
+
+/* Behind the body, swaying slowly; it moves out with the belly. */
+.cat-seat__tail {
+  clip-path: inset(48% 0 19% 72%);
+  transform-origin: 74% 74%;
+  translate: calc(var(--fat) * 8px) 0;
+  transition: translate 520ms var(--ease-pop);
+  animation: seat-tail 3.8s var(--ease-in-out) infinite;
+}
+
+@keyframes seat-tail {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+/* Cut straight below the chin, leaning toward the pointer (--look-x, set on the page). */
+.cat-seat__head {
+  transform-origin: 35% 34%;
+  rotate: calc(var(--look-x, 0) * 5deg);
+  translate: calc(var(--look-x, 0) * 1px) calc(var(--look-y, 0) * 0.6px);
+  transition: rotate 180ms linear, translate 180ms linear;
+}
+
+.cat-seat__skull {
+  clip-path: polygon(0 37%, 68% 37%, 68% 28%, 60% 27%, 48% 15%, 37% 13%, 18% 15%, 0 10%);
+}
+
+.cat-seat__ear--left {
+  clip-path: polygon(15% 0, 37% 0, 37% 14%, 18% 17%, 15% 14%);
+  transform-origin: 27% 13%;
+}
+
+.cat-seat__ear--right {
+  clip-path: polygon(47% 0, 70% 0, 70% 30%, 60% 29%, 47% 16%);
+  transform-origin: 56% 22%;
+}
+
+.cat-slot:hover .cat-seat__ear--left {
+  animation: ear-flick 1100ms var(--ease-in-out) infinite;
+}
+
+.cat-slot:hover .cat-seat__ear--right {
+  --flick: 1;
+  animation: ear-flick 1100ms var(--ease-in-out) infinite 180ms;
+}
+
+/* Blinks now and then; shut when asleep. */
+.cat-seat__lid {
+  position: absolute;
+  width: 7.6%;
+  height: 9.4%;
+  border-radius: 50%;
+  background: var(--cat-lid);
+  box-shadow: 0 1px 0 var(--cat-lid-edge);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  animation: seat-blink 5.3s infinite;
+}
+
+.cat-seat__lid--left {
+  top: 18.2%;
+  left: 14.2%;
+}
+
+.cat-seat__lid--right {
+  top: 21.2%;
+  left: 37.4%;
+  animation-delay: 40ms;
+}
+
+@keyframes seat-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(0);
+  }
+  95.5% {
+    transform: scaleY(1);
+  }
+}
+
+/* Asleep: eyes shut, head dropped, belly going up and down, z's drifting off. */
+.cat-seat--asleep .cat-seat__lid {
+  animation: none;
+  transform: scaleY(1);
+}
+
+.cat-seat--asleep .cat-seat__head {
+  transform: rotate(5deg) translateY(1.5px);
+  transition: transform 700ms var(--ease-in-out);
+}
+
+.cat-seat--asleep .cat-seat__tail {
+  animation-play-state: paused;
+}
+
+.cat-seat--asleep .cat-seat__body {
+  animation: seat-breathe 3.2s var(--ease-in-out) infinite;
+}
+
+@keyframes seat-breathe {
+  50% {
+    transform: scale(1.05, 0.975);
+  }
+}
+
+/* Over any screen, so white with a dark edge. */
+.cat-seat__zzz {
+  position: absolute;
+  top: 12px;
+  left: 62%;
+  display: block;
+  width: 14px;
+  height: 14px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 0 2px #000, 0 1px 1px #000;
+  pointer-events: none;
+}
+
+.cat-seat__zzz i {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-style: normal;
+  opacity: 0;
+  animation: zzz-rise 2.7s var(--ease-out) infinite;
+}
+
+.cat-seat__zzz i:nth-child(2) {
+  animation-delay: 0.9s;
+}
+
+.cat-seat__zzz i:nth-child(3) {
+  animation-delay: 1.8s;
+}
+
+@keyframes zzz-rise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 2px) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(8px, -12px) scale(1.3);
+  }
+}
+
+/* The seat, in the badge's row. */
+.cat-slot {
+  position: relative;
+  z-index: 1;
+  display: block;
+  flex: none;
+  cursor: var(--paw);
+}
+
+.cat-slot__trot,
+.cat-slot__facing {
+  position: relative;
+  display: block;
+  transform-origin: 50% 100%;
+}
+
+.cat-slot--pasting .cat-seat {
+  animation: seat-paddle 420ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes seat-paddle {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(4deg) translateY(-1px);
+  }
+}
+
+/* "Geri al" was pressed: out of the box, papers in its mouth, over to the badge in two hops,
+   the papers go in, and back to its seat. Timing: FETCH_DROP_MS, FETCH_MS. The picture faces
+   left, so it turns round for the way there. */
+.cat-slot--fetch {
+  z-index: 3;
+}
+
+.cat-slot--fetch .cat-slot__trot {
+  animation: cat-trot var(--fetch-ms) linear both;
+}
+
+.cat-slot--fetch .cat-slot__facing {
+  animation: cat-trot-facing var(--fetch-ms) step-end both;
+}
+
+@keyframes cat-trot-facing {
+  0% {
+    scale: -1 1;
+  }
+  52% {
+    scale: 1 1;
+  }
+}
+
+@keyframes cat-trot {
+  0% {
+    transform: scale(1.08, 0.84);
+    animation-timing-function: ease-out;
+  }
+  6% {
+    transform: scale(0.94, 1.08);
+    animation-timing-function: ease-out;
+  }
+  15% {
+    transform: translate(calc(var(--dx) * 0.28), var(--hop));
+    animation-timing-function: ease-in;
+  }
+  23% {
+    transform: translateX(calc(var(--dx) * 0.55)) scale(1.06, 0.88);
+    animation-timing-function: ease-out;
+  }
+  32% {
+    transform: translate(calc(var(--dx) * 0.8), calc(var(--hop) * 0.8));
+    animation-timing-function: ease-in;
+  }
+  40% {
+    transform: translateX(var(--dx)) scale(1.08, 0.86);
+  }
+  46% {
+    transform: translateX(var(--dx));
+  }
+  52% {
+    transform: translateX(var(--dx)) scale(1.04, 0.92);
+    animation-timing-function: ease-out;
+  }
+  64% {
+    transform: translate(calc(var(--dx) * 0.6), var(--hop));
+    animation-timing-function: ease-in;
+  }
+  74% {
+    transform: translateX(calc(var(--dx) * 0.3)) scale(1.05, 0.9);
+    animation-timing-function: ease-out;
+  }
+  86% {
+    transform: translateY(calc(var(--hop) * 0.7));
+    animation-timing-function: ease-in;
+  }
+  94% {
+    transform: scale(1.1, 0.86);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.cat-fetch__box {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 53px;
+  height: 40px;
+  transform: translateX(-50%);
+  animation: fetch-box-off 240ms var(--ease-out) 80ms both;
+}
+
+@keyframes fetch-box-off {
+  to {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.75);
+  }
+}
+
+/* In its mouth; they go into the badge as it lands there. */
+.cat-fetch__sheets {
+  position: absolute;
+  top: 22%;
+  left: 2%;
+  width: 15px;
+  height: 11px;
+  animation: fetch-sheets var(--fetch-ms) linear both;
+}
+
+.cat-fetch__sheets i {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #8d8778;
+  border-radius: 1px;
+  background: repeating-linear-gradient(#fff 0 2px, #c9c4b6 2px 3px);
+  transform: translate(calc(var(--i) * -2px), calc(var(--i) * -1.5px)) rotate(calc(var(--i) * 7deg - 10deg));
+}
+
+@keyframes fetch-sheets {
+  0%,
+  36% {
+    opacity: 1;
+    transform: none;
+  }
+  44% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+}
+
+/* A card on its way off the panel: the cat gives it a tap, then another, looks at you, gives it
+   the last slow shove and watches it go. Timing: TABLE_PUSH_MS. It faces left; --dir is where
+   the card goes. */
+.table-cat {
+  position: absolute;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.table-cat__facing {
+  display: block;
+}
+
+.table-cat__body {
+  position: relative;
+  display: block;
+  transform-origin: 50% 100%;
+  animation: table-cat-push 1500ms linear both;
+}
+
+.table-cat .leaping-cat {
+  display: block;
+}
+
+.table-cat .leaping-cat__foot {
+  animation: none;
+}
+
+@keyframes table-cat-push {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.7);
+    animation-timing-function: var(--ease-pop);
+  }
+  10% {
+    opacity: 1;
+    transform: none;
+  }
+  30% {
+    transform: translateX(-9px);
+  }
+  36% {
+    transform: translateX(-9px) rotate(9deg);
+  }
+  54% {
+    transform: translateX(-9px) rotate(9deg);
+  }
+  60% {
+    transform: translateX(-9px);
+  }
+  72% {
+    transform: translateX(-22px) rotate(-5deg);
+  }
+  92% {
+    opacity: 1;
+    transform: translateX(-22px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-22px) scale(0.85);
+  }
+}
+
+/* The gentle paw: claws in, reaching out from the cat's chest for each tap. */
+.table-cat .claw-paw {
+  top: 34%;
+  right: auto;
+  left: -7px;
+  z-index: 1;
+  width: 13px;
+  scale: none;
+  rotate: 90deg;
+  animation: table-paw 1500ms linear both;
+}
+
+.table-cat .claw-paw__claws {
+  display: none;
+}
+
+@keyframes table-paw {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  16% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+  20% {
+    transform: translateY(2px);
+  }
+  23% {
+    transform: translateY(-4px);
+  }
+  27% {
+    transform: translateY(3px);
+  }
+  32%,
+  58% {
+    transform: translateY(-5px);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(5px);
+  }
+  78% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* The plain theme has no cats anywhere, except the other themes' cards in Settings. */
 :root[data-cat="plain"] :not(.cat-card) > .leaping-cat,
 :root[data-cat="plain"] .cat-face,
+:root[data-cat="plain"] .cat-slot,
 :root[data-cat="plain"] .box-cat,
 :root[data-cat="plain"] .undo__cat,
 :root[data-cat="plain"] .whiskers,

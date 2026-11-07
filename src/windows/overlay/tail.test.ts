@@ -95,12 +95,19 @@ describe("tailSegments", () => {
     expect(tailSegments([{ x: 1, y: 1 }])).toEqual([]);
   });
 
-  it("starts at the tip and thickens toward the base", () => {
+  it("starts at the tip, thickens toward the base, then slims where it leaves the cat", () => {
     const segments = tailSegments(line);
     expect(segments[0].d.startsWith("M1000.0 0.0")).toBe(true);
-    for (let i = 1; i < segments.length; i += 1) {
+    const widest = segments.reduce((best, s, i) => (s.width > segments[best].width ? i : best), 0);
+    expect(widest).toBeGreaterThan(0);
+    expect(widest).toBeLessThan(segments.length - 1);
+    for (let i = 1; i <= widest; i += 1) {
       expect(segments[i].width).toBeGreaterThanOrEqual(segments[i - 1].width);
     }
+    for (let i = widest + 1; i < segments.length; i += 1) {
+      expect(segments[i].width).toBeLessThanOrEqual(segments[i - 1].width);
+    }
+    expect(segments[segments.length - 1].width).toBeLessThan(segments[0].width);
   });
 
   it("keeps the stripes continuous across pieces", () => {

@@ -146,6 +146,12 @@ export const queueClear = (leap = false) => invoke<void>("queue_clear", { leap }
 /** Turning it on also closes the overlay. */
 export const textModeSet = (enabled: boolean) => invoke<void>("text_mode_set", { enabled });
 export const badgeState = () => invoke<BadgeState>("badge_state");
+/** Grows the see-through badge window for a moment, or puts it back. */
+export const badgeMakeRoom = (room: boolean) => invoke<void>("badge_make_room", { room });
+/** Where the pointer is, in px from the badge window's corner. */
+export const badgeCursor = () => invoke<[number, number] | null>("badge_cursor");
+/** A cat is needed in the panel: the one on the badge goes there for this long. */
+export const badgeCatAway = (ms: number) => invoke<void>("badge_cat_away", { ms });
 
 export const panelToggle = () => invoke<void>("panel_toggle");
 export const panelClose = () => invoke<void>("panel_close");
@@ -230,6 +236,10 @@ export const BadgeEvents = {
   update: "badge:update",
   /** The panel's bin was clicked; a cat leaps from there into the box. */
   leap: "badge:leap",
+  /** "Geri al" brought this many items back; a cat carries them from the box to the badge. */
+  fetch: "badge:fetch",
+  /** The badge's cat is wanted in the panel for this many ms. */
+  catAway: "badge:cat-away",
   /** Files are being dragged over the badge (true) or have left it (false). */
   dropHover: "badge:drop-hover",
 } as const;

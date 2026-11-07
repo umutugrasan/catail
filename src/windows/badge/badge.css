@@ -40,6 +40,17 @@ body,
   margin-bottom: 0;
 }
 
+/* The cat in its seat, then the pill. */
+.badge-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+#root[data-corner^="top"] .badge-row {
+  align-items: flex-start;
+}
+
 .badge-wrap {
   position: relative;
   display: inline-flex;
@@ -92,6 +103,7 @@ body,
 }
 
 .badge {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -127,25 +139,10 @@ body,
   border: 2px dashed var(--tint-500);
 }
 
-/* Gentle pulse while pasting. */
-.badge--pasting .cat-face {
-  animation: pulse 900ms var(--ease-in-out) infinite;
-}
-
-@keyframes pulse {
-  50% {
-    opacity: 0.35;
-    transform: scale(0.7);
-  }
-}
 
 /* An item landed: squash, then spring back. */
 .badge--bump {
   animation: badge-catch 520ms var(--ease-out) backwards;
-}
-
-.badge--bump .cat-face {
-  animation: face-catch 520ms var(--ease-out) backwards;
 }
 
 @keyframes badge-catch {
@@ -166,15 +163,6 @@ body,
   }
 }
 
-@keyframes face-catch {
-  25% {
-    transform: scale(1.35) rotate(-10deg);
-  }
-  100% {
-    transform: none;
-  }
-}
-
 /* "Geri al": a bored cat waits beside the button while the timer drains. */
 .undo {
   display: flex;
@@ -185,15 +173,27 @@ body,
 }
 
 .undo__cat {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
 }
 
+/* The box is gone: the button goes after it. Timing: shred.ts. */
+.undo--shred .undo__button {
+  animation: undo-out var(--out-for) var(--ease-out) var(--out-at) forwards;
+}
+
+@keyframes undo-out {
+  to {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
 .undo .box-cat {
   margin-bottom: -1px;
-  animation:
-    cat-arrive 420ms var(--ease-out) backwards,
-    box-shuffle 7s var(--ease-in-out) infinite 2s;
+  animation: box-shuffle 7s var(--ease-in-out) infinite 2s;
 }
 
 /* The box pops up first (the cat is already in the air, so the box itself must not slide or
@@ -213,17 +213,6 @@ body,
   from {
     opacity: 0;
     transform: scale(0.6);
-  }
-}
-
-@keyframes cat-arrive {
-  from {
-    opacity: 0;
-    transform: translateX(22px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 

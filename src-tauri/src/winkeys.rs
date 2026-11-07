@@ -9,7 +9,6 @@ use std::sync::{Mutex, OnceLock};
 
 use tauri_plugin_global_shortcut::{Modifiers, Shortcut};
 use windows::Win32::Foundation::{LPARAM, LRESULT, WPARAM};
-use windows::Win32::System::Threading::GetCurrentProcessId; // TEMP-DIAG
 use windows::Win32::System::Threading::{
     GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_TIME_CRITICAL,
 };
@@ -22,7 +21,6 @@ use windows::Win32::UI::WindowsAndMessaging::{
     CallNextHookEx, DispatchMessageW, GetMessageW, SetWindowsHookExW, HC_ACTION, KBDLLHOOKSTRUCT,
     MSG, WH_KEYBOARD_LL, WM_KEYDOWN, WM_SYSKEYDOWN,
 };
-use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId}; // TEMP-DIAG
 
 /// Unassigned virtual key; pressing it with Win held means "not a Start-menu tap".
 const VK_DUMMY: u16 = 0xE8;
@@ -91,74 +89,13 @@ unsafe extern "system" fn hook(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRE
         // SAFETY: for HC_ACTION, `lparam` points to a KBDLLHOOKSTRUCT.
         let info = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
         let down = matches!(wparam.0 as u32, WM_KEYDOWN | WM_SYSKEYDOWN);
-        let swallow = info.dwExtraInfo != INJECTED && on_key(info.vkCode, down, info.time);
-        diag_key(info, down, swallow);
-        if swallow {
+        if info.dwExtraInfo != INJECTED && on_key(info.vkCode, down, info.time) {
             return LRESULT(1);
         }
     }
     // SAFETY: passing the event on unchanged.
     unsafe { CallNextHookEx(None, code, wparam, lparam) }
 }
-
-// TEMP-DIAG start: timing of Win, Shift and S only, written away from the hook thread.
-#[link(name = "kernel32")]
-extern "system" {
-    fn GetTickCount() -> u32;
-}
-
-static DIAG: OnceLock<std::sync::mpsc::Sender<String>> = OnceLock::new();
-
-pub fn diag(line: String) {
-    let sender = DIAG.get_or_init(|| {
-        let (tx, rx) = std::sync::mpsc::channel::<String>();
-        std::thread::spawn(move || {
-            use std::io::Write;
-            let path = std::env::temp_dir().join("catail-keylog.txt");
-            let Ok(mut file) = std::fs::File::create(path) else {
-                return;
-            };
-            for line in rx {
-                let now = chrono::Local::now().format("%H:%M:%S%.3f");
-                let _ = writeln!(file, "{now} {line}");
-                let _ = file.flush();
-            }
-        });
-        tx
-    });
-    let _ = sender.send(line);
-}
-
-fn diag_key(info: &KBDLLHOOKSTRUCT, down: bool, swallow: bool) {
-    let name = match info.vkCode {
-        0x5B => "LWin",
-        0x5C => "RWin",
-        0xA0 => "LShift",
-        0xA1 => "RShift",
-        0x53 => "S",
-        _ => return,
-    };
-    // SAFETY: plain queries.
-    let (lag, ours) = unsafe {
-        let mut pid = 0u32;
-        GetWindowThreadProcessId(GetForegroundWindow(), Some(&mut pid));
-        (
-            GetTickCount().wrapping_sub(info.time),
-            pid == GetCurrentProcessId(),
-        )
-    };
-    let bound = BOUND.try_lock().map_or(99, |b| b.len());
-    diag(format!(
-        "{name} {} lag={lag}ms win={} shift={} ctrl={} alt={} recording={} bound={bound} ourWindowInFront={ours} swallowed={swallow}",
-        if down { "down" } else { "up" },
-        held(VK_LWIN) || held(VK_RWIN),
-        held(VK_SHIFT),
-        held(VK_CONTROL),
-        held(VK_MENU),
-        RECORDING.load(Ordering::SeqCst),
-    ));
-}
-// TEMP-DIAG end
 
 /// Returns true to swallow the key.
 fn on_key(vk: u32, down: bool, time: u32) -> bool {

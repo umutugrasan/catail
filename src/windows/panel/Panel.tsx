@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { CatFace, TRASH_HANDOFF_MS, TrashJump } from "../../lib/cats";
+import { catsAround } from "../../lib/cat";
+import { CatFace, TABLE_PUSH_MS, TableCat, TRASH_HANDOFF_MS, TrashJump } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
+  badgeCatAway,
   onWindowEvent,
   PanelEvents,
   panelClose,
@@ -55,7 +57,8 @@ export function Panel() {
   // Bumped on every open so the entrance animation replays.
   const [openCount, setOpenCount] = useState(0);
   const [closing, setClosing] = useState(false);
-  const [removing, setRemoving] = useState<Set<string>>(new Set());
+  // Tiles on their way out, and which way a cat pushes each: -1 left, 1 right, 0 no cat.
+  const [removing, setRemoving] = useState<Map<string, number>>(new Map());
   const [exporting, setExporting] = useState<Export>({ kind: "idle" });
   const [clearing, setClearing] = useState(false);
   // Files from another app are being dragged over the panel.
@@ -84,7 +87,7 @@ export function Panel() {
         // Grows out of the badge, wherever it sits.
         document.getElementById("root")!.dataset.corner = corner;
         setClosing(false);
-        setRemoving(new Set());
+        setRemoving(new Map());
         setExporting({ kind: "idle" });
         setOpenCount((n) => n + 1);
       }),
@@ -101,15 +104,19 @@ export function Panel() {
   const clearAll = () => {
     if (clearing) return;
     setClearing(true);
+    void badgeCatAway(TRASH_HANDOFF_MS + 400);
     setTimeout(() => {
       void queueClear(true).finally(() => setClearing(false));
     }, TRASH_HANDOFF_MS);
   };
 
-  const remove = (id: string) => {
-    // Let the tile shrink away before it leaves the grid; the rest then slide up.
-    setRemoving((current) => new Set(current).add(id));
-    setTimeout(() => void queueRemove(id), REMOVE_MS);
+  const remove = (id: string, index: number) => {
+    // A cat pushes the tile off the panel's nearer edge (or it just shrinks away, with no cat)
+    // before it leaves the grid; the rest then slide up.
+    const dir = catsAround() ? (index % GRID.columns === 0 ? -1 : 1) : 0;
+    setRemoving((current) => new Map(current).set(id, dir));
+    if (dir !== 0) void badgeCatAway(TABLE_PUSH_MS);
+    setTimeout(() => void queueRemove(id), dir === 0 ? REMOVE_MS : TABLE_PUSH_MS);
   };
 
   const exportAs = async (format: ExportFormat) => {
@@ -187,6 +194,7 @@ export function Panel() {
           {items.map((item, index) => {
             const dragged = drag?.id === item.id;
             const at = dragged ? { x: drag.x, y: drag.y } : cellPosition(index, GRID);
+            const pushed = removing.get(item.id) ?? 0;
             return (
               <li
                 key={item.id}
@@ -194,10 +202,12 @@ export function Panel() {
                   "panel__slot",
                   dragged && "panel__slot--dragging",
                   removing.has(item.id) && "panel__slot--removing",
+                  pushed !== 0 && "panel__slot--pushed",
+                  pushed === 1 && "panel__slot--pushed-right",
                 ]
                   .filter(Boolean)
                   .join(" ")}
-                style={{ transform: `translate(${at.x}px, ${at.y}px)` }}
+                style={{ transform: `translate(${at.x}px, ${at.y}px)`, "--dir": pushed } as React.CSSProperties}
                 onPointerDown={(e) => onTilePointerDown(e, item.id, index)}
                 onPointerMove={onTilePointerMove}
                 onPointerUp={onTilePointerUp}
@@ -233,12 +243,13 @@ export function Panel() {
                       className="panel__tile-button panel__tile-button--danger"
                       title={t("panel.remove")}
                       onPointerDown={(e) => e.stopPropagation()}
-                      onClick={() => remove(item.id)}
+                      onClick={() => remove(item.id, index)}
                     >
                       <TrashIcon size={14} />
                     </button>
                   </span>
                 </div>
+                {pushed !== 0 && <TableCat />}
               </li>
             );
           })}

@@ -182,8 +182,11 @@ pub fn set_aside_pasted<R: Runtime>(app: &AppHandle<R>, ids: &[uuid::Uuid]) {
 /// "Geri al": brings back what the last paste or clear took away.
 pub fn restore<R: Runtime>(app: &AppHandle<R>) {
     let state = app.state::<AppState>();
-    state.undo.lock().unwrap().take();
+    let offer = state.undo.lock().unwrap().take();
     state.queue.lock().unwrap().restore();
+    if let Some(offer) = offer {
+        badge::fetch(app, offer.count);
+    }
     changed(app);
 }
 

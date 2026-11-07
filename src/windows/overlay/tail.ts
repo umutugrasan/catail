@@ -1,5 +1,5 @@
-// The cat's tail that comes in from the screen edge, curls around a corner of the selection and
-// drags it into the badge. Every frame is worked out from the progress alone, so the tail and
+// The tail of the badge's cat: it comes out from under the cat (or in from the screen edge, when
+// the badge is on another screen), curls around a corner of the selection and drags it back. Every frame is worked out from the progress alone, so the tail and
 // the snapshot it holds can't drift apart. CSS pixels throughout; colors live in overlay.css.
 import { clamp, type Point, type Rect, type Size } from "./geometry";
 
@@ -9,6 +9,8 @@ export const TAIL_MS = 1000;
 const CURL_END = 0.34;
 const SQUEEZE_END = 0.44;
 const PULL_END = 0.86;
+/** The capture reaches the cat. */
+export const CAUGHT_AT = PULL_END;
 const RETREAT_START = 0.8;
 
 /** The curl: an inward spiral around the grab point. */
@@ -24,6 +26,9 @@ const GRAB_INSET = 44;
 const TIP_WIDTH = 21;
 const BASE_WIDTH = 33;
 const TAPER_LENGTH = 520;
+/** It has to fit under a small cat: slim where it leaves the body, over this many px. */
+const ROOT_SHARE = 0.26;
+const ROOT_LENGTH = 200;
 const OUTLINE = 7;
 /** Width can't vary along one SVG stroke, so the tail is drawn in this many short pieces. */
 const SEGMENTS = 18;
@@ -81,8 +86,18 @@ export function tailBase(target: Point, view: Size): Point {
   return { x, y: -OFFSCREEN };
 }
 
-export function makeTailScene(rect: Rect, target: Point, view: Size, spin: 1 | -1): TailScene {
-  const base = tailBase(target, view);
+export const isOnView = ({ x, y }: Point, view: Size) => x >= 0 && y >= 0 && x <= view.width && y <= view.height;
+
+/** Where the tail leaves the cat sitting with its middle at `cat` (the seat's 40 px picture). */
+export const catTailRoot = (cat: Point): Point => ({ x: cat.x + 9, y: cat.y + 10 });
+
+export function makeTailScene(
+  rect: Rect,
+  target: Point,
+  view: Size,
+  spin: 1 | -1,
+  base: Point = tailBase(target, view),
+): TailScene {
   const center = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
   // The corner facing the tail. Small selections get held by the middle.
   const insetX = Math.max(rect.width / 2 - GRAB_INSET, 0);
@@ -198,6 +213,8 @@ export function tailFrame(scene: TailScene, progress: number): TailFrame {
 
 const widthAt = (fromTip: number) => lerp(TIP_WIDTH, BASE_WIDTH, clamp(fromTip / TAPER_LENGTH, 0, 1));
 
+const rootShare = (fromBase: number) => lerp(ROOT_SHARE, 1, clamp(fromBase / ROOT_LENGTH, 0, 1));
+
 const pathData = (points: Point[]) =>
   points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("");
 
@@ -205,7 +222,8 @@ const pathData = (points: Point[]) =>
 export function tailSegments(points: Point[]): TailSegment[] {
   if (points.length < 2) return [];
   const fromTip = [...points].reverse();
-  const each = polylineLength(fromTip) / SEGMENTS;
+  const total = polylineLength(fromTip);
+  const each = total / SEGMENTS;
   const segments: TailSegment[] = [];
   let walked = 0;
   let piece = [fromTip[0]];
@@ -213,7 +231,7 @@ export function tailSegments(points: Point[]): TailSegment[] {
   const flush = () => {
     segments.push({
       d: pathData(piece),
-      width: widthAt(walked + pieceLength / 2),
+      width: widthAt(walked + pieceLength / 2) * rootShare(total - walked - pieceLength / 2),
       dashOffset: walked - STRIPE_START,
     });
     walked += pieceLength;

@@ -577,6 +577,21 @@ pub fn badge_state(app: AppHandle) -> BadgeState {
     badge::current(&app)
 }
 
+#[tauri::command]
+pub fn badge_make_room(app: AppHandle, room: bool) {
+    badge::make_room(&app, room);
+}
+
+#[tauri::command]
+pub fn badge_cat_away(app: AppHandle, ms: u64) {
+    badge::cat_away(&app, ms);
+}
+
+#[tauri::command]
+pub fn badge_cursor(app: AppHandle) -> Option<(f64, f64)> {
+    badge::cursor(&app)
+}
+
 /// The overlays are already closed, so the always-on-top windows don't cover the dialog.
 fn save_with_dialog(app: &AppHandle, image: image::RgbaImage) {
     let mut dialog = app

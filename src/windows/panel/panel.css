@@ -170,6 +170,58 @@ button {
   }
 }
 
+/* A cat is pushing this tile off the panel (the cat itself: cats.css). */
+.panel__slot--pushed {
+  z-index: 3;
+}
+
+.panel__slot--pushed .panel__tile {
+  animation: table-push 1500ms linear both;
+}
+
+.panel__slot--pushed .table-cat {
+  left: 66px;
+}
+
+.panel__slot--pushed-right .table-cat {
+  right: 66px;
+  left: auto;
+}
+
+.panel__slot--pushed-right .table-cat__facing {
+  scale: -1 1;
+}
+
+@keyframes table-push {
+  0%,
+  17% {
+    transform: none;
+  }
+  21% {
+    transform: translateX(calc(var(--dir) * 4px)) rotate(calc(var(--dir) * -1.5deg));
+  }
+  24% {
+    transform: translateX(calc(var(--dir) * 4px));
+  }
+  28%,
+  58% {
+    transform: translateX(calc(var(--dir) * 9px)) rotate(calc(var(--dir) * -1deg));
+  }
+  72% {
+    transform: translateX(calc(var(--dir) * 22px));
+    animation-timing-function: ease-in;
+  }
+  78% {
+    opacity: 1;
+    transform: translateX(calc(var(--dir) * 26px)) rotate(calc(var(--dir) * 16deg));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--dir) * 36px), 74px) rotate(calc(var(--dir) * 70deg)) scale(0.6);
+  }
+}
+
 /* 72 px squares, 6 px apart (GRID.pitch = 78 in Panel.tsx). */
 .panel__tile {
   position: relative;

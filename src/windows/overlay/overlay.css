@@ -977,6 +977,38 @@ html.pressing .overlay--resize-corner * {
   max-width: none;
 }
 
+/* The badge's cat, sitting where the badge will be: the tail comes out from under it. */
+.overlay__cat {
+  position: absolute;
+  z-index: 8;
+  margin: 0;
+  translate: -50% -50%;
+  transition: none;
+  animation:
+    overlay-cat-in 240ms var(--ease-pop) backwards,
+    overlay-cat-catch 460ms var(--ease-out) 820ms;
+  pointer-events: none;
+}
+
+@keyframes overlay-cat-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+}
+
+@keyframes overlay-cat-catch {
+  20% {
+    transform: scale(1.14, 0.84);
+  }
+  50% {
+    transform: scale(0.94, 1.1);
+  }
+  100% {
+    transform: none;
+  }
+}
+
 .overlay__dim--fly {
   background: rgba(var(--shade-rgb), 0.55);
   animation: fade-in 200ms var(--ease-out) both;

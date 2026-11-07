@@ -29,3 +29,7 @@ export async function initCat(): Promise<void> {
   }
   void listen<string>("app:cat", (event) => wear(event.payload)).catch(() => undefined);
 }
+
+/** The plain theme has no cat, and some people asked their system for less motion. */
+export const catsAround = () =>
+  document.documentElement.dataset.cat !== "plain" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
