@@ -7,7 +7,8 @@ const API_URL = `https://api.github.com/repos/${REPO}/releases?per_page=10`;
 const DOWNLOAD_PREFIX = `https://github.com/${REPO}/releases/download/`;
 const INSTALLER = /^catail[_-]v?(\d+\.\d+\.\d+)[_-]x64-setup\.exe$/i;
 const CACHE_KEY = "catail.site.release";
-const CACHE_TTL_MS = 60 * 60 * 1000;
+// Short, so a new release reaches earlier visitors soon. The API allows 60 requests an hour.
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`;
 

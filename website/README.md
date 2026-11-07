@@ -11,7 +11,7 @@ python -m http.server 5180 --directory website
 
 ## İndirme düğmesi
 
-`release.js`, GitHub API'den yayımlanmış son sürümleri okur ve içinde kurulum dosyası (`Catail_<sürüm>_x64-setup.exe`) olan en yenisine bağlanır. Taslaklar, ön sürümler ve kurulum dosyası henüz yüklenmemiş sürümler atlanır. Sonuç bir saat tarayıcıda saklanır. API'ye ulaşılamazsa düğme Releases sayfasına gider. Yeni sürümde sitede bir şey değiştirmek gerekmez.
+`release.js`, GitHub API'den yayımlanmış son sürümleri okur ve içinde kurulum dosyası (`Catail_<sürüm>_x64-setup.exe`) olan en yenisine bağlanır. Taslaklar, ön sürümler ve kurulum dosyası henüz yüklenmemiş sürümler atlanır. Sonuç beş dakika tarayıcıda saklanır. API'ye ulaşılamazsa düğme Releases sayfasına gider. Yeni sürümde sitede bir şey değiştirmek gerekmez.
 
 ## Sürüme bağlı metin
 
