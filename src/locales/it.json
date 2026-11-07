@@ -56,7 +56,8 @@
     "qr_copy_link": "Copia link",
     "qr_copy_text": "Copia il testo del codice QR",
     "qr_copied": "Copiato ✓",
-    "qr_text": "Codice QR"
+    "qr_text": "Codice QR",
+    "tool_crop": "Ritaglia"
   },
   "save": {
     "dialog_title": "Salva screenshot",
@@ -169,7 +170,7 @@
     "export": "Salva",
     "export_zip": "Immagini in PNG, testi in TXT",
     "export_pdf": "Una pagina per elemento",
-    "zoom": "Ingrandisci",
+    "zoom": "Ingrandisci e modifica",
     "title_short": "Coda"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "Documento PDF"
   },
   "preview": {
-    "close": "Chiudi (Esc)"
+    "close": "Chiudi (Esc)",
+    "save": "Salva",
+    "confirm": "Salvare le modifiche?",
+    "discard": "Non salvare",
+    "keep_editing": "Continua a modificare",
+    "save_failed": "Salvataggio non riuscito. L'elemento potrebbe non essere più in coda.",
+    "load_failed": "Impossibile aprire l'immagine.",
+    "edit_text": "Modifica testo"
   }
 }

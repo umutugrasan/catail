@@ -79,6 +79,8 @@ fn main() {
             commands::queue_items,
             commands::queue_remove,
             commands::queue_reorder,
+            commands::queue_edit_image,
+            commands::queue_edit_text,
             commands::queue_restore,
             commands::settings_get,
             commands::settings_save,

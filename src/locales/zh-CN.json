@@ -56,7 +56,8 @@
     "qr_copy_link": "复制链接",
     "qr_copy_text": "复制二维码中的文字",
     "qr_copied": "已复制 ✓",
-    "qr_text": "二维码"
+    "qr_text": "二维码",
+    "tool_crop": "裁剪"
   },
   "save": {
     "dialog_title": "保存截图",
@@ -169,7 +170,7 @@
     "export": "保存",
     "export_zip": "图片为 PNG，文字为 TXT",
     "export_pdf": "每项一页",
-    "zoom": "放大",
+    "zoom": "放大并编辑",
     "title_short": "队列"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "PDF 文档"
   },
   "preview": {
-    "close": "关闭 (Esc)"
+    "close": "关闭 (Esc)",
+    "save": "保存",
+    "confirm": "要保存更改吗?",
+    "discard": "不保存",
+    "keep_editing": "继续编辑",
+    "save_failed": "无法保存。该项目可能已不在队列中。",
+    "load_failed": "无法打开图片。",
+    "edit_text": "编辑文本"
   }
 }

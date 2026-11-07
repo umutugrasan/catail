@@ -19,7 +19,7 @@ use tauri::{AppHandle, Manager, Runtime};
 use crate::clipboard::{self, Clip, Copied};
 use crate::i18n::{t, t_with};
 use crate::state::{AppState, UndoKind, UndoOffer};
-use crate::{badge, hotkeys, notify, panel};
+use crate::{badge, hotkeys, notify, panel, preview};
 use item::QueueItem;
 
 /// How long "Geri al" stays on the badge after a paste or a clear.
@@ -70,6 +70,30 @@ pub fn remove<R: Runtime>(app: &AppHandle<R>, id: uuid::Uuid) {
 pub fn reorder<R: Runtime>(app: &AppHandle<R>, order: &[uuid::Uuid]) {
     app.state::<AppState>().queue.lock().unwrap().reorder(order);
     changed(app);
+}
+
+/// Saves an edited image over its queue item. Returns whether the item was still there.
+pub fn edit_image<R: Runtime>(app: &AppHandle<R>, id: uuid::Uuid, img: &RgbaImage) -> Result<bool> {
+    let found = app
+        .state::<AppState>()
+        .queue
+        .lock()
+        .unwrap()
+        .replace_image(id, img)?;
+    changed(app);
+    Ok(found)
+}
+
+/// Saves edited text over its queue item. Returns whether the item was still there.
+pub fn edit_text<R: Runtime>(app: &AppHandle<R>, id: uuid::Uuid, text: String) -> bool {
+    let found = app
+        .state::<AppState>()
+        .queue
+        .lock()
+        .unwrap()
+        .replace_text(id, text);
+    changed(app);
+    found
 }
 
 /// Empties the queue and leaves text mode: everything is back to normal, with "Geri al"
@@ -129,15 +153,16 @@ pub fn set_text_mode<R: Runtime>(app: &AppHandle<R>, on: bool) {
     changed(app);
 }
 
-/// Call after any change to the queue or text mode. The clipboard is only watched in text
-/// mode, and Ctrl+V is only taken over while the queue has items; otherwise both keys
-/// behave normally.
+/// Call after any change to the queue, text mode or the editor being open. The clipboard is
+/// only watched in text mode, and Ctrl+V is only taken over while the queue has items;
+/// otherwise both keys behave normally. They also do while the editor is open, whose text
+/// boxes need their own copy and paste.
 pub fn changed<R: Runtime>(app: &AppHandle<R>) {
     let state = app.state::<AppState>();
     let has_items = state.queue.lock().unwrap().len() > 0;
     #[cfg(windows)]
     clipboard::watcher::set_active(state.text_mode.load(Ordering::SeqCst));
-    hotkeys::set_queue_paste(app, has_items);
+    hotkeys::set_queue_paste(app, has_items && !preview::is_open());
     badge::refresh(app);
     panel::refresh(app);
 }
@@ -145,7 +170,7 @@ pub fn changed<R: Runtime>(app: &AppHandle<R>) {
 /// Clipboard watcher callback: the user copied something in text mode.
 pub fn on_clipboard_changed<R: Runtime>(app: &AppHandle<R>) {
     let state = app.state::<AppState>();
-    if state.pasting.load(Ordering::SeqCst) || clipboard::is_self_write() {
+    if state.pasting.load(Ordering::SeqCst) || clipboard::is_self_write() || preview::is_open() {
         return;
     }
     if !state.text_mode.load(Ordering::SeqCst) {

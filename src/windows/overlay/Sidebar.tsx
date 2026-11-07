@@ -21,7 +21,10 @@ interface Props {
   onColor: (color: string) => void;
   onWidth: (width: number) => void;
   onUndo: () => void;
-  onCancel: () => void;
+  /** Leaves out the ✕; the image editor has its own. */
+  onCancel?: () => void;
+  /** In the image editor there's no selection to move, but there's a crop tool. */
+  editor?: boolean;
 }
 
 /** Gap between a flyout and its button (matches overlay.css), and the screen margin. */
@@ -95,7 +98,7 @@ export const Sidebar = forwardRef<HTMLDivElement, Props>(function Sidebar(props,
       style={style}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      {toolButton("select")}
+      {toolButton(props.editor ? "crop" : "select")}
 
       <FlyoutButton
         open={open === "shapes"}
@@ -151,9 +154,11 @@ export const Sidebar = forwardRef<HTMLDivElement, Props>(function Sidebar(props,
       <button type="button" data-label={t("overlay.undo")} disabled={!canUndo} onClick={props.onUndo}>
         <UndoIcon />
       </button>
-      <button type="button" className="overlay__close" data-label={t("overlay.cancel_title")} onClick={props.onCancel}>
-        <CloseIcon />
-      </button>
+      {props.onCancel && (
+        <button type="button" className="overlay__close" data-label={t("overlay.cancel_title")} onClick={props.onCancel}>
+          <CloseIcon />
+        </button>
+      )}
     </div>
   );
 });

@@ -56,7 +56,8 @@
     "qr_copy_link": "Copiar link",
     "qr_copy_text": "Copiar o texto do QR code",
     "qr_copied": "Copiado ✓",
-    "qr_text": "QR code"
+    "qr_text": "QR code",
+    "tool_crop": "Cortar"
   },
   "save": {
     "dialog_title": "Salvar captura de tela",
@@ -169,7 +170,7 @@
     "export": "Salvar",
     "export_zip": "Imagens em PNG, textos em TXT",
     "export_pdf": "Uma página por item",
-    "zoom": "Ampliar",
+    "zoom": "Ampliar e editar",
     "title_short": "Fila"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "Documento PDF"
   },
   "preview": {
-    "close": "Fechar (Esc)"
+    "close": "Fechar (Esc)",
+    "save": "Guardar",
+    "confirm": "Guardar as alterações?",
+    "discard": "Não guardar",
+    "keep_editing": "Continuar a editar",
+    "save_failed": "Não foi possível guardar. O item pode já não estar na fila.",
+    "load_failed": "Não foi possível abrir a imagem.",
+    "edit_text": "Editar texto"
   }
 }

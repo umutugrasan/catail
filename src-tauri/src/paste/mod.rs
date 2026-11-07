@@ -46,6 +46,10 @@ enum Outcome {
 
 /// Paste hotkey entry point. Runs on a worker thread.
 pub fn run<R: Runtime>(app: &AppHandle<R>) {
+    // The editor has the focus, so a paste would land in it instead of the target app.
+    if crate::preview::is_open() {
+        return;
+    }
     let state = app.state::<AppState>();
     if state.pasting.swap(true, Ordering::SeqCst) {
         return; // a paste is already running

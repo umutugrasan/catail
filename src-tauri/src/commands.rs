@@ -186,6 +186,44 @@ pub fn queue_reorder(app: AppHandle, ids: Vec<uuid::Uuid>) {
     queue::reorder(&app, &ids);
 }
 
+/// The editor's "Kaydet" for an image: the edited PNG as a raw body, the item's id in a header.
+#[tauri::command]
+pub async fn queue_edit_image(
+    app: AppHandle,
+    request: tauri::ipc::Request<'_>,
+) -> Result<(), String> {
+    let tauri::ipc::InvokeBody::Raw(png) = request.body() else {
+        return Err("expected a raw PNG body".into());
+    };
+    let id = request
+        .headers()
+        .get("x-id")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| uuid::Uuid::parse_str(v).ok())
+        .ok_or("missing or invalid x-id header")?;
+    let image = image::load_from_memory(png)
+        .map_err(|e| format!("cannot decode edited image: {e}"))?
+        .to_rgba8();
+    match queue::edit_image(&app, id, &image) {
+        Ok(true) => Ok(()),
+        Ok(false) => Err("the item is no longer in the queue".into()),
+        Err(e) => Err(format!("{e:#}")),
+    }
+}
+
+/// The editor's "Kaydet" for a text. An empty text wouldn't paste anything, so it's refused.
+#[tauri::command]
+pub fn queue_edit_text(app: AppHandle, id: uuid::Uuid, text: String) -> Result<(), String> {
+    if text.trim().is_empty() {
+        return Err("the text is empty".into());
+    }
+    if queue::edit_text(&app, id, text) {
+        Ok(())
+    } else {
+        Err("the item is no longer in the queue".into())
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct SettingsView {
     settings: Settings,

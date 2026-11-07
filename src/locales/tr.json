@@ -56,7 +56,8 @@
     "qr_copy_link": "Bağlantıyı kopyala",
     "qr_copy_text": "QR koddaki yazıyı kopyala",
     "qr_copied": "Kopyalandı ✓",
-    "qr_text": "QR kod"
+    "qr_text": "QR kod",
+    "tool_crop": "Kırp"
   },
   "save": {
     "dialog_title": "Ekran görüntüsünü kaydet",
@@ -169,7 +170,7 @@
     "export": "Kaydet",
     "export_zip": "Görseller PNG, metinler TXT olarak",
     "export_pdf": "Her öğe bir sayfa",
-    "zoom": "Büyüt",
+    "zoom": "Büyüt ve düzenle",
     "title_short": "Kuyruk"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "PDF belgesi"
   },
   "preview": {
-    "close": "Kapat (Esc)"
+    "close": "Kapat (Esc)",
+    "save": "Kaydet",
+    "confirm": "Değişiklikler kaydedilsin mi?",
+    "discard": "Kaydetme",
+    "keep_editing": "Düzenlemeye dön",
+    "save_failed": "Kaydedilemedi. Öğe kuyruktan kalkmış olabilir.",
+    "load_failed": "Görsel açılamadı.",
+    "edit_text": "Metni düzenle"
   }
 }

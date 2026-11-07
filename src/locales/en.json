@@ -56,7 +56,8 @@
     "qr_copy_link": "Copy link",
     "qr_copy_text": "Copy the text in the QR code",
     "qr_copied": "Copied ✓",
-    "qr_text": "QR code"
+    "qr_text": "QR code",
+    "tool_crop": "Crop"
   },
   "save": {
     "dialog_title": "Save screenshot",
@@ -169,7 +170,7 @@
     "export": "Save",
     "export_zip": "Images as PNG, texts as TXT",
     "export_pdf": "One page per item",
-    "zoom": "Enlarge",
+    "zoom": "Enlarge and edit",
     "title_short": "Queue"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "PDF document"
   },
   "preview": {
-    "close": "Close (Esc)"
+    "close": "Close (Esc)",
+    "save": "Save",
+    "confirm": "Save your changes?",
+    "discard": "Don't save",
+    "keep_editing": "Keep editing",
+    "save_failed": "Couldn't save. The item may have left the queue.",
+    "load_failed": "Couldn't open the image.",
+    "edit_text": "Edit text"
   }
 }

@@ -54,6 +54,13 @@ export function ToolIcon({ tool }: { tool: Tool }) {
           <path d="M5 3l14 8-6 1.5L10 19z" />
         </Icon>
       );
+    case "crop":
+      return (
+        <Icon>
+          <path d="M7 3v12a2 2 0 0 0 2 2h12" />
+          <path d="M17 21V9a2 2 0 0 0-2-2H3" />
+        </Icon>
+      );
     case "arrow":
       return (
         <Icon>

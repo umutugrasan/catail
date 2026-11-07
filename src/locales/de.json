@@ -56,7 +56,8 @@
     "qr_copy_link": "Link kopieren",
     "qr_copy_text": "Text des QR-Codes kopieren",
     "qr_copied": "Kopiert ✓",
-    "qr_text": "QR-Code"
+    "qr_text": "QR-Code",
+    "tool_crop": "Zuschneiden"
   },
   "save": {
     "dialog_title": "Screenshot speichern",
@@ -169,7 +170,7 @@
     "export": "Speichern",
     "export_zip": "Bilder als PNG, Texte als TXT",
     "export_pdf": "Eine Seite pro Element",
-    "zoom": "Vergrößern",
+    "zoom": "Vergrößern und bearbeiten",
     "title_short": "Warteschlange"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "PDF-Dokument"
   },
   "preview": {
-    "close": "Schließen (Esc)"
+    "close": "Schließen (Esc)",
+    "save": "Speichern",
+    "confirm": "Änderungen speichern?",
+    "discard": "Nicht speichern",
+    "keep_editing": "Weiter bearbeiten",
+    "save_failed": "Speichern fehlgeschlagen. Das Element ist vielleicht nicht mehr in der Warteschlange.",
+    "load_failed": "Das Bild konnte nicht geöffnet werden.",
+    "edit_text": "Text bearbeiten"
   }
 }

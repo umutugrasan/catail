@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use image::RgbaImage;
 use uuid::Uuid;
 
-use super::item::QueueItem;
+use super::item::{QueueItem, QueueItemKind};
 use crate::capture::encode_png;
 
 /// Insertion order is paste order.
@@ -57,6 +57,46 @@ impl QueueStore {
 
     pub fn push(&mut self, item: QueueItem) {
         self.items.push(item);
+    }
+
+    /// Swaps an image item's picture for its edited version, keeping its place in the queue.
+    /// The old file goes right away: an edit may have blurred or cropped something out of it.
+    /// Returns whether the item was found.
+    pub fn replace_image(&mut self, id: Uuid, img: &RgbaImage) -> Result<bool> {
+        let Some(index) = self
+            .items
+            .iter()
+            .position(|item| item.id == id && item.kind == QueueItemKind::Image)
+        else {
+            return Ok(false);
+        };
+        let path = self.session_dir.join(format!("{:03}.png", self.next_seq));
+        std::fs::write(&path, encode_png(img)?)
+            .with_context(|| format!("cannot write {}", path.display()))?;
+        self.next_seq += 1;
+        let item = &mut self.items[index];
+        let old = item.image_path.replace(path);
+        item.revision += 1;
+        if let Some(old) = old {
+            let _ = std::fs::remove_file(old);
+        }
+        Ok(true)
+    }
+
+    /// Swaps a text item's text. Returns whether the item was found.
+    pub fn replace_text(&mut self, id: Uuid, text: String) -> bool {
+        let found = self
+            .items
+            .iter_mut()
+            .find(|item| item.id == id && item.kind == QueueItemKind::Text);
+        match found {
+            Some(item) => {
+                item.text = Some(text);
+                item.revision += 1;
+                true
+            }
+            None => false,
+        }
     }
 
     /// Removes the newest item and its file. Returns whether anything was removed.
@@ -283,6 +323,48 @@ mod tests {
         assert_eq!(store.len(), 1);
         assert!(!first.image_path.unwrap().exists());
         std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn editing_an_image_keeps_its_place_and_drops_the_old_file() {
+        let root = temp_root("edit-image");
+        let mut store = QueueStore::new(&root, "s1");
+        store.push_image(&RgbaImage::new(4, 4)).unwrap();
+        store.push_image(&RgbaImage::new(4, 4)).unwrap();
+        let first = store.items()[0].clone();
+        let old = first.image_path.clone().unwrap();
+
+        let cropped = RgbaImage::from_pixel(2, 1, Rgba([9, 9, 9, 255]));
+        assert!(store.replace_image(first.id, &cropped).unwrap());
+
+        let edited = &store.items()[0];
+        assert_eq!(edited.id, first.id);
+        assert_eq!(edited.revision, first.revision + 1);
+        assert!(!old.exists());
+        // A new name, not 001.png again: names are never reused within a session.
+        assert_eq!(file_names(&store), ["003.png", "002.png"]);
+        let saved = image::open(edited.image_path.as_ref().unwrap()).unwrap();
+        assert_eq!((saved.width(), saved.height()), (2, 1));
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn editing_needs_an_item_of_that_kind() {
+        let mut store = QueueStore::new(&temp_root("edit-kind"), "s1");
+        store.push(QueueItem::text("metin".into(), None));
+        let id = store.items()[0].id;
+
+        assert!(!store.replace_image(id, &RgbaImage::new(1, 1)).unwrap());
+        assert!(!store
+            .replace_image(Uuid::new_v4(), &RgbaImage::new(1, 1))
+            .unwrap());
+        assert!(!store.replace_text(Uuid::new_v4(), "x".into()));
+        assert_eq!(store.items()[0].text.as_deref(), Some("metin"));
+        assert_eq!(store.items()[0].revision, 0);
+
+        assert!(store.replace_text(id, "yeni".into()));
+        assert_eq!(store.items()[0].text.as_deref(), Some("yeni"));
+        assert_eq!(store.items()[0].revision, 1);
     }
 
     #[test]

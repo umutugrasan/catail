@@ -12,7 +12,8 @@ export type Tool =
   | "line"
   | "arrow"
   | "text"
-  | "blur";
+  | "blur"
+  | "crop";
 
 /** Grouped in the sidebar behind one button each. */
 export const SHAPE_TOOLS = ["rect", "ellipse", "line", "arrow"] as const satisfies readonly Tool[];
@@ -72,6 +73,7 @@ export function startShape(tool: Tool, p: Point, style: Style): Shape | null {
     case "select":
     case "eraser":
     case "text":
+    case "crop":
       return null;
   }
 }

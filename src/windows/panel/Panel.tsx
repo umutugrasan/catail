@@ -189,23 +189,21 @@ export function Panel() {
                   title={item.sourceApp ?? undefined}
                 >
                   {item.kind === "image" ? (
-                    <img src={queueImageUrl(item.id)} alt="" draggable={false} />
+                    <img src={queueImageUrl(item.id, item.revision)} alt="" draggable={false} />
                   ) : (
                     <span className="panel__text">{item.preview}</span>
                   )}
                   <span className="panel__index">{index + 1}</span>
                   <span className="panel__actions">
-                    {item.kind === "image" && (
-                      <button
-                        type="button"
-                        className="panel__tile-button"
-                        title={t("panel.zoom")}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={() => void previewOpen(item.id)}
-                      >
-                        <ZoomIcon />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className="panel__tile-button"
+                      title={t("panel.zoom")}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={() => void previewOpen(item.id)}
+                    >
+                      <ZoomIcon />
+                    </button>
                     <button
                       type="button"
                       className="panel__tile-button panel__tile-button--danger"

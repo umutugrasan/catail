@@ -56,7 +56,8 @@
     "qr_copy_link": "Copiar enlace",
     "qr_copy_text": "Copiar el texto del código QR",
     "qr_copied": "Copiado ✓",
-    "qr_text": "Código QR"
+    "qr_text": "Código QR",
+    "tool_crop": "Recortar"
   },
   "save": {
     "dialog_title": "Guardar captura",
@@ -169,7 +170,7 @@
     "export": "Guardar",
     "export_zip": "Imágenes en PNG, textos en TXT",
     "export_pdf": "Una página por elemento",
-    "zoom": "Ampliar",
+    "zoom": "Ampliar y editar",
     "title_short": "Cola"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "Documento PDF"
   },
   "preview": {
-    "close": "Cerrar (Esc)"
+    "close": "Cerrar (Esc)",
+    "save": "Guardar",
+    "confirm": "¿Guardar los cambios?",
+    "discard": "No guardar",
+    "keep_editing": "Seguir editando",
+    "save_failed": "No se pudo guardar. Puede que el elemento ya no esté en la cola.",
+    "load_failed": "No se pudo abrir la imagen.",
+    "edit_text": "Editar texto"
   }
 }

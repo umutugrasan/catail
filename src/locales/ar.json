@@ -56,7 +56,8 @@
     "qr_copy_link": "نسخ الرابط",
     "qr_copy_text": "نسخ نص رمز QR",
     "qr_copied": "تم النسخ ✓",
-    "qr_text": "رمز QR"
+    "qr_text": "رمز QR",
+    "tool_crop": "قص"
   },
   "save": {
     "dialog_title": "حفظ لقطة الشاشة",
@@ -169,7 +170,7 @@
     "export": "حفظ",
     "export_zip": "الصور بصيغة PNG والنصوص بصيغة TXT",
     "export_pdf": "صفحة لكل عنصر",
-    "zoom": "تكبير",
+    "zoom": "تكبير وتعديل",
     "title_short": "القائمة"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "مستند PDF"
   },
   "preview": {
-    "close": "إغلاق (Esc)"
+    "close": "إغلاق (Esc)",
+    "save": "حفظ",
+    "confirm": "هل تريد حفظ التغييرات؟",
+    "discard": "عدم الحفظ",
+    "keep_editing": "متابعة التعديل",
+    "save_failed": "تعذر الحفظ. ربما لم يعد العنصر في القائمة.",
+    "load_failed": "تعذر فتح الصورة.",
+    "edit_text": "تعديل النص"
   }
 }

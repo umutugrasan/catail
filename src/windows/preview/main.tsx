@@ -3,6 +3,7 @@ import { Preview } from "./Preview";
 import "../../lib/theme.css";
 import "../../lib/pressCursor";
 import { initI18n } from "../../lib/i18n";
+import "../overlay/overlay.css";
 import "./preview.css";
 
 // Strings first: the language comes from the app.

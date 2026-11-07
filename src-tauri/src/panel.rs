@@ -51,6 +51,7 @@ pub struct ItemView {
     /// Whole text, for exporting.
     pub full_text: Option<String>,
     pub source_app: Option<String>,
+    pub revision: u32,
 }
 
 impl From<&QueueItem> for ItemView {
@@ -61,6 +62,7 @@ impl From<&QueueItem> for ItemView {
             preview: item.text.as_deref().map(preview),
             full_text: item.text.clone(),
             source_app: item.source_app.clone(),
+            revision: item.revision,
         }
     }
 }
@@ -190,7 +192,8 @@ pub fn parse_image_path(path: &str) -> Option<Uuid> {
     Uuid::parse_str(name).ok()
 }
 
-/// Serves queued images to the panel's thumbnails.
+/// Serves queued images to the panel's thumbnails and the editor, which draws them on a canvas
+/// and so needs the CORS header to read the result back.
 pub fn serve<R: Runtime>(
     ctx: UriSchemeContext<'_, R>,
     request: Request<Vec<u8>>,
@@ -202,7 +205,9 @@ pub fn serve<R: Runtime>(
     });
     let bytes = path.and_then(|p| std::fs::read(p).ok());
 
-    let builder = Response::builder().header(header::CACHE_CONTROL, "no-store");
+    let builder = Response::builder()
+        .header(header::CACHE_CONTROL, "no-store")
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
     match bytes {
         Some(png) => builder
             .header(header::CONTENT_TYPE, "image/png")

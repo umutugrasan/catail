@@ -1,5 +1,6 @@
-//! Large preview of a queued image, opened from the panel's zoom button. Covers the primary
-//! monitor with a dimmed backdrop; a click or Esc closes it.
+//! Large view of a queued item, opened from the panel's zoom button, where images and texts can
+//! be edited. Covers the primary monitor with a dimmed backdrop. Saving and closing are up to
+//! the page, which asks first if there are unsaved changes.
 
 use std::sync::Mutex;
 
@@ -22,6 +23,10 @@ pub fn current() -> Option<Uuid> {
     *CURRENT.lock().unwrap()
 }
 
+pub fn is_open() -> bool {
+    current().is_some()
+}
+
 /// Must not run on the main thread (the window may be created here).
 pub fn open<R: Runtime>(app: &AppHandle<R>, id: Uuid) -> Result<()> {
     let window = ensure_window(app)?;
@@ -36,6 +41,7 @@ pub fn open<R: Runtime>(app: &AppHandle<R>, id: Uuid) -> Result<()> {
         ));
     }
     *CURRENT.lock().unwrap() = Some(id);
+    crate::queue::changed(app);
     app.emit_to(LABEL, EVENT_SHOW, id)?;
     window.show()?;
     // Focus so Esc reaches it.
@@ -48,6 +54,7 @@ pub fn close<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window(LABEL) {
         let _ = window.hide();
     }
+    crate::queue::changed(app);
 }
 
 fn ensure_window<R: Runtime>(app: &AppHandle<R>) -> Result<WebviewWindow<R>> {

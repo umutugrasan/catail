@@ -26,6 +26,8 @@ export interface QueueItemView {
   /** Whole text, for exporting. */
   fullText: string | null;
   sourceApp: string | null;
+  /** Goes up with every edit. */
+  revision: number;
 }
 
 /** Mirrors `settings.rs` (snake_case on purpose: passed through unchanged). */
@@ -143,8 +145,13 @@ export const queueRemove = (id: string) => invoke<void>("queue_remove", { id });
 export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { ids });
 /** Brings back what the last paste or clear removed. */
 export const queueRestore = () => invoke<void>("queue_restore");
-export const queueImageUrl = (id: string) => convertFileSrc(`${id}.png`, "queue");
-/** Shows a queued image large, over the whole screen. */
+/** The revision makes an edited image a new address, so it isn't shown from the old one. */
+export const queueImageUrl = (id: string, revision: number) => `${convertFileSrc(`${id}.png`, "queue")}?v=${revision}`;
+/** Saves an edited image over its queue item; the PNG goes as a raw body. */
+export const queueEditImage = (id: string, png: Uint8Array) =>
+  invoke<void>("queue_edit_image", png, { headers: { "x-id": id } });
+export const queueEditText = (id: string, text: string) => invoke<void>("queue_edit_text", { id, text });
+/** Shows a queued item large, over the whole screen, ready to edit. */
 export const previewOpen = (id: string) => invoke<void>("preview_open", { id });
 export const previewClose = () => invoke<void>("preview_close");
 /** The image to show, for a preview window that has only just loaded. */

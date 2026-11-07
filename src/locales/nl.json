@@ -56,7 +56,8 @@
     "qr_copy_link": "Link kopiëren",
     "qr_copy_text": "Tekst van de QR-code kopiëren",
     "qr_copied": "Gekopieerd ✓",
-    "qr_text": "QR-code"
+    "qr_text": "QR-code",
+    "tool_crop": "Bijsnijden"
   },
   "save": {
     "dialog_title": "Schermafbeelding opslaan",
@@ -169,7 +170,7 @@
     "export": "Opslaan",
     "export_zip": "Afbeeldingen als PNG, teksten als TXT",
     "export_pdf": "Eén pagina per item",
-    "zoom": "Vergroten",
+    "zoom": "Vergroten en bewerken",
     "title_short": "Wachtrij"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "PDF-document"
   },
   "preview": {
-    "close": "Sluiten (Esc)"
+    "close": "Sluiten (Esc)",
+    "save": "Opslaan",
+    "confirm": "Wijzigingen opslaan?",
+    "discard": "Niet opslaan",
+    "keep_editing": "Verder bewerken",
+    "save_failed": "Opslaan is mislukt. Het item staat misschien niet meer in de wachtrij.",
+    "load_failed": "De afbeelding kan niet worden geopend.",
+    "edit_text": "Tekst bewerken"
   }
 }

@@ -56,7 +56,8 @@
     "qr_copy_link": "リンクをコピー",
     "qr_copy_text": "QR コードの文字をコピー",
     "qr_copied": "コピーしました ✓",
-    "qr_text": "QR コード"
+    "qr_text": "QR コード",
+    "tool_crop": "トリミング"
   },
   "save": {
     "dialog_title": "スクリーンショットを保存",
@@ -169,7 +170,7 @@
     "export": "保存",
     "export_zip": "画像は PNG、テキストは TXT で",
     "export_pdf": "1 項目 1 ページ",
-    "zoom": "拡大",
+    "zoom": "拡大して編集",
     "title_short": "キュー"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "PDF ドキュメント"
   },
   "preview": {
-    "close": "閉じる (Esc)"
+    "close": "閉じる (Esc)",
+    "save": "保存",
+    "confirm": "変更を保存しますか?",
+    "discard": "保存しない",
+    "keep_editing": "編集を続ける",
+    "save_failed": "保存できませんでした。項目がキューから削除された可能性があります。",
+    "load_failed": "画像を開けませんでした。",
+    "edit_text": "テキストを編集"
   }
 }

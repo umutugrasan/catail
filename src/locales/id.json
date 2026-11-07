@@ -56,7 +56,8 @@
     "qr_copy_link": "Salin tautan",
     "qr_copy_text": "Salin teks di kode QR",
     "qr_copied": "Disalin ✓",
-    "qr_text": "Kode QR"
+    "qr_text": "Kode QR",
+    "tool_crop": "Pangkas"
   },
   "save": {
     "dialog_title": "Simpan tangkapan layar",
@@ -169,7 +170,7 @@
     "export": "Simpan",
     "export_zip": "Gambar sebagai PNG, teks sebagai TXT",
     "export_pdf": "Satu halaman per item",
-    "zoom": "Perbesar",
+    "zoom": "Perbesar dan edit",
     "title_short": "Antrean"
   },
   "ocr": {
@@ -196,6 +197,13 @@
     "pdf_filter": "Dokumen PDF"
   },
   "preview": {
-    "close": "Tutup (Esc)"
+    "close": "Tutup (Esc)",
+    "save": "Simpan",
+    "confirm": "Simpan perubahan?",
+    "discard": "Jangan simpan",
+    "keep_editing": "Lanjut mengedit",
+    "save_failed": "Gagal menyimpan. Item mungkin sudah keluar dari antrean.",
+    "load_failed": "Gambar tidak dapat dibuka.",
+    "edit_text": "Edit teks"
   }
 }

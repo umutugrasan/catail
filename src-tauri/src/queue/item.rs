@@ -21,6 +21,8 @@ pub struct QueueItem {
     pub text: Option<String>,
     /// Process the text was copied from; informational only.
     pub source_app: Option<String>,
+    /// Goes up with every edit, so windows showing the image know to load it again.
+    pub revision: u32,
 }
 
 impl QueueItem {
@@ -32,6 +34,7 @@ impl QueueItem {
             image_path: Some(path),
             text: None,
             source_app: None,
+            revision: 0,
         }
     }
 
@@ -43,6 +46,7 @@ impl QueueItem {
             image_path: None,
             text: Some(text),
             source_app,
+            revision: 0,
         }
     }
 }
