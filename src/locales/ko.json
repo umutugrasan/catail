@@ -157,7 +157,8 @@
     "cat_white": "흰 고양이",
     "cat_calico": "삼색 고양이",
     "cat_black": "검은 고양이(어둡게)",
-    "cat_plain": "기본"
+    "cat_plain": "기본",
+    "plain_color": "테마 색상"
   },
   "badge": {
     "count": "대기열: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "붙여 넣은 {count}개를 대기열로 되돌리기",
     "undo_clear_title": "삭제한 {count}개를 대기열로 되돌리기",
     "close_queue": "대기열 닫기",
-    "close_text_mode": "텍스트 모드 끄기"
+    "close_text_mode": "텍스트 모드 끄기",
+    "close_undo": "실행 취소 닫기"
   },
   "panel": {
     "title": "대기열 · {count}개",

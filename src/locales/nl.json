@@ -157,7 +157,8 @@
     "cat_white": "Witte kat",
     "cat_calico": "Lapjeskat",
     "cat_black": "Zwarte kat (donker)",
-    "cat_plain": "Normaal"
+    "cat_plain": "Normaal",
+    "plain_color": "Themakleur"
   },
   "badge": {
     "count": "Wachtrij: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "De {count} geplakte items terugzetten in de wachtrij",
     "undo_clear_title": "De {count} verwijderde items terugzetten in de wachtrij",
     "close_queue": "Wachtrij sluiten",
-    "close_text_mode": "Tekstmodus uitzetten"
+    "close_text_mode": "Tekstmodus uitzetten",
+    "close_undo": "Ongedaan maken sluiten"
   },
   "panel": {
     "title": "Wachtrij · {count} items",

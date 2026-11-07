@@ -166,20 +166,21 @@
   --tail-stripe: #3f3c45;
 }
 
-/* No cat at all: plain colors, the system's mouse pointers. */
+/* No cat at all: plain colors, the system's mouse pointers. The color is the user's pick
+   (Settings); cat.ts sets --plain-* from it (plainAccent.ts), the defaults are the blue. */
 [data-cat="plain"] {
   --tint-50: #ffffff;
   --tint-100: #f2f2f2;
   --tint-200: #dcdcdc;
-  --tint-300: #0067c0;
-  --tint-400: #005aa8;
-  --tint-500: #0067c0;
+  --tint-300: var(--plain-300, #0067c0);
+  --tint-400: var(--plain-400, #005aa8);
+  --tint-500: var(--plain-500, #0067c0);
   --ink-900: #1b1b1b;
   --ink-700: #2b2b2b;
   --ink-500: #5f5f5f;
   --ink-300: #a0a0a0;
   --surface-raised: #ffffff;
-  --accent-text: #ffffff;
+  --accent-text: var(--plain-text, #ffffff);
   --danger: #c42b1c;
   --danger-soft: #fdecea;
   --shadow-rgb: 0, 0, 0;

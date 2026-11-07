@@ -68,12 +68,16 @@ export interface Settings {
   badge_corner: BadgeCorner;
   /** Which cat the app looks like; the theme follows it. */
   cat: Cat;
+  /** The plain theme's color, "#rrggbb". */
+  plain_accent: string;
 }
 
 export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "plain";
 export const CATS: Cat[] = ["orange", "gray", "white", "calico", "black", "plain"];
 /** Takes effect right away, in every window. */
 export const catSet = (cat: Cat) => invoke<void>("cat_set", { cat });
+/** The plain theme's color; also takes effect right away, in every window. */
+export const plainAccentSet = (color: string) => invoke<void>("plain_accent_set", { color });
 
 export type BadgeCorner = "bottom-right" | "bottom-center" | "bottom-left" | "top-right" | "top-center" | "top-left";
 export const BADGE_CORNERS: BadgeCorner[] = [
@@ -162,6 +166,8 @@ export const queueRemove = (id: string) => invoke<void>("queue_remove", { id });
 export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { ids });
 /** Brings back what the last paste or clear removed. */
 export const queueRestore = () => invoke<void>("queue_restore");
+/** The ✕ on "Geri al": gives up on bringing anything back. */
+export const undoDismiss = () => invoke<void>("undo_dismiss");
 /** The revision makes an edited image a new address, so it isn't shown from the old one. */
 export const queueImageUrl = (id: string, revision: number) => `${convertFileSrc(`${id}.png`, "queue")}?v=${revision}`;
 /** A queued PDF file, for the preview window. */

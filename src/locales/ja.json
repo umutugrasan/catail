@@ -157,7 +157,8 @@
     "cat_white": "白猫",
     "cat_calico": "三毛猫",
     "cat_black": "黒猫(ダーク)",
-    "cat_plain": "標準"
+    "cat_plain": "標準",
+    "plain_color": "テーマの色"
   },
   "badge": {
     "count": "キュー: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "貼り付けた {count} 件をキューに戻す",
     "undo_clear_title": "削除した {count} 件をキューに戻す",
     "close_queue": "キューを閉じる",
-    "close_text_mode": "テキストモードをオフにする"
+    "close_text_mode": "テキストモードをオフにする",
+    "close_undo": "元に戻すを閉じる"
   },
   "panel": {
     "title": "キュー · {count} 件",

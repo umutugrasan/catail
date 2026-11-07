@@ -157,7 +157,8 @@
     "cat_white": "Gato branco",
     "cat_calico": "Gato tricolor",
     "cat_black": "Gato preto (escuro)",
-    "cat_plain": "Normal"
+    "cat_plain": "Normal",
+    "plain_color": "Cor do tema"
   },
   "badge": {
     "count": "Fila: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Trazer de volta à fila os {count} itens colados",
     "undo_clear_title": "Trazer de volta à fila os {count} itens removidos",
     "close_queue": "Fechar a fila",
-    "close_text_mode": "Desativar o modo de texto"
+    "close_text_mode": "Desativar o modo de texto",
+    "close_undo": "Fechar desfazer"
   },
   "panel": {
     "title": "Fila · {count} itens",

@@ -157,7 +157,8 @@
     "cat_white": "Белый кот",
     "cat_calico": "Трёхцветная кошка",
     "cat_black": "Чёрный кот (тёмная)",
-    "cat_plain": "Обычная"
+    "cat_plain": "Обычная",
+    "plain_color": "Цвет темы"
   },
   "badge": {
     "count": "Очередь: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Вернуть в очередь вставленные элементы ({count})",
     "undo_clear_title": "Вернуть в очередь удалённые элементы ({count})",
     "close_queue": "Закрыть очередь",
-    "close_text_mode": "Выключить текстовый режим"
+    "close_text_mode": "Выключить текстовый режим",
+    "close_undo": "Закрыть отмену"
   },
   "panel": {
     "title": "Очередь · {count}",

@@ -94,6 +94,7 @@ fn main() {
             commands::queue_edit_image,
             commands::queue_edit_text,
             commands::queue_restore,
+            commands::undo_dismiss,
             commands::settings_get,
             commands::settings_save,
             commands::hotkey_check,
@@ -118,6 +119,8 @@ fn main() {
             commands::ui_language,
             commands::ui_cat,
             commands::cat_set,
+            commands::ui_plain_accent,
+            commands::plain_accent_set,
         ])
         .setup(move |app| {
             // Single-instance has already exited any second copy, so older folders are stale.

@@ -392,6 +392,78 @@ td:last-child {
   flex: none;
 }
 
+/* The plain theme's color, under the cards: a swatch that opens the picker. */
+.plain-color {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  animation: fade-in 200ms var(--ease-out) both;
+}
+
+.plain-color__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: var(--paw);
+  transition: background var(--fast) var(--ease-out), border-color var(--fast) var(--ease-out);
+}
+
+.plain-color__button:hover,
+.plain-color__button.open {
+  border-color: var(--tint-500);
+  background: var(--surface-hover);
+}
+
+.plain-color__button code {
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The chevron points left as drawn: down while closed, up while open. */
+.plain-color__button svg {
+  transform: rotate(-90deg);
+  transition: transform var(--normal) var(--ease-out);
+}
+
+.plain-color__button.open svg {
+  transform: rotate(90deg);
+}
+
+.plain-color__swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(var(--ring-rgb), 0.25);
+}
+
+.plain-color .picker {
+  width: 220px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+
+.plain-color .picker__presets {
+  flex-wrap: wrap;
+}
+
 :root[data-cat="plain"] h2::before {
   display: none;
 }

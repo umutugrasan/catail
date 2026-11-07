@@ -157,7 +157,8 @@
     "cat_white": "Biały kot",
     "cat_calico": "Kot szylkretowy",
     "cat_black": "Czarny kot (ciemny)",
-    "cat_plain": "Zwykły"
+    "cat_plain": "Zwykły",
+    "plain_color": "Kolor motywu"
   },
   "badge": {
     "count": "Kolejka: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Przywróć do kolejki wklejone elementy ({count})",
     "undo_clear_title": "Przywróć do kolejki usunięte elementy ({count})",
     "close_queue": "Zamknij kolejkę",
-    "close_text_mode": "Wyłącz tryb tekstu"
+    "close_text_mode": "Wyłącz tryb tekstu",
+    "close_undo": "Zamknij cofanie"
   },
   "panel": {
     "title": "Kolejka · {count}",

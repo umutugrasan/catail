@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { wearPlainAccent } from "../../lib/cat";
 import { BoxCat, CatFace, LeapingCat } from "../../lib/cats";
 import { LANGUAGES, t } from "../../lib/i18n";
 import {
   BADGE_CORNERS,
   CATS,
   catSet,
+  plainAccentSet,
   settingsGet,
   settingsSave,
   updateCheck,
@@ -17,6 +19,9 @@ import {
   type Settings as SettingsModel,
   type UpdateInfo,
 } from "../../lib/ipc";
+import { PLAIN_PRESETS } from "../../lib/plainAccent";
+import { ColorPicker } from "../overlay/ColorPicker";
+import { ChevronIcon } from "../overlay/icons";
 import { HotkeyField } from "./HotkeyField";
 
 /** The plain theme's card shows a plain window; there's no cat to show. */
@@ -100,6 +105,17 @@ export function Settings() {
     void catSet(cat);
   };
 
+  // The plain theme's color shows here at once; it's saved (and sent to the other windows)
+  // once the picker stops moving for a moment.
+  const [accentOpen, setAccentOpen] = useState(false);
+  const accentTimer = useRef(0);
+  const pickAccent = (color: string) => {
+    change({ plain_accent: color });
+    wearPlainAccent(color);
+    window.clearTimeout(accentTimer.current);
+    accentTimer.current = window.setTimeout(() => void plainAccentSet(color), 150);
+  };
+
   const setRule = (index: number, patch: Partial<AppPasteRule>) => {
     if (!settings) return;
     change({ app_rules: settings.app_rules.map((rule, i) => (i === index ? { ...rule, ...patch } : rule)) });
@@ -181,6 +197,24 @@ export function Settings() {
                 </button>
               ))}
             </div>
+            {settings.cat === "plain" && (
+              <div className="plain-color">
+                <button
+                  type="button"
+                  className={`plain-color__button${accentOpen ? " open" : ""}`}
+                  aria-expanded={accentOpen}
+                  onClick={() => setAccentOpen((open) => !open)}
+                >
+                  <span className="plain-color__swatch" style={{ background: settings.plain_accent }} />
+                  {t("settings.plain_color")}
+                  <code>{settings.plain_accent.toUpperCase()}</code>
+                  <ChevronIcon />
+                </button>
+                {accentOpen && (
+                  <ColorPicker color={settings.plain_accent} presets={PLAIN_PRESETS} onChange={pickAccent} />
+                )}
+              </div>
+            )}
           </section>
         )}
 

@@ -4,13 +4,16 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { t } from "../../lib/i18n";
 import { hexToHsv, hsvToHex, parseHex, svFromPoint, type Hsv } from "./color";
 import { PRESET_COLORS } from "./draw";
+import "./picker.css";
 
 interface Props {
   color: string;
   onChange: (color: string) => void;
+  /** Quick picks under the picker; the drawing colors unless given. */
+  presets?: readonly string[];
 }
 
-export function ColorPicker({ color, onChange }: Props) {
+export function ColorPicker({ color, onChange, presets = PRESET_COLORS }: Props) {
   // Kept separately from the hex so hue survives dragging through black/white.
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(color));
   const [hexInput, setHexInput] = useState(color);
@@ -85,7 +88,7 @@ export function ColorPicker({ color, onChange }: Props) {
         />
       </div>
       <div className="picker__presets">
-        {PRESET_COLORS.map((preset) => (
+        {presets.map((preset) => (
           <button
             key={preset}
             type="button"

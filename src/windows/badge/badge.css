@@ -82,8 +82,20 @@ body,
   height: 11px;
 }
 
-.badge-wrap:hover .badge__close {
+.badge-wrap:hover .badge__close,
+.undo__wrap:hover .badge__close {
   opacity: 1;
+}
+
+/* "Geri al" with its ✕. */
+.undo__wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Gone with the button when the box is torn up. */
+.undo--shred .undo__wrap .badge__close {
+  display: none;
 }
 
 .badge__close:hover {

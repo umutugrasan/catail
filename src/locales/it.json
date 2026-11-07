@@ -157,7 +157,8 @@
     "cat_white": "Gatto bianco",
     "cat_calico": "Gatto calico",
     "cat_black": "Gatto nero (scuro)",
-    "cat_plain": "Normale"
+    "cat_plain": "Normale",
+    "plain_color": "Colore del tema"
   },
   "badge": {
     "count": "Coda: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Riporta in coda i {count} elementi incollati",
     "undo_clear_title": "Riporta in coda i {count} elementi eliminati",
     "close_queue": "Chiudi la coda",
-    "close_text_mode": "Disattiva la modalità testo"
+    "close_text_mode": "Disattiva la modalità testo",
+    "close_undo": "Chiudi annulla"
   },
   "panel": {
     "title": "Coda · {count} elementi",

@@ -157,7 +157,8 @@
     "cat_white": "白猫",
     "cat_calico": "三花猫",
     "cat_black": "黑猫(深色)",
-    "cat_plain": "普通"
+    "cat_plain": "普通",
+    "plain_color": "主题颜色"
   },
   "badge": {
     "count": "队列：{count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "将已粘贴的 {count} 项放回队列",
     "undo_clear_title": "将已删除的 {count} 项放回队列",
     "close_queue": "关闭队列",
-    "close_text_mode": "关闭文本模式"
+    "close_text_mode": "关闭文本模式",
+    "close_undo": "关闭撤销"
   },
   "panel": {
     "title": "队列 · {count} 项",

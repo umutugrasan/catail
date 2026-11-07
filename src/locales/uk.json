@@ -157,7 +157,8 @@
     "cat_white": "Білий кіт",
     "cat_calico": "Триколірна кішка",
     "cat_black": "Чорний кіт (темна)",
-    "cat_plain": "Звичайна"
+    "cat_plain": "Звичайна",
+    "plain_color": "Колір теми"
   },
   "badge": {
     "count": "Черга: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Повернути до черги вставлені елементи ({count})",
     "undo_clear_title": "Повернути до черги видалені елементи ({count})",
     "close_queue": "Закрити чергу",
-    "close_text_mode": "Вимкнути текстовий режим"
+    "close_text_mode": "Вимкнути текстовий режим",
+    "close_undo": "Закрити скасування"
   },
   "panel": {
     "title": "Черга · {count}",

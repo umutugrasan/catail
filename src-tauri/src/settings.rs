@@ -100,6 +100,20 @@ pub struct Settings {
     pub badge_corner: BadgeCorner,
     /// Which cat the app looks like; the theme follows it.
     pub cat: Cat,
+    /// The plain theme's color, "#rrggbb".
+    pub plain_accent: String,
+}
+
+/// The plain theme's color until one is picked: Windows' blue.
+pub const PLAIN_ACCENT_DEFAULT: &str = "#0067c0";
+
+/// "#rrggbb", lower case.
+pub fn is_hex_color(value: &str) -> bool {
+    value.len() == 7
+        && value.starts_with('#')
+        && value[1..]
+            .chars()
+            .all(|c| c.is_ascii_digit() || ('a'..='f').contains(&c))
 }
 
 /// Unknown names, from a newer version's settings file, fall back to the orange cat.
@@ -133,6 +147,7 @@ impl Default for Settings {
             translate_to: "tr".into(),
             badge_corner: BadgeCorner::BottomRight,
             cat: Cat::default(),
+            plain_accent: PLAIN_ACCENT_DEFAULT.into(),
         }
     }
 }
@@ -197,6 +212,10 @@ impl Settings {
             self.translate_to = Self::default().translate_to;
         }
         self.language = self.language.filter(|code| crate::i18n::is_supported(code));
+        self.plain_accent = self.plain_accent.to_lowercase();
+        if !is_hex_color(&self.plain_accent) {
+            self.plain_accent = PLAIN_ACCENT_DEFAULT.into();
+        }
         self
     }
 
@@ -297,6 +316,25 @@ mod tests {
         assert_eq!(s.app_rules.len(), 1);
         assert_eq!(s.app_rules[0].process, "whatsapp.exe");
         assert_eq!(s.app_rules[0].delay_ms, Some(50));
+    }
+
+    #[test]
+    fn plain_accent_must_be_a_color() {
+        let tidy = |value: &str| {
+            Settings {
+                plain_accent: value.into(),
+                ..Settings::default()
+            }
+            .sanitized()
+            .plain_accent
+        };
+        assert_eq!(tidy("#C239B3"), "#c239b3");
+        assert_eq!(tidy("mavi"), PLAIN_ACCENT_DEFAULT);
+        assert_eq!(tidy("#12345"), PLAIN_ACCENT_DEFAULT);
+        assert_eq!(tidy("#12345g"), PLAIN_ACCENT_DEFAULT);
+        // Settings saved before the color existed get the default.
+        let old: Settings = serde_json::from_str(r#"{"cat":"plain"}"#).unwrap();
+        assert_eq!(old.plain_accent, PLAIN_ACCENT_DEFAULT);
     }
 
     #[test]

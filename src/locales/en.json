@@ -157,7 +157,8 @@
     "cat_white": "White cat",
     "cat_calico": "Calico cat",
     "cat_black": "Black cat (dark)",
-    "cat_plain": "Normal"
+    "cat_plain": "Normal",
+    "plain_color": "Theme color"
   },
   "badge": {
     "count": "Queue: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Bring the {count} pasted items back into the queue",
     "undo_clear_title": "Bring the {count} removed items back into the queue",
     "close_queue": "Close the queue",
-    "close_text_mode": "Turn off text mode"
+    "close_text_mode": "Turn off text mode",
+    "close_undo": "Dismiss undo"
   },
   "panel": {
     "title": "Queue · {count} items",

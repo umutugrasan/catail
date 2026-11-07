@@ -157,7 +157,8 @@
     "cat_white": "Gato blanco",
     "cat_calico": "Gato calicó",
     "cat_black": "Gato negro (oscuro)",
-    "cat_plain": "Normal"
+    "cat_plain": "Normal",
+    "plain_color": "Color del tema"
   },
   "badge": {
     "count": "Cola: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Devolver a la cola los {count} elementos pegados",
     "undo_clear_title": "Devolver a la cola los {count} elementos eliminados",
     "close_queue": "Cerrar la cola",
-    "close_text_mode": "Desactivar el modo texto"
+    "close_text_mode": "Desactivar el modo texto",
+    "close_undo": "Cerrar deshacer"
   },
   "panel": {
     "title": "Cola · {count} elementos",

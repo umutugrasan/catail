@@ -9,7 +9,9 @@ function palette(cat: string): Record<string, string> {
   const start = themeCss.indexOf(`[data-cat="${cat}"] {`);
   expect(start, `no block for ${cat}`).toBeGreaterThanOrEqual(0);
   const block = themeCss.slice(start, themeCss.indexOf("}", start));
-  return Object.fromEntries([...block.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6});/g)].map((m) => [m[1], m[2]]));
+  // A picked color (`var(--plain-300, #0067c0)`) is checked by its default; plainAccent.test.ts covers the rest.
+  const values = block.matchAll(/--([\w-]+):\s*(?:var\(--[\w-]+,\s*)?(#[0-9a-f]{6})\)?;/g);
+  return Object.fromEntries([...values].map((m) => [m[1], m[2]]));
 }
 
 function luminance(hex: string): number {

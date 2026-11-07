@@ -321,6 +321,32 @@ pub fn cat_set(app: AppHandle, state: State<'_, AppState>, cat: Cat) -> Result<(
     saved.map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))
 }
 
+pub const EVENT_PLAIN_ACCENT: &str = "app:plain-accent";
+
+#[tauri::command]
+pub fn ui_plain_accent(state: State<'_, AppState>) -> String {
+    state.settings.lock().unwrap().plain_accent.clone()
+}
+
+/// The plain theme's color, picked in Settings. Saved and shown everywhere right away.
+#[tauri::command]
+pub fn plain_accent_set(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    color: String,
+) -> Result<(), String> {
+    let color = color.to_lowercase();
+    if !crate::settings::is_hex_color(&color) {
+        return Err(format!("not a color: {color}"));
+    }
+    let mut settings = state.settings.lock().unwrap();
+    settings.plain_accent = color.clone();
+    let saved = settings.save();
+    drop(settings);
+    let _ = app.emit(EVENT_PLAIN_ACCENT, color);
+    saved.map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))
+}
+
 /// The interface language for the windows' strings, e.g. "en".
 #[tauri::command]
 pub fn ui_language() -> String {
@@ -554,6 +580,11 @@ pub fn preview_close(app: AppHandle) {
 #[tauri::command]
 pub fn queue_restore(app: AppHandle) {
     queue::restore(&app);
+}
+
+#[tauri::command]
+pub fn undo_dismiss(app: AppHandle) {
+    queue::dismiss_undo(&app);
 }
 
 /// Clears the queue from the overlay toolbar; the overlay stays open.

@@ -13,6 +13,7 @@ import {
   queueClear,
   queueRestore,
   textModeSet,
+  undoDismiss,
   type BadgeState,
   type LeapStart,
 } from "../../lib/ipc";
@@ -285,27 +286,37 @@ export function Badge() {
         <span ref={boxRef} className="undo__cat">
           <BoxCat leapFrom={leapFrom} shred={shredding ? shredAt : null} />
         </span>
-        <button
-          type="button"
-          className="undo__button"
-          title={t(undo.kind === "paste" ? "badge.undo_paste_title" : "badge.undo_clear_title", { count: undo.count })}
-          onMouseDown={onPress(() => void queueRestore())}
-        >
-          <UndoIcon />
-          {t("badge.undo")}
-          <span className="undo__count">{undo.count}</span>
-          {/* Drains over the time left; keyed so it restarts for a new offer. */}
-          <span
-            key={`${undo.kind}-${undo.count}-${undo.totalMs}-${Math.round(undo.remainingMs / 1000)}`}
-            className="undo__timer"
-            style={
-              {
-                "--from": undo.remainingMs / undo.totalMs,
-                animationDuration: `${undo.remainingMs}ms`,
-              } as React.CSSProperties
-            }
-          />
-        </button>
+        <div className="undo__wrap">
+          <button
+            type="button"
+            className="undo__button"
+            title={t(undo.kind === "paste" ? "badge.undo_paste_title" : "badge.undo_clear_title", { count: undo.count })}
+            onMouseDown={onPress(() => void queueRestore())}
+          >
+            <UndoIcon />
+            {t("badge.undo")}
+            <span className="undo__count">{undo.count}</span>
+            {/* Drains over the time left; keyed so it restarts for a new offer. */}
+            <span
+              key={`${undo.kind}-${undo.count}-${undo.totalMs}-${Math.round(undo.remainingMs / 1000)}`}
+              className="undo__timer"
+              style={
+                {
+                  "--from": undo.remainingMs / undo.totalMs,
+                  animationDuration: `${undo.remainingMs}ms`,
+                } as React.CSSProperties
+              }
+            />
+          </button>
+          <button
+            type="button"
+            className="badge__close"
+            title={t("badge.close_undo")}
+            onMouseDown={onPress(() => void undoDismiss())}
+          >
+            <CloseIcon />
+          </button>
+        </div>
       </div>
     );
   }

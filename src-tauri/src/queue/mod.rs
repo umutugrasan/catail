@@ -190,6 +190,12 @@ pub fn restore<R: Runtime>(app: &AppHandle<R>) {
     changed(app);
 }
 
+/// The ✕ on "Geri al": the offer goes now, and what it would have brought back with it.
+pub fn dismiss_undo<R: Runtime>(app: &AppHandle<R>) {
+    withdraw_undo(app);
+    changed(app);
+}
+
 fn offer_undo<R: Runtime>(app: &AppHandle<R>, kind: UndoKind, count: usize) {
     if count == 0 {
         return;

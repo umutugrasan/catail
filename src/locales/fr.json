@@ -157,7 +157,8 @@
     "cat_white": "Chat blanc",
     "cat_calico": "Chat calico",
     "cat_black": "Chat noir (sombre)",
-    "cat_plain": "Normal"
+    "cat_plain": "Normal",
+    "plain_color": "Couleur du thème"
   },
   "badge": {
     "count": "File : {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "Remettre les {count} éléments collés dans la file",
     "undo_clear_title": "Remettre les {count} éléments supprimés dans la file",
     "close_queue": "Fermer la file",
-    "close_text_mode": "Quitter le mode texte"
+    "close_text_mode": "Quitter le mode texte",
+    "close_undo": "Fermer l'annulation"
   },
   "panel": {
     "title": "File · {count} éléments",

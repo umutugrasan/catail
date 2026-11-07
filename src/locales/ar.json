@@ -157,7 +157,8 @@
     "cat_white": "قطة بيضاء",
     "cat_calico": "قطة ثلاثية الألوان",
     "cat_black": "قطة سوداء (داكن)",
-    "cat_plain": "عادي"
+    "cat_plain": "عادي",
+    "plain_color": "لون السمة"
   },
   "badge": {
     "count": "القائمة: {count}",
@@ -168,7 +169,8 @@
     "undo_paste_title": "إعادة العناصر الملصقة ({count}) إلى القائمة",
     "undo_clear_title": "إعادة العناصر المحذوفة ({count}) إلى القائمة",
     "close_queue": "إغلاق القائمة",
-    "close_text_mode": "إيقاف وضع النص"
+    "close_text_mode": "إيقاف وضع النص",
+    "close_undo": "إغلاق التراجع"
   },
   "panel": {
     "title": "القائمة · {count}",
