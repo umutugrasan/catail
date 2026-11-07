@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { BoxCat, CatFace } from "../../lib/cats";
 import { LANGUAGES, t } from "../../lib/i18n";
 import {
   BADGE_CORNERS,
@@ -110,7 +111,13 @@ export function Settings() {
 
   return (
     <main className="settings">
-      <h1>{t("settings.title")}</h1>
+      <header className="settings__header">
+        <h1>
+          <CatFace size={26} />
+          {t("settings.title")}
+        </h1>
+        <BoxCat />
+      </header>
 
       <section>
         <h2>{t("settings.shortcuts")}</h2>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
-import { TRASH_JUMP_MS, TrashJump } from "../../lib/cats";
+import { CatEar, TRASH_JUMP_MS, TrashJump, Whiskers } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   captureDeliver,
@@ -601,6 +601,10 @@ export function Overlay() {
         className={`overlay__modes${flying ? " overlay__modes--hidden" : ""}`}
         onPointerDown={(e) => e.stopPropagation()}
       >
+        <CatEar side="left" />
+        <CatEar side="right" />
+        <Whiskers side="left" />
+        <Whiskers side="right" />
         <button
           type="button"
           className={info.textMode ? undefined : "active"}

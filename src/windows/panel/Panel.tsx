@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { TRASH_HANDOFF_MS, TrashJump } from "../../lib/cats";
+import { CatFace, TRASH_HANDOFF_MS, TrashJump } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   onWindowEvent,
@@ -152,6 +152,7 @@ export function Panel() {
     <main key={openCount} className={`panel${closing ? " panel--closing" : ""}`}>
       <header className="panel__header">
         <h1>
+          <CatFace size={16} />
           {t("panel.title_short")}
           <span className="panel__count">{items.length}</span>
         </h1>

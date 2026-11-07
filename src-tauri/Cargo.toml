@@ -1,6 +1,6 @@
 [package]
 name = "catail"
-version = "0.7.4"
+version = "0.7.5"
 description = "Sequential screenshot and clipboard queue"
 edition = "2021"
 publish = false

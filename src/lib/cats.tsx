@@ -29,6 +29,29 @@ export function CatFace({ size = 18 }: { size?: number }) {
   );
 }
 
+/** Three thin whiskers fanning out from one side of whatever they're placed in. */
+export function Whiskers({ side }: { side: "left" | "right" }) {
+  return (
+    <svg className={`whiskers whiskers--${side}`} viewBox="0 0 32 26" width={32} height={26} aria-hidden="true">
+      <g transform={side === "right" ? "matrix(-1 0 0 1 32 0)" : undefined}>
+        <path d="M32 9C22 5 11 3 2 4" />
+        <path d="M32 13C21 12 10 13 0 14" />
+        <path d="M32 17C22 19 12 22 3 25" />
+      </g>
+    </svg>
+  );
+}
+
+/** A small ear to sit on top edge of a bar. Open at the bottom, so it merges into the bar. */
+export function CatEar({ side }: { side: "left" | "right" }) {
+  return (
+    <svg className={`cat-ear cat-ear--${side}`} viewBox="0 0 24 14" width={24} height={14} aria-hidden="true">
+      <path className="cat-ear__shell" d="M1 14 5 3.5C5.8 1.2 8 .8 9.8 2.2L23 14" />
+      <path className="cat-ear__inner" d="M7 13 8.2 6.6c.2-1 1.2-1.2 2-.5L17 13Z" />
+    </svg>
+  );
+}
+
 /** Size of the leaping cat in the panel's bin and in the badge; they must match for the handoff. */
 export const LEAP_CAT_SIZE = 41;
 

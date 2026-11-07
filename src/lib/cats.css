@@ -4,6 +4,78 @@
   flex: none;
 }
 
+/* Whiskers: light with a soft shadow, so they read over both dark and bright screens. */
+.whiskers {
+  position: absolute;
+  top: 50%;
+  margin-top: -13px;
+  fill: none;
+  stroke: var(--pink-50);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 1px 1px rgba(59, 23, 41, 0.6));
+  pointer-events: none;
+  animation: whisker-twitch 7s var(--ease-in-out) infinite;
+  transition: rotate var(--normal) var(--ease-pop);
+}
+
+.whiskers--left {
+  right: calc(100% + 1px);
+  transform-origin: 100% 50%;
+}
+
+/* A beat later, so the two sides don't move like one piece. */
+.whiskers--right {
+  left: calc(100% + 1px);
+  transform-origin: 0% 50%;
+  animation-delay: 0.35s;
+}
+
+@keyframes whisker-twitch {
+  0%,
+  88%,
+  100% {
+    transform: rotate(0deg);
+  }
+  91% {
+    transform: rotate(5deg);
+  }
+  94% {
+    transform: rotate(-3deg);
+  }
+  97% {
+    transform: rotate(2deg);
+  }
+}
+
+.cat-ear {
+  position: absolute;
+  top: -11px;
+  z-index: -1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cat-ear--left {
+  left: 16px;
+}
+
+.cat-ear--right {
+  right: 16px;
+  scale: -1 1;
+}
+
+.cat-ear__shell {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.cat-ear__inner {
+  fill: var(--pink-200);
+}
+
 .cat-face__eyes {
   transform-box: fill-box;
   transform-origin: center;

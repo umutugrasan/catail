@@ -21,16 +21,54 @@ body {
   padding: 20px 24px 76px;
 }
 
+html {
+  scrollbar-color: var(--pink-300) transparent;
+}
+
+.settings__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
 h1 {
-  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
   font-size: 20px;
   font-weight: 600;
 }
 
+/* A small paw print in front of each section's name. */
 h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 600;
+}
+
+h2::before {
+  content: "";
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ee93ba'%3E%3Cellipse cx='5' cy='11' rx='2.4' ry='3.2'/%3E%3Cellipse cx='9.6' cy='5.8' rx='2.5' ry='3.4'/%3E%3Cellipse cx='14.4' cy='5.8' rx='2.5' ry='3.4'/%3E%3Cellipse cx='19' cy='11' rx='2.4' ry='3.2'/%3E%3Cpath d='M12 11c-3.4 0-6.4 3.3-6.4 6.4 0 2.2 1.7 3.3 3.5 3.1 1-.1 1.9-.5 2.9-.5s1.9.4 2.9.5c1.8.2 3.5-.9 3.5-3.1C18.4 14.3 15.4 11 12 11Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--pink-500);
+}
+
+input:focus-visible,
+select:focus-visible,
+.hotkey__button:focus-visible {
+  outline: 2px solid var(--pink-300);
+  outline-offset: 1px;
 }
 
 section {
