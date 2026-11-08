@@ -166,6 +166,73 @@
   --tail-stripe: #3f3c45;
 }
 
+/* The sea turtle: sea greens, a brown shell, a sandy belly. */
+[data-cat="turtle"] {
+  --tint-50: #f4faef;
+  --tint-100: #e5f3da;
+  --tint-200: #c9e4b4;
+  --tint-300: #a8dc86;
+  --tint-400: #8fcf6a;
+  --tint-500: #3f7f2c;
+  --ink-900: #1c3514;
+  --ink-700: #2b4a20;
+  --ink-500: #4b6741;
+  --ink-300: #9bb88e;
+  --surface-raised: #ffffff;
+  --accent-text: #1c3514;
+  --danger: #b3261e;
+  --danger-soft: #fde6e3;
+  --shadow-rgb: 28, 53, 20;
+  --shade-rgb: 14, 28, 10;
+  --ring-rgb: 28, 53, 20;
+  color-scheme: light;
+
+  --face: #9ad3b5;
+  --face-rim: #2d4a3e;
+  --face-eye: #1c1c1c;
+  --face-whisker: #2d4a3e;
+  --whisker: #f4faef;
+  --cat-lid: #9ad3b5;
+  --cat-lid-edge: #2d4a3e;
+  --tail-body: #9ad3b5;
+  --tail-outline: #2d4a3e;
+  --tail-stripe: #9ad3b5;
+}
+
+/* "Kendi kedin": customCat.ts works these out from the picked colors; until then, the orange
+   cat's. */
+[data-cat="custom"] {
+  --tint-50: var(--custom-tint-50, #fff6fa);
+  --tint-100: var(--custom-tint-100, #ffe8f1);
+  --tint-200: var(--custom-tint-200, #fbd2e3);
+  --tint-300: var(--custom-tint-300, #f7b3cf);
+  --tint-400: var(--custom-tint-400, #ee93ba);
+  --tint-500: var(--custom-tint-500, #c9507f);
+  --ink-900: var(--custom-ink-900, #3b1729);
+  --ink-700: var(--custom-ink-700, #5b2141);
+  --ink-500: var(--custom-ink-500, #8a5570);
+  --ink-300: var(--custom-ink-300, #c49aae);
+  --surface-raised: #ffffff;
+  --accent-text: var(--custom-accent-text, #3b1729);
+  --danger: #b92a55;
+  --danger-soft: #ffe1ea;
+  --shadow-rgb: var(--custom-shadow-rgb, 59, 23, 41);
+  --shade-rgb: 28, 10, 20;
+  --ring-rgb: var(--custom-ring-rgb, 59, 23, 41);
+  color-scheme: light;
+
+  --face: var(--custom-face, #5b2141);
+  --face-rim: var(--custom-face-rim, #5b2141);
+  --face-eye: var(--custom-face-eye, #f7b3cf);
+  --face-whisker: var(--custom-face-whisker, #5b2141);
+  --whisker: var(--custom-whisker, #fff6fa);
+  --cat-lid: var(--custom-cat-lid, #f99b3e);
+  --cat-lid-edge: var(--custom-cat-lid-edge, #7a3a12);
+  --tail-body: var(--custom-tail-body, #f89838);
+  --tail-outline: var(--custom-tail-outline, #c86008);
+  --tail-stripe: var(--custom-tail-stripe, #f8c060);
+}
+
 /* No cat at all: plain colors, the system's mouse pointers. The color is the user's pick
    (Settings); cat.ts sets --plain-* from it (plainAccent.ts), the defaults are the blue. */
 [data-cat="plain"] {

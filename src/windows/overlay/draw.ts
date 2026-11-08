@@ -1,6 +1,6 @@
 // Annotation shapes and their rendering. Shapes are stored in CSS pixels of the overlay
 // window; a Transform maps them onto the preview canvas or the full-resolution export.
-import type { Point } from "./geometry";
+import type { Point, Rect } from "./geometry";
 
 export type Tool =
   | "select"
@@ -33,7 +33,18 @@ export interface Style {
 export type Shape =
   | { kind: "pen" | "highlighter"; points: Point[]; style: Style }
   | { kind: "arrow" | "line" | "rect" | "ellipse" | "blur"; from: Point; to: Point; style: Style }
-  | { kind: "text"; at: Point; text: string; style: Style };
+  | TextShape;
+
+/** `size`: letters' height in CSS px, once changed (otherwise from the stroke width).
+ *  `spacing`: extra px between letters. */
+export interface TextShape {
+  kind: "text";
+  at: Point;
+  text: string;
+  style: Style;
+  size?: number;
+  spacing?: number;
+}
 
 /** Maps a CSS point to target pixels: `(p - origin) * k`. */
 export interface Transform {
@@ -45,6 +56,47 @@ export interface Transform {
 }
 
 export const textSize = (width: number) => 14 + width * 3;
+export const fontSizeOf = (shape: TextShape) => shape.size ?? textSize(shape.style.width);
+export const TEXT_LINE_HEIGHT = 1.25;
+export const textFont = (size: number) => `600 ${size}px "Segoe UI", sans-serif`;
+
+let measurer: CanvasRenderingContext2D | null | undefined;
+/** One line's width; measured where there is a canvas, estimated where there isn't (tests). */
+function lineWidth(line: string, size: number, spacing: number): number {
+  if (measurer === undefined) {
+    try {
+      measurer = document.createElement("canvas").getContext("2d");
+    } catch {
+      measurer = null;
+    }
+  }
+  if (measurer) {
+    measurer.font = textFont(size);
+    return measurer.measureText(line).width + spacing * line.length;
+  }
+  return line.length * (size * 0.6 + spacing);
+}
+
+/** Where a text sits, in the same CSS px as its `at`. */
+export function textBox(shape: TextShape): Rect {
+  const size = fontSizeOf(shape);
+  const lines = shape.text.split("\n");
+  return {
+    x: shape.at.x,
+    y: shape.at.y,
+    width: Math.max(...lines.map((line) => lineWidth(line, size, shape.spacing ?? 0)), size * 0.5),
+    height: lines.length * size * TEXT_LINE_HEIGHT,
+  };
+}
+
+/** The topmost text under `p`, or -1. */
+export function textAt(shapes: readonly Shape[], p: Point, tolerance = 4): number {
+  for (let i = shapes.length - 1; i >= 0; i -= 1) {
+    const shape = shapes[i];
+    if (shape.kind === "text" && hitTest(shape, p, tolerance)) return i;
+  }
+  return -1;
+}
 const HIGHLIGHTER_ALPHA = 0.35;
 const BLUR_BLOCK_CSS = 8;
 
@@ -134,15 +186,12 @@ export function hitTest(shape: Shape, p: Point, tolerance: number): boolean {
       return p.x >= x1 - tolerance && p.x <= x2 + tolerance && p.y >= y1 - tolerance && p.y <= y2 + tolerance;
     }
     case "text": {
-      const size = textSize(shape.style.width);
-      const lines = shape.text.split("\n");
-      const width = Math.max(...lines.map((l) => l.length)) * size * 0.6;
-      const height = lines.length * size * 1.25;
+      const box = textBox(shape);
       return (
-        p.x >= shape.at.x - tolerance &&
-        p.x <= shape.at.x + width + tolerance &&
-        p.y >= shape.at.y - tolerance &&
-        p.y <= shape.at.y + height + tolerance
+        p.x >= box.x - tolerance &&
+        p.x <= box.x + box.width + tolerance &&
+        p.y >= box.y - tolerance &&
+        p.y <= box.y + box.height + tolerance
       );
     }
   }
@@ -225,11 +274,14 @@ export function drawShapes(ctx: CanvasRenderingContext2D, shapes: readonly Shape
       }
       case "text": {
         const p = map(shape.at);
-        ctx.font = `600 ${textSize(shape.style.width) * t.k}px "Segoe UI", sans-serif`;
+        const size = fontSizeOf(shape);
+        ctx.font = textFont(size * t.k);
+        ctx.letterSpacing = `${(shape.spacing ?? 0) * t.k}px`;
         ctx.textBaseline = "top";
         shape.text.split("\n").forEach((line, i) => {
-          ctx.fillText(line, p.x, p.y + i * textSize(shape.style.width) * 1.25 * t.k);
+          ctx.fillText(line, p.x, p.y + i * size * TEXT_LINE_HEIGHT * t.k);
         });
+        ctx.letterSpacing = "0px";
         break;
       }
       case "blur":

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { fatness } from "../../lib/catSeat";
-import { CatEar, SeatCat, TRASH_JUMP_MS, TrashJump, Whiskers } from "../../lib/cats";
+import { CatEar, SeatCat, TRASH_JUMP_MS, TrashJump, TurtleBar, Whiskers } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   captureDeliver,
@@ -29,12 +29,16 @@ import {
   hitTest,
   isMeaningful,
   startShape,
+  textAt,
   textSize,
+  fontSizeOf,
+  type TextShape,
   WIDTHS,
   type Shape,
   type Tool,
 } from "./draw";
 import { ContextMenu } from "./ContextMenu";
+import { TextSelection } from "./TextSelection";
 import {
   clampPoint,
   containsPoint,
@@ -82,6 +86,9 @@ type Drag =
 interface TextDraft {
   at: Point;
   value: string;
+  /** Changing a text already placed: which shape, and its look. */
+  index?: number;
+  look?: Pick<TextShape, "style" | "size" | "spacing">;
 }
 
 const viewSize = () => ({ width: window.innerWidth, height: window.innerHeight });
@@ -115,6 +122,8 @@ export function Overlay() {
   }, []);
   const [draft, setDraft] = useState<Shape | null>(null);
   const [textDraft, setTextDraftState] = useState<TextDraft | null>(null);
+  /** A placed text picked again: TextSelection shows its frame and bar. */
+  const [pickedText, setPickedText] = useState<number | null>(null);
   // Read by commitText: blur and the next click can both fire for the same draft.
   const textDraftRef = useRef<TextDraft | null>(null);
   const [sidebarSize, setSidebarSize] = useState<Size>(SIDEBAR_FALLBACK);
@@ -152,6 +161,7 @@ export function Overlay() {
     setShapesState([]);
     setDraft(null);
     setTextDraft(null);
+    setPickedText(null);
     setTool("select");
     setOcr(null);
     setFlying(null);
@@ -193,13 +203,15 @@ export function Overlay() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawShapes(ctx, draft ? [...shapes, draft] : shapes, {
+    // A text being changed shows only in its text box.
+    const shown = textDraft?.index !== undefined ? shapes.filter((_, i) => i !== textDraft.index) : shapes;
+    drawShapes(ctx, draft ? [...shown, draft] : shown, {
       k: dpr,
       origin: { x: 0, y: 0 },
       frame,
       frameScale: info.width / window.innerWidth,
     });
-  }, [shapes, draft, info]);
+  }, [shapes, draft, info, textDraft]);
 
   /** Selection with its drawings, at the frame's full resolution, as PNG bytes. */
   const compose = useCallback(async (): Promise<Uint8Array | null> => {
@@ -248,7 +260,10 @@ export function Overlay() {
     const tail = tailRef.current;
     if (!el || !tail) return;
     const spin = Math.random() < 0.5 ? 1 : -1;
-    await playTail(el, tail, makeTailScene(selection, target, viewSize(), spin, cat ? catTailRoot(cat) : undefined));
+    // The turtle reaches out with a flipper; a cat curls its tail.
+    const kind = document.documentElement.dataset.cat === "turtle" ? "flipper" : "tail";
+    const scene = makeTailScene(selection, target, viewSize(), spin, cat ? catTailRoot(cat) : undefined, kind);
+    await playTail(el, tail, scene);
   }, [info, selection, shapes.length]);
 
   const finish = useCallback(
@@ -322,9 +337,46 @@ export function Overlay() {
     const current = textDraftRef.current;
     setTextDraft(null);
     if (!current) return;
-    const shape: Shape = { kind: "text", at: current.at, text: current.value, style: { color, width } };
-    if (isMeaningful(shape)) setShapes((list) => [...list, shape]);
+    const shape: Shape = { kind: "text", at: current.at, text: current.value, style: { color, width }, ...current.look };
+    const index = current.index;
+    if (index !== undefined) {
+      // A changed text: emptied, it goes.
+      setShapes((list) =>
+        isMeaningful(shape) ? list.map((s, i) => (i === index ? shape : s)) : list.filter((_, i) => i !== index),
+      );
+      setPickedText(isMeaningful(shape) ? index : null);
+    } else if (isMeaningful(shape)) {
+      setShapes((list) => [...list, shape]);
+    }
   }, [color, width, setTextDraft, setShapes]);
+
+  // A picked text: moved live (one undo step per drag), changed from its bar, changed or deleted.
+  const picked = pickedText !== null && shapes[pickedText]?.kind === "text" ? (shapes[pickedText] as TextShape) : null;
+  const dragText = (next: TextShape, phase: "start" | "move") => {
+    if (pickedText === null) return;
+    if (phase === "start") history.current.push(shapesRef.current);
+    const list = shapesRef.current.map((s, i) => (i === pickedText ? next : s));
+    shapesRef.current = list;
+    setShapesState(list);
+  };
+  const changeText = (next: TextShape) => {
+    if (pickedText !== null) setShapes((list) => list.map((s, i) => (i === pickedText ? next : s)));
+  };
+  const deleteText = useCallback(() => {
+    if (pickedText === null) return;
+    setShapes((list) => list.filter((_, i) => i !== pickedText));
+    setPickedText(null);
+  }, [pickedText, setShapes]);
+  const editText = () => {
+    if (!picked || pickedText === null) return;
+    setPickedText(null);
+    setTextDraft({
+      at: picked.at,
+      value: picked.text,
+      index: pickedText,
+      look: { style: picked.style, size: picked.size, spacing: picked.spacing },
+    });
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -333,6 +385,12 @@ export function Overlay() {
       if (menu && key === "escape") {
         e.preventDefault();
         setMenu(null);
+        return;
+      }
+      if (pickedText !== null && (key === "escape" || key === "delete" || key === "backspace")) {
+        e.preventDefault();
+        if (key === "escape") setPickedText(null);
+        else deleteText();
         return;
       }
       if (ocr) {
@@ -362,12 +420,18 @@ export function Overlay() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [finish, primary, undo, textDraft, ocr, menu]);
+  }, [finish, primary, undo, textDraft, ocr, menu, pickedText, deleteText]);
 
   // Focus a new text box once it's in the DOM (autoFocus alone loses to the click).
   const textOpen = textDraft !== null;
   useEffect(() => {
-    if (textOpen) setTimeout(() => textRef.current?.focus(), 0);
+    // A text being changed opens with the caret after its last letter.
+    if (textOpen)
+      setTimeout(() => {
+        const box = textRef.current;
+        box?.focus();
+        box?.setSelectionRange(box.value.length, box.value.length);
+      }, 0);
   }, [textOpen]);
 
   useLayoutEffect(() => {
@@ -402,6 +466,17 @@ export function Overlay() {
     if (e.button !== 0) return;
     if (textDraft) commitText();
     const p = pointFrom(e);
+
+    // A click on a text already placed picks it (looking around, or with the text tool).
+    if (selection && (tool === "select" || tool === "text")) {
+      const hit = textAt(shapesRef.current, p);
+      if (hit >= 0) {
+        e.preventDefault();
+        setPickedText(hit);
+        return;
+      }
+    }
+    setPickedText(null);
 
     if (drawing) {
       if (tool === "text") {
@@ -628,6 +703,7 @@ export function Overlay() {
         <CatEar side="right" />
         <Whiskers side="left" />
         <Whiskers side="right" />
+        <TurtleBar />
         <button
           type="button"
           className={info.textMode ? undefined : "active"}
@@ -648,6 +724,10 @@ export function Overlay() {
         </button>
       </div>
 
+      {picked && !flying && (
+        <TextSelection shape={picked} onDrag={dragText} onChange={changeText} onDelete={deleteText} onEdit={editText} />
+      )}
+
       {textDraft && (
         <textarea
           ref={textRef}
@@ -659,11 +739,15 @@ export function Overlay() {
           style={{
             left: textDraft.at.x,
             top: textDraft.at.y,
-            color,
-            fontSize: textSize(width),
+            color: textDraft.look?.style.color ?? color,
+            fontSize: textDraft.look
+              ? fontSizeOf({ kind: "text", at: textDraft.at, text: "", style: textDraft.look.style, size: textDraft.look.size })
+              : textSize(width),
+            letterSpacing: textDraft.look?.spacing ?? 0,
           }}
           onPointerDown={(e) => e.stopPropagation()}
           onChange={(e) => setTextDraft({ ...textDraft, value: e.target.value })}
+          onFocus={(e) => e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length)}
           onKeyDown={onTextKey}
           onBlur={commitText}
         />

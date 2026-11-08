@@ -41,6 +41,8 @@ const SNAPSHOT_END_SIZE = 36;
 const ARC_HEIGHT = 90;
 
 export interface TailScene {
+  /** A cat curls its tail round the capture; a turtle reaches out and holds it with a flipper. */
+  kind: "tail" | "flipper";
   rect: Rect;
   target: Point;
   view: Size;
@@ -97,6 +99,7 @@ export function makeTailScene(
   view: Size,
   spin: 1 | -1,
   base: Point = tailBase(target, view),
+  kind: "tail" | "flipper" = "tail",
 ): TailScene {
   const center = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
   // The corner facing the tail. Small selections get held by the middle.
@@ -106,7 +109,7 @@ export function makeTailScene(
     x: base.x >= center.x ? insetX : -insetX,
     y: base.y >= center.y ? insetY : -insetY,
   };
-  return { rect, target, view, base, grab, spin };
+  return { kind, rect, target, view, base, grab, spin };
 }
 
 /** Outer rim to center. The rim's direction of travel lines up with the way the tail arrives. */
@@ -200,9 +203,17 @@ export function tailFrame(scene: TailScene, progress: number): TailFrame {
     y: clamp(from.y + translate.y + scene.grab.y * scale, margin, Math.max(view.height - margin, margin)),
   };
 
-  const spiral = curl(scene, grab, lerp(1, CURL_SQUEEZE, squeeze));
   const wave = lerp(lerp(24, 8, squeeze), 3, pull);
-  const whole = [...approach(base, spiral[0], spiral[1], wave, p), ...spiral.slice(1)];
+  let whole: Point[];
+  if (scene.kind === "flipper") {
+    // Straight in to the grab point, the arm's own line leading on past it.
+    const along = Math.max(distance(base, grab), 0.001);
+    const ahead = { x: grab.x + ((grab.x - base.x) / along) * 10, y: grab.y + ((grab.y - base.y) / along) * 10 };
+    whole = approach(base, grab, ahead, wave * 0.6, p);
+  } else {
+    const spiral = curl(scene, grab, lerp(1, CURL_SQUEEZE, squeeze));
+    whole = [...approach(base, spiral[0], spiral[1], wave, p), ...spiral.slice(1)];
+  }
 
   const out = easeOut(phase(p, 0, CURL_END));
   const back = 1 - easeIn(phase(p, RETREAT_START, 1));
@@ -218,8 +229,8 @@ const rootShare = (fromBase: number) => lerp(ROOT_SHARE, 1, clamp(fromBase / ROO
 const pathData = (points: Point[]) =>
   points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("");
 
-/** Splits the tail, tip first, into pieces that each carry their own width. */
-export function tailSegments(points: Point[]): TailSegment[] {
+/** Splits the tail, tip first, into pieces that each carry their own width (times `widthScale`). */
+export function tailSegments(points: Point[], widthScale = 1): TailSegment[] {
   if (points.length < 2) return [];
   const fromTip = [...points].reverse();
   const total = polylineLength(fromTip);
@@ -231,7 +242,7 @@ export function tailSegments(points: Point[]): TailSegment[] {
   const flush = () => {
     segments.push({
       d: pathData(piece),
-      width: widthAt(walked + pieceLength / 2) * rootShare(total - walked - pieceLength / 2),
+      width: widthAt(walked + pieceLength / 2) * rootShare(total - walked - pieceLength / 2) * widthScale,
       dashOffset: walked - STRIPE_START,
     });
     walked += pieceLength;
@@ -249,8 +260,13 @@ export function tailSegments(points: Point[]): TailSegment[] {
 
 const LAYERS = ["outline", "body", "stripes"] as const;
 
+/** The flipper at the end of the turtle's arm, pointing along +x from the arm's tip. */
+const FLIPPER_PATH = "M-12 0C6-27 48-33 80-10C54 11 16 24-12 0Z";
+/** The arm is slimmer than a tail. */
+const ARM_WIDTH = 0.62;
+
 /** Paints a frame's centerline into the tail's svg, outlines under everything so they never cut across it. */
-export function drawTail(svg: SVGSVGElement, points: Point[]) {
+export function drawTail(svg: SVGSVGElement, points: Point[], kind: "tail" | "flipper" = "tail") {
   if (svg.childElementCount === 0) {
     for (const layer of LAYERS) {
       for (let i = 0; i < SEGMENTS; i += 1) {
@@ -260,7 +276,8 @@ export function drawTail(svg: SVGSVGElement, points: Point[]) {
       }
     }
   }
-  const segments = tailSegments(points);
+  const segments = tailSegments(points, kind === "flipper" ? ARM_WIDTH : 1);
+  if (kind === "flipper") drawFlipper(svg, points);
   LAYERS.forEach((layer, l) => {
     for (let i = 0; i < SEGMENTS; i += 1) {
       const path = svg.children[l * SEGMENTS + i];
@@ -271,6 +288,26 @@ export function drawTail(svg: SVGSVGElement, points: Point[]) {
       if (layer === "stripes") path.setAttribute("stroke-dashoffset", String(segment.dashOffset));
     }
   });
+}
+
+/** Puts the flipper on the arm's tip, turned the way the arm points; hidden while there is no arm. */
+function drawFlipper(svg: SVGSVGElement, points: Point[]) {
+  let flipper = svg.querySelector<SVGPathElement>(".overlay__flipper");
+  if (!flipper) {
+    flipper = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    flipper.setAttribute("class", "overlay__flipper");
+    flipper.setAttribute("d", FLIPPER_PATH);
+    svg.appendChild(flipper);
+  }
+  if (points.length < 2) {
+    flipper.setAttribute("visibility", "hidden");
+    return;
+  }
+  const tip = points[points.length - 1];
+  const before = points[Math.max(points.length - 4, 0)];
+  const angle = (Math.atan2(tip.y - before.y, tip.x - before.x) * 180) / Math.PI;
+  flipper.setAttribute("visibility", "visible");
+  flipper.setAttribute("transform", `translate(${tip.x.toFixed(1)} ${tip.y.toFixed(1)}) rotate(${angle.toFixed(1)})`);
 }
 
 /** Runs the animation. Resolves at the end, or by the clock if the window stops painting. */
@@ -289,7 +326,7 @@ export function playTail(snapshot: HTMLElement, tail: SVGSVGElement, scene: Tail
       const frame = tailFrame(scene, progress);
       snapshot.style.transform = `translate(${frame.translate.x}px, ${frame.translate.y}px) scale(${frame.scale}) rotate(${frame.rotate}deg)`;
       snapshot.style.opacity = String(frame.opacity);
-      drawTail(tail, frame.points);
+      drawTail(tail, frame.points, scene.kind);
       if (progress >= 1) {
         clearTimeout(fallback);
         stop();

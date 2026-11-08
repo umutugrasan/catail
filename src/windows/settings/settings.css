@@ -392,6 +392,48 @@ td:last-child {
   flex: none;
 }
 
+/* Which animal: its themes are listed below. Each button shows that animal. */
+.animal-picker {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.animal-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px 6px 8px;
+  border: 2px solid var(--tint-200);
+  border-radius: 999px;
+  background: var(--tint-50);
+  color: var(--ink-900);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: var(--paw);
+  transition: border-color var(--fast) var(--ease-out), transform var(--fast) var(--ease-pop);
+}
+
+.animal-card:hover {
+  transform: translateY(-2px);
+}
+
+.animal-card--active {
+  border-color: var(--tint-500);
+}
+
+.animal-card .leaping-cat__foot {
+  animation: none;
+}
+
+/* "Kendi kedin": a swatch for each part, the picker under them. */
+.custom-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 /* The plain theme's color, under the cards: a swatch that opens the picker. */
 .plain-color {
   display: flex;

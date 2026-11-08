@@ -7,4 +7,4 @@ import { initI18n } from "../../lib/i18n";
 import "./settings.css";
 
 // Strings first: the language comes from the app.
-void Promise.all([initI18n(), initCat()]).then(() => createRoot(document.getElementById("root")!).render(<Settings />));
+void Promise.all([initI18n(), initCat({ paintCustom: true })]).then(() => createRoot(document.getElementById("root")!).render(<Settings />));

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { catsAround } from "../../lib/cat";
+import { catsAround, useWornTheme } from "../../lib/cat";
 import { fatness } from "../../lib/catSeat";
-import { BadgeCat, BoxCat, FETCH_DROP_MS, FETCH_MS } from "../../lib/cats";
+import { BadgeCat, BoxCat, FETCH_DROP_MS, FETCH_MS, ShellTurtle } from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   BadgeEvents,
@@ -47,6 +47,7 @@ export function Badge() {
   const pillRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLSpanElement>(null);
   const down = state.corner.startsWith("top");
+  const turtle = useWornTheme() === "turtle";
 
   // "Geri al" brought this many items back; the cat carries them over from its box.
   const [fetching, setFetching] = useState<number | null>(null);
@@ -266,6 +267,22 @@ export function Badge() {
     };
   }, [fetching]);
 
+  /** A press on the sleeping animal: up it jumps (the turtle out of its shell), wide awake. */
+  const wake = () => {
+    setPoke((n) => n + 1);
+    jumpFor(JUMP_MS);
+    move(
+      [
+        { transform: "none" },
+        { transform: "scale(1.15, 0.8)", offset: 0.15 },
+        { transform: `translateY(${down ? 14 : -14}px) scale(0.9, 1.15)`, offset: 0.45 },
+        { transform: "scale(1.1, 0.88)", offset: 0.72 },
+        { transform: "none" },
+      ],
+      620,
+    );
+  };
+
   // Act on press: the window never takes focus, so there may be no click event.
   const onPress = (action: () => void) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -284,7 +301,11 @@ export function Badge() {
         }
       >
         <span ref={boxRef} className="undo__cat">
-          <BoxCat leapFrom={leapFrom} shred={shredding ? shredAt : null} />
+          {turtle ? (
+            <ShellTurtle leapFrom={leapFrom} flee={shredding} runDir={shredAt.hopDir} />
+          ) : (
+            <BoxCat leapFrom={leapFrom} shred={shredding ? shredAt : null} />
+          )}
         </span>
         <div className="undo__wrap">
           <button
@@ -339,8 +360,8 @@ export function Badge() {
         seatRef={seatRef}
         slotRef={slotRef}
         pasting={state.pasting}
-        onPress={onPress(() => void panelToggle())}
-        onHover={() => asleep && setPoke((n) => n + 1)}
+        onPress={onPress(() => (asleep ? wake() : void panelToggle()))}
+        onHover={() => asleep && !turtle && setPoke((n) => n + 1)}
       />
       <div ref={pillRef} className="badge-wrap">
         {dropHover ? (

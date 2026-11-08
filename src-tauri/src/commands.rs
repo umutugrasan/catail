@@ -12,7 +12,7 @@ use crate::capture::region::{self, SelectionRect};
 use crate::i18n::{t, t_with};
 use crate::panel::{self, ItemView};
 use crate::queue::item::QueueItemKind;
-use crate::settings::{Cat, Settings};
+use crate::settings::{Cat, CustomCat, Settings};
 use crate::state::AppState;
 use crate::translate::{self, Translation};
 use crate::updater::{self, UpdateInfo};
@@ -344,6 +344,29 @@ pub fn plain_accent_set(
     let saved = settings.save();
     drop(settings);
     let _ = app.emit(EVENT_PLAIN_ACCENT, color);
+    saved.map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))
+}
+
+pub const EVENT_CUSTOM_CAT: &str = "app:custom-cat";
+
+#[tauri::command]
+pub fn ui_custom_cat(state: State<'_, AppState>) -> CustomCat {
+    state.settings.lock().unwrap().custom_cat.clone()
+}
+
+/// "Kendi kedin": its colors, picked in Settings. Saved and shown everywhere right away.
+#[tauri::command]
+pub fn custom_cat_set(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    custom: CustomCat,
+) -> Result<(), String> {
+    let custom = custom.tidied();
+    let mut settings = state.settings.lock().unwrap();
+    settings.custom_cat = custom.clone();
+    let saved = settings.save();
+    drop(settings);
+    let _ = app.emit(EVENT_CUSTOM_CAT, custom);
     saved.map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))
 }
 

@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { wearPlainAccent } from "../../lib/cat";
-import { BoxCat, CatFace, LeapingCat } from "../../lib/cats";
+import { useWornTheme, wearCustomCat, wearPlainAccent } from "../../lib/cat";
+import { BoxCat, CatFace, LeapingCat, ShellTurtle } from "../../lib/cats";
 import { LANGUAGES, t } from "../../lib/i18n";
+import { CUSTOM_PRESETS, type CustomCat } from "../../lib/customCat";
 import {
+  ANIMAL_THEMES,
+  ANIMALS,
+  animalOf,
   BADGE_CORNERS,
-  CATS,
   catSet,
+  customCatSet,
   plainAccentSet,
   settingsGet,
   settingsSave,
   updateCheck,
   updateInstall,
+  type Animal,
   type AppPasteRule,
   type BadgeCorner,
   type Cat,
@@ -33,6 +38,12 @@ function PlainThemeIcon() {
     </svg>
   );
 }
+
+const CUSTOM_PARTS: [keyof CustomCat, string][] = [
+  ["fur", "settings.custom_fur"],
+  ["belly", "settings.custom_belly"],
+  ["eyes", "settings.custom_eyes"],
+];
 
 const HOTKEYS: [keyof HotkeyMap, string][] = [
   ["region", "settings.shortcut_region"],
@@ -72,6 +83,7 @@ const PAGES = [
 type Page = (typeof PAGES)[number][0];
 
 export function Settings() {
+  const worn = useWornTheme();
   const [page, setPage] = useState<Page>("theme");
   const [settings, setSettings] = useState<SettingsModel | null>(null);
   const [version, setVersion] = useState("");
@@ -103,6 +115,29 @@ export function Settings() {
   const pickCat = (cat: Cat) => {
     change({ cat });
     void catSet(cat);
+  };
+
+  // The animal whose themes are listed. Picking another one puts on its first theme.
+  const [animal, setAnimal] = useState<Animal>("cat");
+  useEffect(() => {
+    const worn = settings && animalOf(settings.cat);
+    if (worn) setAnimal(worn);
+  }, [settings?.cat]);
+  const pickAnimal = (next: Animal) => {
+    setAnimal(next);
+    if (settings && animalOf(settings.cat) !== next) pickCat(ANIMAL_THEMES[next][0]);
+  };
+
+  // "Kendi kedin": like the plain theme's color, shown here at once and saved a moment later.
+  const [customOpen, setCustomOpen] = useState<keyof CustomCat | null>(null);
+  const customTimer = useRef(0);
+  const pickCustom = (part: keyof CustomCat) => (color: string) => {
+    if (!settings) return;
+    const custom = { ...settings.custom_cat, [part]: color };
+    change({ custom_cat: custom });
+    wearCustomCat(custom);
+    window.clearTimeout(customTimer.current);
+    customTimer.current = window.setTimeout(() => void customCatSet(custom), 150);
   };
 
   // The plain theme's color shows here at once; it's saved (and sent to the other windows)
@@ -161,7 +196,7 @@ export function Settings() {
           <CatFace size={26} />
           {t("settings.title")}
         </h1>
-        <BoxCat />
+        {worn === "turtle" ? <ShellTurtle /> : <BoxCat />}
       </header>
 
       <nav className="settings__nav">
@@ -181,9 +216,25 @@ export function Settings() {
       <div key={page} className="settings__page">
         {page === "theme" && (
           <section>
+            <h2>{t("settings.animal")}</h2>
+            <div className="animal-picker">
+              {ANIMALS.map((each) => (
+                <button
+                  key={each}
+                  type="button"
+                  data-cat={ANIMAL_THEMES[each][0]}
+                  className={`animal-card${each === animal ? " animal-card--active" : ""}`}
+                  aria-pressed={each === animal}
+                  onClick={() => pickAnimal(each)}
+                >
+                  <LeapingCat size={34} />
+                  {t(`settings.animal_${each}`)}
+                </button>
+              ))}
+            </div>
             <h2>{t("settings.cat")}</h2>
             <div className="cat-picker">
-              {CATS.map((cat) => (
+              {[...ANIMAL_THEMES[animal], "plain" as const].map((cat) => (
                 <button
                   key={cat}
                   type="button"
@@ -197,6 +248,33 @@ export function Settings() {
                 </button>
               ))}
             </div>
+            {settings.cat === "custom" && (
+              <div className="plain-color">
+                <div className="custom-parts">
+                  {CUSTOM_PARTS.map(([part, label]) => (
+                    <button
+                      key={part}
+                      type="button"
+                      className={`plain-color__button${customOpen === part ? " open" : ""}`}
+                      aria-expanded={customOpen === part}
+                      onClick={() => setCustomOpen((open) => (open === part ? null : part))}
+                    >
+                      <span className="plain-color__swatch" style={{ background: settings.custom_cat[part] }} />
+                      {t(label)}
+                      <ChevronIcon />
+                    </button>
+                  ))}
+                </div>
+                {customOpen && (
+                  <ColorPicker
+                    key={customOpen}
+                    color={settings.custom_cat[customOpen]}
+                    presets={CUSTOM_PRESETS[customOpen]}
+                    onChange={pickCustom(customOpen)}
+                  />
+                )}
+              </div>
+            )}
             {settings.cat === "plain" && (
               <div className="plain-color">
                 <button

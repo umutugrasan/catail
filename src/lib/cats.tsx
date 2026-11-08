@@ -7,14 +7,22 @@ import boxHead from "./cats/box-head.png";
 import footLeft from "./cats/foot-left.png";
 import footRight from "./cats/foot-right.png";
 import standingBody from "./cats/standing-body.png";
+import turtleShell from "./animals/turtle/shell.svg";
 import { SEAT_STRIPS } from "./catSeat";
 import { BOX_H, BOX_W, BURST_MS, CHIP_MS, HOP_MS, SHARD_MS, type Flight, type ShredPlan } from "./shred";
 import "./cats.css";
 
-/** Tiny face with whiskers, in the chosen cat's colors. */
+/** Tiny face with whiskers, in the chosen cat's colors; the turtle's own face for the turtle. */
 export function CatFace({ size = 18 }: { size?: number }) {
   return (
     <svg className="cat-face" viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <g className="cat-face__turtle">
+        <ellipse cx="12" cy="13" rx="9.5" ry="7.8" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1.2 }} />
+        <ellipse cx="8.6" cy="12.6" rx="1.5" ry="1.8" style={{ fill: "var(--face-eye)" }} />
+        <ellipse cx="15.4" cy="12.6" rx="1.5" ry="1.8" style={{ fill: "var(--face-eye)" }} />
+        <path d="M10.3 16.1q1.7 1.4 3.4 0" fill="none" strokeWidth="0.9" strokeLinecap="round" style={{ stroke: "var(--face-rim)" }} />
+      </g>
+      <g className="cat-face__cat">
       <path
         d="M5 9.5 6.2 3l4.3 3.6h3L17.8 3 19 9.5c1 1.2 1.5 2.7 1.5 4.3C20.5 18 16.7 21 12 21s-8.5-3-8.5-7.2c0-1.6.5-3.1 1.5-4.3Z"
         style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 0.9, strokeLinejoin: "round" }}
@@ -28,6 +36,7 @@ export function CatFace({ size = 18 }: { size?: number }) {
       <path d="M11.2 15.6h1.6L12 16.6Z" style={{ fill: "var(--face-eye)" }} />
       <g strokeWidth="0.9" strokeLinecap="round" opacity="0.85" style={{ stroke: "var(--face-whisker)" }}>
         <path d="M8 16.2 1.5 15.4M8 17.2 2 18.2M16 16.2l6.5-.8M16 17.2l6 1" />
+      </g>
       </g>
     </svg>
   );
@@ -250,6 +259,8 @@ export function SeatCat({
         <span className="cat-seat__lid cat-seat__lid--left" />
         <span className="cat-seat__lid cat-seat__lid--right" />
       </span>
+      {/* The turtle sleeps inside its shell. */}
+      <img className="cat-seat__shell" src={turtleShell} alt="" draggable={false} />
       {asleep && (
         <span className="cat-seat__zzz">
           <i>z</i>
@@ -352,7 +363,73 @@ export function TrashJump({ size = 17, handoff = false }: { size?: number; hando
   return (
     <span className={`trash-jump${handoff ? " trash-jump--handoff" : ""}`}>
       <LeapingCat size={handoff ? LEAP_CAT_SIZE : Math.round(size * 2.4)} />
+      {/* The turtle comes out of the bin curled up in its shell, bouncing like a ball. */}
+      <img className="trash-jump__shell" src={turtleShell} alt="" draggable={false} />
       <TrashIcon size={size} />
+    </span>
+  );
+}
+
+/**
+ * The turtle's "Geri al": no box for a turtle, it hides in its own shell. `leapFrom` (as for
+ * BoxCat): the shell bounces in from there like a ball. Now and then it rocks, and two eyes peek
+ * out. With `flee`, time is up: out come its head and flippers and it runs off (`runDir` -1 left).
+ */
+export function ShellTurtle({
+  leapFrom,
+  flee = false,
+  runDir = -1,
+}: {
+  leapFrom?: { x: number; y: number } | null;
+  flee?: boolean;
+  runDir?: number;
+}) {
+  return (
+    <span
+      className={`shell-turtle${leapFrom ? " shell-turtle--arrive" : ""}${flee ? " shell-turtle--flee" : ""}`}
+      style={{ "--dx": `${leapFrom?.x ?? 0}px`, "--dy": `${leapFrom?.y ?? 0}px`, "--run": runDir } as CSSProperties}
+      aria-hidden="true"
+    >
+      <span className="shell-turtle__ball">
+        <img className="shell-turtle__shell" src={turtleShell} alt="" draggable={false} />
+        <span className="shell-turtle__peek">
+          <i />
+          <i />
+        </span>
+      </span>
+      {flee && (
+        <span className="shell-turtle__runner">
+          <span className="shell-turtle__facing">
+            <LeapingCat size={40} />
+          </span>
+        </span>
+      )}
+      {flee && (
+        <span className="shell-turtle__dust">
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** The turtle's version of the whiskers and ears on a bar: a head peeking over, a flipper each side. */
+export function TurtleBar() {
+  return (
+    <span className="turtle-bar" aria-hidden="true">
+      <svg className="turtle-bar__head" viewBox="0 0 40 26" width={34} height={22}>
+        <ellipse cx="20" cy="17" rx="16" ry="12" />
+        <ellipse className="turtle-bar__eye" cx="13.5" cy="14" rx="2.2" ry="2.6" />
+        <ellipse className="turtle-bar__eye" cx="26.5" cy="14" rx="2.2" ry="2.6" />
+      </svg>
+      <svg className="turtle-bar__flipper turtle-bar__flipper--left" viewBox="0 0 44 22" width={34} height={17}>
+        <path d="M44 11C34 1 14-1 2 6C12 16 32 20 44 11Z" />
+      </svg>
+      <svg className="turtle-bar__flipper turtle-bar__flipper--right" viewBox="0 0 44 22" width={34} height={17}>
+        <path d="M0 11C10 1 30-1 42 6C32 16 12 20 0 11Z" />
+      </svg>
     </span>
   );
 }

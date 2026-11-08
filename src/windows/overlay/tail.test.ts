@@ -87,6 +87,26 @@ describe("tailFrame", () => {
   });
 });
 
+describe("the turtle's flipper", () => {
+  const root = { x: 1580, y: 1000 };
+  const flipper = makeTailScene(rect, badge, view, 1, root, "flipper");
+
+  it("reaches straight for the capture from under the turtle, without curling", () => {
+    const points = tailFrame(flipper, 0.34).points;
+    const tip = points[points.length - 1];
+    const grab = { x: rect.x + rect.width / 2 + flipper.grab.x, y: rect.y + rect.height / 2 + flipper.grab.y };
+    expect(points[0]).toEqual(root);
+    expect(Math.hypot(tip.x - grab.x, tip.y - grab.y)).toBeLessThan(2);
+    // Fully out, not yet squeezing: the grab point is exactly where it was. A curled tail ends in a spiral many points long; the arm is just the reach.
+    expect(points.length).toBeLessThan(tailFrame(makeTailScene(rect, badge, view, 1, root), 0.34).points.length);
+  });
+
+  it("is a slimmer arm than a tail", () => {
+    const points = tailFrame(flipper, 0.4).points;
+    expect(tailSegments(points, 0.62)[0].width).toBeLessThan(tailSegments(points)[0].width);
+  });
+});
+
 describe("tailSegments", () => {
   const line = Array.from({ length: 101 }, (_, i) => ({ x: i * 10, y: 0 }));
 

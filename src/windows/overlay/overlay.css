@@ -889,6 +889,26 @@ html.pressing .overlay--resize-corner * {
   max-width: none;
 }
 
+/* The turtle's flipper at the end of its arm, holding the capture. Shape: tail.ts. */
+.overlay__flipper {
+  fill: var(--tail-body);
+  stroke: var(--tail-outline);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+:root[data-cat="turtle"] .overlay__tail-stripes {
+  display: none;
+}
+
+/* The turtle's bar looks like its shell. */
+:root[data-cat="turtle"] .overlay__modes {
+  border-color: #9c6b34;
+  background-color: #ecd09a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='31'%3E%3Cpath d='M9 0h18l9 15.5-9 15.5H9L0 15.5z' fill='none' stroke='%23c99a55' stroke-width='2'/%3E%3C/svg%3E");
+  background-size: 30px 26px;
+}
+
 /* The badge's cat, sitting where the badge will be: the tail comes out from under it. */
 .overlay__cat {
   position: absolute;

@@ -11,6 +11,7 @@ function palette(cat: string): Record<string, string> {
   const block = themeCss.slice(start, themeCss.indexOf("}", start));
   // A picked color (`var(--plain-300, #0067c0)`) is checked by its default; plainAccent.test.ts covers the rest.
   const values = block.matchAll(/--([\w-]+):\s*(?:var\(--[\w-]+,\s*)?(#[0-9a-f]{6})\)?;/g);
+  // customCat.test.ts checks the colors a picked cat gets.
   return Object.fromEntries([...values].map((m) => [m[1], m[2]]));
 }
 

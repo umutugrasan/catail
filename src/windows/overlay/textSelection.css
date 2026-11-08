@@ -1,0 +1,148 @@
+/* A placed text, picked again (TextSelection.tsx). */
+.text-select {
+  position: absolute;
+  z-index: 6;
+  box-sizing: border-box;
+  border: 2px dashed var(--tint-500);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+  cursor: var(--paw-move);
+  touch-action: none;
+  animation: pop-in var(--fast) var(--ease-pop) both;
+}
+
+/* Hold here (or anywhere on the frame) to move it. */
+.text-select__grip {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: -20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  border-radius: 4px 0 0 4px;
+  background: var(--tint-500);
+  fill: #fff;
+  cursor: var(--paw-move);
+}
+
+/* Pull to make the letters bigger or smaller. */
+.text-select__size {
+  position: absolute;
+  top: 50%;
+  right: -9px;
+  width: 12px;
+  height: 12px;
+  margin-top: -8px;
+  border: 2px solid var(--tint-500);
+  border-radius: 50%;
+  background: #fff;
+  cursor: var(--paw-ew);
+}
+
+.text-select__bar {
+  position: absolute;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  cursor: var(--paw-default);
+  animation: pop-in var(--fast) var(--ease-pop) both;
+}
+
+.text-select__bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: var(--paw);
+  transition: background var(--fast) var(--ease-out);
+}
+
+.text-select__bar button:hover:not(:disabled),
+.text-select__bar button.open {
+  background: var(--surface-hover);
+}
+
+.text-select__bar button:disabled {
+  opacity: 0.4;
+  cursor: var(--paw-default);
+}
+
+.text-select__bar .text-select__delete:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.text-select__glyph {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.text-select__glyph sup {
+  margin-left: 1px;
+  font-size: 11px;
+}
+
+/* The color's own swatch under the A, like a highlighter's. */
+.text-select__color {
+  position: relative;
+}
+
+.text-select__color .text-select__glyph {
+  padding-bottom: 5px;
+}
+
+.text-select__swatch {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  width: 13px;
+  height: 4px;
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px rgba(var(--ring-rgb), 0.25);
+}
+
+.text-select__color svg {
+  width: 12px;
+  height: 12px;
+  transform: rotate(-90deg);
+}
+
+.text-select__divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: var(--border);
+}
+
+.text-select__picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  padding: 10px 10px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+
+.text-select__picker .picker__presets {
+  flex-wrap: wrap;
+}

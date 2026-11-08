@@ -121,6 +121,8 @@ fn main() {
             commands::cat_set,
             commands::ui_plain_accent,
             commands::plain_accent_set,
+            commands::ui_custom_cat,
+            commands::custom_cat_set,
         ])
         .setup(move |app| {
             // Single-instance has already exited any second copy, so older folders are stale.

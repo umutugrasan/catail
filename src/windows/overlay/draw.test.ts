@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { arrowHead, extendShape, hitTest, isMeaningful, startShape, type Shape } from "./draw";
+import {
+  arrowHead,
+  extendShape,
+  fontSizeOf,
+  hitTest,
+  isMeaningful,
+  startShape,
+  textAt,
+  textBox,
+  textSize,
+  type Shape,
+  type TextShape,
+} from "./draw";
 
 const style = { color: "#ef4444", width: 4 };
 
@@ -58,5 +70,32 @@ describe("hitTest", () => {
     expect(hitTest(line, { x: 60, y: 12 }, 4)).toBe(false);
     expect(hitTest(pen, { x: 15, y: 5 }, 4)).toBe(true);
     expect(hitTest(pen, { x: 10, y: 30 }, 4)).toBe(false);
+  });
+});
+
+describe("placed text", () => {
+  const style = { color: "#e0457b", width: 4 };
+  const hello: TextShape = { kind: "text", at: { x: 100, y: 50 }, text: "merhaba", style };
+
+  it("sits in a box as tall as its lines and wider with spacing", () => {
+    const box = textBox(hello);
+    expect(box.x).toBe(100);
+    expect(box.height).toBeCloseTo(textSize(4) * 1.25);
+    expect(textBox({ ...hello, text: "merhaba\ndünya" }).height).toBeCloseTo(textSize(4) * 2.5);
+    expect(textBox({ ...hello, spacing: 6 }).width).toBeGreaterThan(box.width);
+    expect(textBox({ ...hello, size: 60 }).width).toBeGreaterThan(box.width);
+  });
+
+  it("takes its own size once one is set", () => {
+    expect(fontSizeOf(hello)).toBe(textSize(4));
+    expect(fontSizeOf({ ...hello, size: 40 })).toBe(40);
+  });
+
+  it("is found under the pointer, the topmost one first", () => {
+    const line: Shape = { kind: "line", from: { x: 0, y: 0 }, to: { x: 300, y: 300 }, style };
+    const shapes: Shape[] = [hello, line, { ...hello, text: "üstteki" }];
+    expect(textAt(shapes, { x: 110, y: 60 })).toBe(2);
+    expect(textAt(shapes, { x: 10, y: 400 })).toBe(-1);
+    expect(textAt([line], { x: 50, y: 50 })).toBe(-1);
   });
 });

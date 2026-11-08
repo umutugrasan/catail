@@ -9,9 +9,12 @@ import {
   hitTest,
   isMeaningful,
   startShape,
+  fontSizeOf,
+  textAt,
   textSize,
   WIDTHS,
   type Shape,
+  type TextShape,
   type Tool,
 } from "../overlay/draw";
 import {
@@ -29,6 +32,7 @@ import {
 } from "../overlay/geometry";
 import { CloseIcon, SaveIcon } from "../overlay/icons";
 import { Sidebar } from "../overlay/Sidebar";
+import { TextSelection } from "../overlay/TextSelection";
 import { CloseGuard } from "./CloseGuard";
 import { canvasOf, canvasToPng, cropCanvas, fitSize, flatten, roomIn } from "./editor";
 
@@ -61,7 +65,15 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
   const [width, setWidth] = useState<number>(WIDTHS[1]);
   const [crop, setCrop] = useState<Rect | null>(null);
   const [hover, setHover] = useState<Handle | null>(null);
-  const [text, setText] = useState<{ at: Point; value: string } | null>(null);
+  /** A text being written; `index` and `look` when it's one already placed being changed. */
+  const [text, setText] = useState<{
+    at: Point;
+    value: string;
+    index?: number;
+    look?: Pick<TextShape, "style" | "size" | "spacing">;
+  } | null>(null);
+  /** A placed text picked again: TextSelection shows its frame and bar. */
+  const [pickedText, setPickedText] = useState<number | null>(null);
   const [drag, setDrag] = useState<Drag>({ kind: "none" });
   const [view, setView] = useState<Size>(viewSize);
   const [asking, setAsking] = useState(false);
@@ -106,13 +118,15 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
     canvas.width = Math.round(display.width * dpr);
     canvas.height = Math.round(display.height * dpr);
     ctx.drawImage(base, 0, 0, canvas.width, canvas.height);
-    drawShapes(ctx, draft ? [...shapes, draft] : shapes, {
+    // A text being changed shows only in its text box.
+    const shown = text?.index !== undefined ? shapes.filter((_, i) => i !== text.index) : shapes;
+    drawShapes(ctx, draft ? [...shown, draft] : shown, {
       k: dpr,
       origin: { x: 0, y: 0 },
       frame: base,
       frameScale: base.width / display.width,
     });
-  }, [base, display?.width, display?.height, shapes, draft]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [base, display?.width, display?.height, shapes, draft, text?.index]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const remember = useCallback(() => {
     if (base) history.current.push({ base, shapes: shapesRef.current });
@@ -129,12 +143,43 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
   const commitText = useCallback(() => {
     if (!text) return;
     setText(null);
-    const shape: Shape = { kind: "text", at: text.at, text: text.value, style: { color, width } };
-    if (isMeaningful(shape)) {
+    const shape: Shape = { kind: "text", at: text.at, text: text.value, style: { color, width }, ...text.look };
+    const index = text.index;
+    if (index !== undefined) {
+      // A changed text: emptied, it goes.
+      remember();
+      const list = shapesRef.current;
+      setShapes(isMeaningful(shape) ? list.map((s, i) => (i === index ? shape : s)) : list.filter((_, i) => i !== index));
+      setPickedText(isMeaningful(shape) ? index : null);
+    } else if (isMeaningful(shape)) {
       remember();
       setShapes([...shapesRef.current, shape]);
     }
   }, [text, color, width, remember, setShapes]);
+
+  // A picked text: moved live (one undo step per drag), changed from its bar, changed or deleted.
+  const picked = pickedText !== null && shapes[pickedText]?.kind === "text" ? (shapes[pickedText] as TextShape) : null;
+  const dragText = (next: TextShape, phase: "start" | "move") => {
+    if (pickedText === null) return;
+    if (phase === "start") remember();
+    setShapes(shapesRef.current.map((s, i) => (i === pickedText ? next : s)));
+  };
+  const changeText = (next: TextShape) => {
+    if (pickedText === null) return;
+    remember();
+    setShapes(shapesRef.current.map((s, i) => (i === pickedText ? next : s)));
+  };
+  const deleteText = useCallback(() => {
+    if (pickedText === null) return;
+    remember();
+    setShapes(shapesRef.current.filter((_, i) => i !== pickedText));
+    setPickedText(null);
+  }, [pickedText, remember, setShapes]);
+  const editText = () => {
+    if (!picked || pickedText === null) return;
+    setPickedText(null);
+    setText({ at: picked.at, value: picked.text, index: pickedText, look: { style: picked.style, size: picked.size, spacing: picked.spacing } });
+  };
 
   const applyCrop = useCallback(() => {
     if (!base || !display || !crop) return;
@@ -184,6 +229,12 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
     const onKey = (e: KeyboardEvent) => {
       if (text) return; // the text box handles its own keys
       const key = e.key.toLowerCase();
+      if (pickedText !== null && !asking && (key === "escape" || key === "delete" || key === "backspace")) {
+        e.preventDefault();
+        if (key === "escape") setPickedText(null);
+        else deleteText();
+        return;
+      }
       if (key === "escape") {
         e.preventDefault();
         if (asking) setAsking(false);
@@ -203,12 +254,18 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [text, asking, crop, requestClose, applyCrop, undo, save]);
+  }, [text, asking, crop, requestClose, applyCrop, undo, save, pickedText, deleteText]);
 
   // Focus a new text box once it's in the DOM (autoFocus alone loses to the click).
   const textOpen = text !== null;
   useEffect(() => {
-    if (textOpen) setTimeout(() => textRef.current?.focus(), 0);
+    // A text being changed opens with the caret after its last letter.
+    if (textOpen)
+      setTimeout(() => {
+        const box = textRef.current;
+        box?.focus();
+        box?.setSelectionRange(box.value.length, box.value.length);
+      }, 0);
   }, [textOpen]);
 
   const pointFrom = (e: ReactPointerEvent): Point => {
@@ -228,8 +285,20 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
   };
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0 || tool === "select") return;
+    if (e.button !== 0) return;
     const p = pointFrom(e);
+    // A click on a text already placed picks it (looking around, or with the text tool).
+    if (tool === "select" || tool === "text") {
+      const hit = textAt(shapesRef.current, p);
+      if (hit >= 0) {
+        e.preventDefault();
+        if (text) commitText();
+        setPickedText(hit);
+        return;
+      }
+    }
+    setPickedText(null);
+    if (tool === "select") return;
     if (tool === "text") {
       // Keep the click from moving focus away from the text box we're about to open.
       e.preventDefault();
@@ -354,6 +423,10 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
             </>
           )}
 
+          {picked && (
+            <TextSelection shape={picked} onDrag={dragText} onChange={changeText} onDelete={deleteText} onEdit={editText} />
+          )}
+
           {text && (
             <textarea
               ref={textRef}
@@ -362,9 +435,18 @@ export function ImageEditor(props: { item: QueueItemView; closing: boolean; onCl
               rows={1}
               value={text.value}
               placeholder={t("overlay.text_placeholder")}
-              style={{ left: text.at.x, top: text.at.y, color, fontSize: textSize(width) }}
+              style={{
+                left: text.at.x,
+                top: text.at.y,
+                color: text.look?.style.color ?? color,
+                fontSize: text.look
+                  ? fontSizeOf({ kind: "text", at: text.at, text: "", style: text.look.style, size: text.look.size })
+                  : textSize(width),
+                letterSpacing: text.look?.spacing ?? 0,
+              }}
               onPointerDown={(e) => e.stopPropagation()}
               onChange={(e) => setText({ ...text, value: e.target.value })}
+              onFocus={(e) => e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length)}
               onKeyDown={onTextKey}
               onBlur={commitText}
             />

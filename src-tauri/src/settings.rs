@@ -102,6 +102,47 @@ pub struct Settings {
     pub cat: Cat,
     /// The plain theme's color, "#rrggbb".
     pub plain_accent: String,
+    /// "Kendi kedin": its colors.
+    pub custom_cat: CustomCat,
+}
+
+/// "Kendi kedin": the colors the orange cat is painted in, "#rrggbb" each.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct CustomCat {
+    pub fur: String,
+    pub belly: String,
+    pub eyes: String,
+}
+
+impl Default for CustomCat {
+    fn default() -> Self {
+        Self {
+            fur: "#8f7cf2".into(),
+            belly: "#f6f2ff".into(),
+            eyes: "#1c1c1c".into(),
+        }
+    }
+}
+
+impl CustomCat {
+    /// Lower case, and each broken color back to its default.
+    pub fn tidied(self) -> Self {
+        let default = Self::default();
+        let tidy = |value: String, fallback: String| {
+            let value = value.to_lowercase();
+            if is_hex_color(&value) {
+                value
+            } else {
+                fallback
+            }
+        };
+        Self {
+            fur: tidy(self.fur, default.fur),
+            belly: tidy(self.belly, default.belly),
+            eyes: tidy(self.eyes, default.eyes),
+        }
+    }
 }
 
 /// The plain theme's color until one is picked: Windows' blue.
@@ -124,6 +165,10 @@ pub enum Cat {
     White,
     Calico,
     Black,
+    /// "Kendi kedin": the orange cat in the colors of `custom_cat`.
+    Custom,
+    /// Not a cat: the turtle, with pictures of its own.
+    Turtle,
     /// No cat: plain colors, system pointers, no tail animation.
     Plain,
     #[default]
@@ -148,6 +193,7 @@ impl Default for Settings {
             badge_corner: BadgeCorner::BottomRight,
             cat: Cat::default(),
             plain_accent: PLAIN_ACCENT_DEFAULT.into(),
+            custom_cat: CustomCat::default(),
         }
     }
 }
@@ -216,6 +262,7 @@ impl Settings {
         if !is_hex_color(&self.plain_accent) {
             self.plain_accent = PLAIN_ACCENT_DEFAULT.into();
         }
+        self.custom_cat = self.custom_cat.tidied();
         self
     }
 
@@ -316,6 +363,26 @@ mod tests {
         assert_eq!(s.app_rules.len(), 1);
         assert_eq!(s.app_rules[0].process, "whatsapp.exe");
         assert_eq!(s.app_rules[0].delay_ms, Some(50));
+    }
+
+    #[test]
+    fn custom_cat_and_turtle() {
+        let s = Settings {
+            custom_cat: CustomCat {
+                fur: "#ABCDEF".into(),
+                belly: "beyaz".into(),
+                eyes: "#00ff00".into(),
+            },
+            ..Settings::default()
+        }
+        .sanitized();
+        assert_eq!(s.custom_cat.fur, "#abcdef");
+        assert_eq!(s.custom_cat.belly, CustomCat::default().belly);
+        assert_eq!(s.custom_cat.eyes, "#00ff00");
+        let parsed: Settings = serde_json::from_str(r#"{"cat":"turtle"}"#).unwrap();
+        assert_eq!(parsed.cat, Cat::Turtle);
+        assert_eq!(parsed.custom_cat, CustomCat::default());
+        assert_eq!(serde_json::to_string(&Cat::Custom).unwrap(), "\"custom\"");
     }
 
     #[test]

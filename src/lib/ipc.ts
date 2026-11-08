@@ -1,5 +1,6 @@
 // Thin wrappers around Tauri commands and window events.
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import type { CustomCat } from "./customCat";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
@@ -70,14 +71,28 @@ export interface Settings {
   cat: Cat;
   /** The plain theme's color, "#rrggbb". */
   plain_accent: string;
+  /** "Kendi kedin": its colors. */
+  custom_cat: CustomCat;
 }
 
-export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "plain";
-export const CATS: Cat[] = ["orange", "gray", "white", "calico", "black", "plain"];
+export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "custom" | "turtle" | "plain";
+export const CATS: Cat[] = ["orange", "gray", "white", "calico", "black", "custom", "turtle", "plain"];
+
+/** Which animal a theme shows; the plain theme has none. The cat comes first, by default. */
+export type Animal = "cat" | "turtle";
+export const ANIMALS: Animal[] = ["cat", "turtle"];
+export const ANIMAL_THEMES: Record<Animal, Cat[]> = {
+  cat: ["orange", "gray", "white", "calico", "black", "custom"],
+  turtle: ["turtle"],
+};
+export const animalOf = (cat: Cat): Animal | null =>
+  cat === "plain" ? null : (ANIMALS.find((animal) => ANIMAL_THEMES[animal].includes(cat)) ?? "cat");
 /** Takes effect right away, in every window. */
 export const catSet = (cat: Cat) => invoke<void>("cat_set", { cat });
 /** The plain theme's color; also takes effect right away, in every window. */
 export const plainAccentSet = (color: string) => invoke<void>("plain_accent_set", { color });
+/** "Kendi kedin": its colors; also takes effect right away, in every window. */
+export const customCatSet = (custom: CustomCat) => invoke<void>("custom_cat_set", { custom });
 
 export type BadgeCorner = "bottom-right" | "bottom-center" | "bottom-left" | "top-right" | "top-center" | "top-left";
 export const BADGE_CORNERS: BadgeCorner[] = [
