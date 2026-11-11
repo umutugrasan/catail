@@ -1,231 +1,243 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type Ref } from "react";
 import { LeapingCat, SeatCat } from "../../lib/cats";
 import { onWindowEvent, strollDone, StrollEvents, type StrollStart } from "../../lib/ipc";
+import {
+  AT_REST,
+  NO_GUEST,
+  NO_SCRAP,
+  play,
+  Prop,
+  Puppet,
+  setTheStage,
+  type Cast,
+  type CatPose,
+  type Emote,
+  type GuestView,
+  type ScrapView,
+  type View,
+} from "./scenes";
+import { Stage, type Body } from "./stage";
 
-/** Ambling along, and running home when something comes up (px/s). */
-const WALK_SPEED = 38;
-const RUN_SPEED = 260;
-/** The hop between the badge's seat and the taskbar: how long, how far sideways, how high over. */
-const HOP_MS = 440;
-const HOP_SIDEWAYS = 16;
-const HOP_ARC = 12;
-/** Sitting on the seat before hopping off and after hopping back, while the badge swaps cats. */
-const SETTLE_MS = 160;
-/** How far it wanders, and how close it ever gets to the screen's edges. */
-const TRIP_MIN = 110;
-const TRIP_MAX = 560;
-const EDGE = 40;
-/** On the way out it now and then stops for a look round. */
-const PAUSE_CHANCE_PER_S = 0.12;
+/** The cats that can come visiting: any but the one that lives here. */
+const BREEDS = ["orange", "gray", "white", "calico", "black"];
+/** Poses drawn with the sitting cat; the rest are the cat on its feet. */
+const SITTING: readonly CatPose[] = ["sit", "look", "groom", "lick", "roll", "proud", "wiggle", "arch", "sniff", "rub", "dizzy"];
+/** How high up a cat's head is, for something looking at it. */
+const HEAD_UP = 26;
 
-type Phase = "settle-off" | "hop-off" | "out" | "pause" | "linger" | "home" | "hop-on" | "settle-on" | "idle";
-/** What it does at the far end of the walk: a look round, or a wash. */
-type Linger = "look" | "groom";
-
-interface Walk {
-  phase: Phase;
-  /** ms into the phase */
-  t: number;
-  x: number;
-  y: number;
-  home: number;
-  seat: number;
-  /** Away from home: -1 left, 1 right. */
-  dir: -1 | 1;
-  target: number;
-  speed: number;
-  /** How long the current stop lasts. */
-  stopMs: number;
-  linger: Linger;
-  /** Told to hurry while still hopping off. */
-  hurry: boolean;
+function EmoteMark({ mark }: { mark: Emote }) {
+  if (mark === "anger") {
+    return (
+      <svg className="stroll-emote stroll-emote--anger" viewBox="0 0 16 16" width={15} height={15} aria-hidden="true">
+        <path d="M6.2 2.5c.3 2.3-1.2 3.8-3.6 3.6M9.8 2.5c-.3 2.3 1.2 3.8 3.6 3.6M6.2 13.5c.3-2.3-1.2-3.8-3.6-3.6M9.8 13.5c-.3-2.3 1.2-3.8 3.6-3.6" />
+      </svg>
+    );
+  }
+  return <span className={`stroll-emote stroll-emote--${mark === "heart" ? "heart" : "mark"}`}>{mark === "heart" ? "♥" : mark}</span>;
 }
 
-const random = (from: number, to: number) => from + Math.random() * (to - from);
-
-function plan(start: StrollStart): Walk {
-  const left = start.home - HOP_SIDEWAYS - EDGE;
-  const right = start.width - EDGE - HOP_SIDEWAYS - start.home;
-  const roomy = (room: number) => room >= TRIP_MIN;
-  const dir: -1 | 1 = roomy(left) && roomy(right) ? (Math.random() < 0.5 ? -1 : 1) : left > right ? -1 : 1;
-  const room = Math.max(0, dir < 0 ? left : right);
-  const trip = Math.min(room, random(TRIP_MIN, TRIP_MAX));
-  const linger: Linger = Math.random() < 0.5 ? "look" : "groom";
-  return {
-    phase: "settle-off",
-    t: 0,
-    x: start.home,
-    y: start.seat,
-    home: start.home,
-    seat: start.seat,
-    dir,
-    target: start.home + dir * (HOP_SIDEWAYS + trip),
-    speed: WALK_SPEED,
-    stopMs: random(2500, 5000),
-    linger,
-    hurry: false,
-  };
+/** A cat on the taskbar: the badge's own, or (with `breed`) one that has come visiting. */
+function CatPuppet({ view, fat, breed, puppetRef }: { view: View; fat: number; breed?: string; puppetRef: Ref<HTMLDivElement> }) {
+  const sitting = SITTING.includes(view.pose);
+  return (
+    <div
+      ref={puppetRef}
+      className={`stroll-actor stroll-cat stroll-cat--${view.pose}${view.fleeing ? " stroll-actor--fleeing" : ""}`}
+      style={{ visibility: view.hidden ? "hidden" : undefined }}
+      data-cat={breed}
+    >
+      <span className={`stroll-actor__facing${view.right ? " stroll-actor__facing--right" : ""}`}>
+        {sitting ? (
+          <SeatCat fat={fat} act={view.pose === "lick" || view.pose === "groom" ? view.pose : null} />
+        ) : (
+          <LeapingCat />
+        )}
+      </span>
+      {view.emote && <EmoteMark key={view.emoteKey} mark={view.emote} />}
+    </div>
+  );
 }
 
-type Pose = "sit" | "hop" | "walk" | "run" | Linger;
+/** A mouse, nose to the left like the cats' pictures. */
+function Mouse() {
+  return (
+    <svg className="mouse" viewBox="0 0 28 17" width={28} height={17} aria-hidden="true">
+      <path className="mouse__tail" d="M20 12.2c3.4.9 6.2-.6 5.6-3.2-.5-2.2 1-3.6 1.6-5.4" />
+      <g className="mouse__feet">
+        <ellipse cx="9.6" cy="15.4" rx="1.9" ry="1" />
+        <ellipse cx="18" cy="15.4" rx="2.1" ry="1" />
+      </g>
+      <path className="mouse__body" d="M21.6 10.4c0 3-3.4 4.9-7.8 4.9-3.4 0-6.6-.6-9.6-1.6C2.6 13.2 1.4 12.6.9 11.8c2.2-3.6 6.4-6.2 10.9-6.2 5.4 0 9.8 2 9.8 4.8Z" />
+      <circle className="mouse__ear" cx="11.4" cy="5" r="3.4" />
+      <circle className="mouse__ear-in" cx="11.2" cy="5.2" r="1.8" />
+      <circle className="mouse__eye" cx="6.4" cy="9.4" r="1" />
+      <circle className="mouse__nose" cx="1.1" cy="11.6" r="1.1" />
+      <path className="mouse__whiskers" d="M3 11.2.6 8.8M3.2 12.2.4 14.2" />
+    </svg>
+  );
+}
+
+/** Who has turned up: a mouse, a red dot, or another cat. */
+function Guest({ view, fat, breed, puppetRef }: { view: GuestView; fat: number; breed: string; puppetRef: Ref<HTMLDivElement> }) {
+  if (view.kind === "cat") return <CatPuppet view={view} fat={fat} breed={breed} puppetRef={puppetRef} />;
+  return (
+    <div
+      ref={puppetRef}
+      className={`stroll-actor stroll-guest stroll-guest--${view.pose}${view.fleeing ? " stroll-actor--fleeing" : ""}`}
+      style={{ visibility: view.hidden || view.kind === null ? "hidden" : undefined }}
+    >
+      <span className={`stroll-actor__facing${view.right ? " stroll-actor__facing--right" : ""}`}>
+        {view.kind === "mouse" && <Mouse />}
+        {view.kind === "dot" && <i className="laser-dot" />}
+      </span>
+      {view.emote && <EmoteMark key={view.emoteKey} mark={view.emote} />}
+    </div>
+  );
+}
+
+/** Two cats fighting: a cloud of dust with paws and tails coming out of it, and stars. */
+function Scrap({ view, breed, scrapRef }: { view: ScrapView; breed: string; scrapRef: Ref<HTMLDivElement> }) {
+  return (
+    <div
+      ref={scrapRef}
+      className={`stroll-actor scrap${view.over ? " scrap--over" : ""}`}
+      style={{ visibility: view.hidden ? "hidden" : undefined }}
+    >
+      {!view.hidden && (
+        <span className="scrap__in">
+          <i className="scrap__limb scrap__limb--1" />
+          <i className="scrap__limb scrap__limb--3" />
+          <span data-cat={breed}>
+            <i className="scrap__limb scrap__limb--2" />
+            <i className="scrap__limb scrap__limb--4" />
+          </span>
+          <svg className="scrap__dust" viewBox="0 0 84 56" width={84} height={56} aria-hidden="true">
+            <circle cx="22" cy="36" r="15" />
+            <circle cx="60" cy="38" r="14" />
+            <circle cx="42" cy="22" r="16" />
+            <circle cx="26" cy="22" r="11" />
+            <circle cx="60" cy="22" r="11" />
+            <circle cx="42" cy="38" r="15" />
+            <path className="scrap__swirl" d="M30 30c4-6 12-6 15-1s-2 10-7 9M52 24c3 2 4 6 1 9" />
+          </svg>
+          {[1, 2, 3, 4].map((i) => (
+            <b key={i} className={`scrap__star scrap__star--${i}`}>
+              ★
+            </b>
+          ))}
+        </span>
+      )}
+    </div>
+  );
+}
+
+const place = (el: HTMLElement | null, at: Body) => {
+  if (el) el.style.transform = `translate(${at.x.toFixed(1)}px, ${(-at.y).toFixed(1)}px)`;
+};
+
+/** `el`'s cat turns its head toward `to` (the seat's cat reads --look-x and --look-y). */
+const look = (el: HTMLElement | null, from: Body & { right: boolean }, to: Body | null) => {
+  if (!el) return;
+  let x = 0;
+  let y = 0;
+  if (to) {
+    const dx = to.x - from.x;
+    const dy = from.y + HEAD_UP - to.y;
+    const reach = Math.hypot(dx, dy) + 70;
+    // A cat turned round has its picture mirrored, and its head's lean with it.
+    x = ((from.right ? -1 : 1) * dx) / reach;
+    y = dy / reach;
+  }
+  el.style.setProperty("--look-x", x.toFixed(3));
+  el.style.setProperty("--look-y", y.toFixed(3));
+};
 
 /**
- * The badge's cat out for a walk along the top of the taskbar: down off its seat, along to
- * somewhere, a sit there (a look round or a wash), back, and up into its seat again.
+ * The badge's cat down on the taskbar: off its seat, up to something (scenes.ts), and back up
+ * into its seat again.
  */
 export function Stroll() {
   const catRef = useRef<HTMLDivElement>(null);
-  const walk = useRef<Walk | null>(null);
-  const [pose, setPose] = useState<Pose>("sit");
-  // The pictures face left.
-  const [facingRight, setFacingRight] = useState(false);
+  const guestRef = useRef<HTMLDivElement>(null);
+  const scrapRef = useRef<HTMLDivElement>(null);
+  const [cat, setCat] = useState<View>(AT_REST);
+  const [guest, setGuest] = useState<GuestView>(NO_GUEST);
+  const [scrap, setScrap] = useState<ScrapView>(NO_SCRAP);
   const [fat, setFat] = useState(0);
-  const [on, setOn] = useState(false);
-  // Out of sight until the first walk; after a walk the window itself is hidden.
+  // Whoever comes visiting: another kind of cat, of its own girth.
+  const [visitor, setVisitor] = useState({ breed: "gray", fat: 0 });
+  // Out of sight until the first outing; after one the strip itself is out of view.
   const [seen, setSeen] = useState(false);
+  const cast = useRef<Cast | null>(null);
+  const puppets = useMemo(
+    () => ({
+      cat: new Puppet<View>((patch) => setCat((view) => ({ ...view, ...patch }))),
+      guest: new Puppet<GuestView>((patch) => setGuest((view) => ({ ...view, ...patch }))),
+      scrap: new Prop<ScrapView>((patch) => setScrap((view) => ({ ...view, ...patch }))),
+    }),
+    [],
+  );
 
   useEffect(() => {
+    const paint = () => {
+      const now = cast.current;
+      if (!now) return;
+      place(catRef.current, now.cat);
+      place(guestRef.current, now.guest);
+      place(scrapRef.current, now.scrap);
+      look(catRef.current, now.cat, now.watching ? now.guest : null);
+      look(guestRef.current, now.guest, now.watching ? now.cat : null);
+    };
     const subscriptions = [
       onWindowEvent<StrollStart>(StrollEvents.start, (sent) => {
+        cast.current?.stage.end();
         // As big as on the badge: the page is zoomed, so its own px are that much bigger.
         const zoom = sent.zoom || 1;
         document.documentElement.style.zoom = String(zoom);
-        const start = { ...sent, home: sent.home / zoom, seat: sent.seat / zoom, width: sent.width / zoom };
-        walk.current = plan(start);
-        // In place before the window shows, not where the last walk ended.
-        if (catRef.current) catRef.current.style.transform = `translate(${start.home}px, ${-start.seat}px)`;
-        setFat(start.fat);
-        setPose("sit");
-        setFacingRight(false);
+        const stage = new Stage(paint);
+        const now: Cast = {
+          stage,
+          ...puppets,
+          home: sent.home / zoom,
+          seat: sent.seat / zoom,
+          width: sent.width / zoom,
+          watching: false,
+        };
+        cast.current = now;
+        const worn = document.documentElement.dataset.cat;
+        const others = BREEDS.filter((breed) => breed !== worn);
+        setFat(sent.fat);
+        setVisitor({ breed: others[Math.floor(Math.random() * others.length)], fat: Math.random() * 0.5 });
+        // In place before the strip comes into view, not where the last outing ended.
+        setTheStage(now);
+        paint();
         setSeen(true);
-        setOn(true);
+        stage.begin();
+        void play(now, sent.kind)
+          .catch((why) => {
+            // Whatever went wrong down there, the badge gets its cat back.
+            console.error(why);
+            return true;
+          })
+          .then((home) => {
+            stage.end();
+            if (home && cast.current === now) void strollDone();
+          });
       }),
-      onWindowEvent(StrollEvents.hurry, () => {
-        const w = walk.current;
-        if (!w) return;
-        w.speed = RUN_SPEED;
-        if (w.phase === "hop-off" || w.phase === "settle-off") w.hurry = true;
-        else if (w.phase === "out" || w.phase === "pause" || w.phase === "linger") goHome(w);
-        else if (w.phase === "home") setPose("run");
-      }),
+      onWindowEvent(StrollEvents.hurry, () => cast.current?.stage.hurry()),
+      onWindowEvent(StrollEvents.stop, () => cast.current?.stage.end()),
     ];
-    return () => subscriptions.forEach((s) => void s.then((u) => u()));
-  }, []);
-
-  const goHome = (w: Walk) => {
-    w.phase = "home";
-    w.t = 0;
-    w.target = w.home + w.dir * HOP_SIDEWAYS;
-    setFacingRight(w.dir < 0);
-    setPose(w.speed > WALK_SPEED ? "run" : "walk");
-  };
-
-  useEffect(() => {
-    if (!on) return;
-    let frame = 0;
-    let last = performance.now();
-    const step = (now: number) => {
-      const w = walk.current;
-      const el = catRef.current;
-      const dt = Math.min(now - last, 50);
-      last = now;
-      if (!w || !el) return;
-      w.t += dt;
-      const toward = (to: number) => {
-        const left = to - w.x;
-        const move = (w.speed * dt) / 1000;
-        if (Math.abs(left) <= move) {
-          w.x = to;
-          return true;
-        }
-        w.x += Math.sign(left) * move;
-        return false;
-      };
-      const hop = (fromX: number, fromY: number, toX: number, toY: number) => {
-        const p = Math.min(w.t / HOP_MS, 1);
-        w.x = fromX + (toX - fromX) * p;
-        w.y = fromY + (toY - fromY) * p + HOP_ARC * 4 * p * (1 - p);
-        return p >= 1;
-      };
-      const next = (phase: Phase) => {
-        w.phase = phase;
-        w.t = 0;
-      };
-
-      switch (w.phase) {
-        case "settle-off":
-          if (w.t >= SETTLE_MS) {
-            next("hop-off");
-            setFacingRight(w.dir > 0);
-            setPose("hop");
-          }
-          break;
-        case "hop-off":
-          if (hop(w.home, w.seat, w.home + w.dir * HOP_SIDEWAYS, 0)) {
-            if (w.hurry) {
-              goHome(w);
-            } else {
-              next("out");
-              setPose("walk");
-            }
-          }
-          break;
-        case "out":
-          if (toward(w.target)) {
-            next("linger");
-            setPose(w.linger);
-          } else if (Math.random() < (PAUSE_CHANCE_PER_S * dt) / 1000) {
-            next("pause");
-            w.stopMs = random(800, 1600);
-            setPose("look");
-          }
-          break;
-        case "pause":
-          if (w.t >= w.stopMs) {
-            next("out");
-            setPose("walk");
-          }
-          break;
-        case "linger":
-          if (w.t >= w.stopMs) goHome(w);
-          break;
-        case "home":
-          if (toward(w.target)) {
-            next("hop-on");
-            setPose("hop");
-          }
-          break;
-        case "hop-on":
-          if (hop(w.home + w.dir * HOP_SIDEWAYS, 0, w.home, w.seat)) {
-            next("settle-on");
-            // Back on the seat it turns to face the way the badge's cat does.
-            setFacingRight(false);
-            setPose("sit");
-          }
-          break;
-        case "settle-on":
-          if (w.t >= SETTLE_MS) {
-            next("idle");
-            void strollDone();
-            setOn(false);
-          }
-          break;
-        case "idle":
-          break;
-      }
-      el.style.transform = `translate(${w.x.toFixed(1)}px, ${(-w.y).toFixed(1)}px)`;
-      frame = requestAnimationFrame(step);
+    return () => {
+      cast.current?.stage.end();
+      subscriptions.forEach((s) => void s.then((u) => u()));
     };
-    frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
-  }, [on]);
+  }, [puppets]);
 
-  const sitting = pose === "sit" || pose === "look" || pose === "groom";
   return (
-    <div ref={catRef} className={`stroll-cat stroll-cat--${pose}`} style={{ visibility: seen ? "visible" : "hidden" }}>
-      <span className={`stroll-cat__facing${facingRight ? " stroll-cat__facing--right" : ""}`}>
-        {sitting ? <SeatCat fat={fat} /> : <LeapingCat />}
-      </span>
+    <div className="stroll" style={{ visibility: seen ? "visible" : "hidden" }}>
+      <Guest view={guest} fat={visitor.fat} breed={visitor.breed} puppetRef={guestRef} />
+      <CatPuppet view={cat} fat={fat} puppetRef={catRef} />
+      <Scrap view={scrap} breed={visitor.breed} scrapRef={scrapRef} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
-//! The badge's cat out for a walk along the taskbar. A see-through strip across the bottom of
-//! the work area that lets every click through to whatever is under it; all it ever shows is
-//! the walking cat. The badge hides its own cat meanwhile and gets it back when the walk ends.
+//! The badge's cat out along the taskbar: a walk, a mad dash, a mouse to chase, another cat
+//! come to visit. A see-through strip across the bottom of the work area that lets every click
+//! through to whatever is under it; all it ever shows is the cat and whoever it has met. The
+//! badge hides its own cat meanwhile and gets it back when the outing ends.
 
 use anyhow::{Context, Result};
 use serde::Serialize;
@@ -15,6 +16,8 @@ const LABEL: &str = "stroll";
 const URL: &str = "src/windows/stroll/index.html";
 pub const EVENT_START: &str = "stroll:start";
 pub const EVENT_HURRY: &str = "stroll:hurry";
+/// The outing is over on the spot: the page drops whatever it was playing.
+pub const EVENT_STOP: &str = "stroll:stop";
 /// To the badge: its cat is back in its seat.
 pub const EVENT_BACK: &str = "badge:stroll-back";
 
@@ -31,9 +34,11 @@ static OUT_FOR_A_WALK: AtomicBool = AtomicBool::new(false);
 const PARKED: f64 = crate::badge::OFF_SCREEN;
 
 /// Where the walk starts, in the strip's logical px.
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StrollStart {
+    /// What it's off to do ("walk", "mouse", "rival"...): the page knows them, not this side.
+    pub kind: String,
     /// The seat's middle, from the strip's left edge.
     pub home: f64,
     /// How high the seat's bottom is above the strip's (the taskbar's top edge).
@@ -82,7 +87,13 @@ fn park<R: Runtime>(window: &WebviewWindow<R>) {
 
 /// Sends the cat off from its seat at `seat_x`, `seat_bottom` (logical px in the badge window).
 /// False when it can't go (no badge on show, no strip yet): the cat stays put.
-pub fn start<R: Runtime>(app: &AppHandle<R>, seat_x: f64, seat_bottom: f64, fat: f64) -> bool {
+pub fn start<R: Runtime>(
+    app: &AppHandle<R>,
+    kind: String,
+    seat_x: f64,
+    seat_bottom: f64,
+    fat: f64,
+) -> bool {
     let (Some(badge), Ok(window)) = (app.get_webview_window("badge"), ensure_window(app)) else {
         return false;
     };
@@ -104,6 +115,7 @@ pub fn start<R: Runtime>(app: &AppHandle<R>, seat_x: f64, seat_bottom: f64, fat:
     let bottom = ay + ah;
     let _ = window.set_size(PhysicalSize::new(aw as u32, h as u32));
     let start = StrollStart {
+        kind,
         home: (f64::from(corner.x) + seat_x * scale - ax) / scale,
         seat: (bottom - (f64::from(corner.y) + seat_bottom * scale)) / scale,
         width: aw / scale,
@@ -139,6 +151,7 @@ pub fn stop<R: Runtime>(app: &AppHandle<R>) {
     };
     if OUT_FOR_A_WALK.swap(false, Ordering::Relaxed) {
         park(&window);
+        let _ = app.emit_to(LABEL, EVENT_STOP, ());
         let _ = app.emit_to("badge", EVENT_BACK, ());
     }
 }

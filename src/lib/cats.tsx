@@ -251,10 +251,17 @@ export const NOSE_BUBBLE_MS = 5200;
 export const NOSE_POP_MS = 900;
 export type NoseBubble = "grow" | "pop";
 
+/**
+ * What a sitting cat does with itself: "lick" a paw and wash its face with it, "groom" its
+ * chest, "knead" (treading with its feet, eyes shut), "yawn", and "purr" when it's stroked.
+ */
+export type SeatAct = "lick" | "groom" | "knead" | "yawn" | "purr";
+
 export function SeatCat({
   fat = 0,
   asleep = false,
   bubble = null,
+  act = null,
   className = "",
   style,
   seatRef,
@@ -262,6 +269,7 @@ export function SeatCat({
   fat?: number;
   asleep?: boolean;
   bubble?: NoseBubble | null;
+  act?: SeatAct | null;
   className?: string;
   style?: CSSProperties;
   seatRef?: Ref<HTMLSpanElement>;
@@ -269,7 +277,7 @@ export function SeatCat({
   return (
     <span
       ref={seatRef}
-      className={`cat-seat${asleep ? " cat-seat--asleep" : ""} ${className}`}
+      className={`cat-seat${asleep ? " cat-seat--asleep" : ""}${act ? ` cat-seat--${act}` : ""} ${className}`}
       style={{ "--fat": fat, ...style } as CSSProperties}
       aria-hidden="true"
     >
@@ -296,6 +304,12 @@ export function SeatCat({
         <img className="cat-seat__ear cat-seat__ear--right" src={standingBody} alt="" draggable={false} />
         <span className="cat-seat__lid cat-seat__lid--left" />
         <span className="cat-seat__lid cat-seat__lid--right" />
+        {(act === "lick" || act === "groom") && <span className="cat-seat__tongue" />}
+        {act === "yawn" && (
+          <span className="cat-seat__yawn">
+            <i />
+          </span>
+        )}
         {bubble === "grow" && (
           <span className="nose-bubble" aria-hidden="true">
             <i className="nose-bubble__shine" />
@@ -310,6 +324,14 @@ export function SeatCat({
           </span>
         )}
       </span>
+      {act === "lick" && <span className="cat-seat__paw" />}
+      {(act === "knead" || act === "purr") && (
+        <span className="cat-seat__hearts">
+          <i>♥</i>
+          <i>♥</i>
+          <i>♥</i>
+        </span>
+      )}
       {bubble === "pop" && <span className="cat-seat__startle">!</span>}
       {asleep && (
         <span className="cat-seat__zzz">
@@ -346,7 +368,10 @@ export function BadgeCat({
   away = false,
   tree = false,
   bubble = null,
+  purring = false,
   onToyPlay,
+  onPet,
+  onLeave,
   turtle = false,
   sad = false,
   hatch = null,
@@ -374,6 +399,11 @@ export function BadgeCat({
   bubble?: NoseBubble | null;
   /** Someone pushed the pompom about. */
   onToyPlay?: () => void;
+  /** Stroked: eyes shut, purring, hearts. */
+  purring?: boolean;
+  /** The pointer moving over it, and leaving it. */
+  onPet?: (e: React.MouseEvent) => void;
+  onLeave?: () => void;
   /** The turtle sits here instead, with its own pictures and games. */
   turtle?: boolean;
   /** The turtle, left alone too long: worried, then in tears, before it nods off. */
@@ -384,6 +414,7 @@ export function BadgeCat({
   onHover: () => void;
 }) {
   const carrying = fetching !== null;
+  const act: SeatAct | null = purring ? "purr" : SEAT_ACTS.find((one) => one === idle) ?? null;
   return (
     <span
       ref={slotRef}
@@ -400,6 +431,8 @@ export function BadgeCat({
       title={title}
       onMouseDown={onPress}
       onMouseEnter={onHover}
+      onMouseMove={onPet}
+      onMouseLeave={onLeave}
     >
       {carrying && <img className="cat-fetch__box" src={boxFront} alt="" draggable={false} />}
       {/* Pasting: it walks up and down a little keyboard, a key going down under each step. */}
@@ -419,7 +452,7 @@ export function BadgeCat({
           {turtle ? (
             <TurtleSeat fat={fat} asleep={asleep} hatch={hatch} seatRef={seatRef} />
           ) : (
-            <SeatCat fat={fat} asleep={asleep} bubble={bubble} seatRef={seatRef} />
+            <SeatCat fat={fat} asleep={asleep} bubble={bubble} act={act} seatRef={seatRef} />
           )}
           {carrying && (
             <span className="cat-fetch__sheets">
@@ -436,6 +469,7 @@ export function BadgeCat({
           <i />
         </span>
       )}
+      {idle === "butterfly" && <Butterfly />}
     </span>
   );
 }
@@ -449,16 +483,58 @@ const KEYS = 5;
  * The turtle has games of its own: "dive" into a pool and back out with a splash, a "silly"
  * dance with its tongue out, and a roll about in its "shell".
  */
-export type CatIdle = "scratch" | "bat" | "stretch" | "hide" | "dive" | "silly" | "shell";
+export type CatIdle =
+  | "scratch"
+  | "bat"
+  | "stretch"
+  | "hide"
+  | "lick"
+  | "groom"
+  | "knead"
+  | "yawn"
+  | "butterfly"
+  | "dive"
+  | "silly"
+  | "shell";
 export const CAT_IDLE_MS: Record<CatIdle, number> = {
   scratch: 3200,
   bat: 2400,
   stretch: 1900,
   hide: 6400,
+  lick: 4400,
+  groom: 3600,
+  knead: 4200,
+  yawn: 2000,
+  butterfly: 6400,
   dive: 4200,
   silly: 2400,
   shell: 3000,
 };
+
+/** The idles that are the sitting cat's own doing (SeatCat's `act`). */
+const SEAT_ACTS: readonly SeatAct[] = ["lick", "groom", "knead", "yawn"];
+
+/**
+ * A butterfly that comes by (CAT_IDLE_MS.butterfly): the cat can't keep its eyes off it, jumps
+ * at it twice and misses, and then it lands on the cat's nose, until the cat sneezes.
+ */
+function Butterfly() {
+  return (
+    <span className="butterfly" aria-hidden="true">
+      <svg viewBox="0 0 14 12" width={14} height={12}>
+        <g className="butterfly__wing butterfly__wing--left">
+          <path d="M7 6C5.4 2.2 2.6.6 1.2 1.8c-1.5 1.3.2 4 5.8 4.2ZM7 6c-3 .2-4.8 1.6-4.2 3.4.6 1.7 3.2 1 4.2-3.4Z" />
+          <circle cx="3" cy="3.4" r="0.8" />
+        </g>
+        <g className="butterfly__wing butterfly__wing--right">
+          <path d="M7 6c1.6-3.8 4.4-5.4 5.8-4.2 1.5 1.3-.2 4-5.8 4.2ZM7 6c3 .2 4.8 1.6 4.2 3.4-.6 1.7-3.2 1-4.2-3.4Z" />
+          <circle cx="11" cy="3.4" r="0.8" />
+        </g>
+        <path className="butterfly__body" d="M7 3.4v5.4M7 3.4 5.8 1.6M7 3.4l1.2-1.8" />
+      </svg>
+    </span>
+  );
+}
 
 /** The turtle's moods and games, a picture each. */
 const TURTLE_POSES = {

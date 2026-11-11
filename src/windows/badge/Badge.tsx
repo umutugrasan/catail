@@ -37,7 +37,9 @@ import {
   undoDismiss,
   type BadgeState,
   type LeapStart,
+  type Outing,
 } from "../../lib/ipc";
+import { drawPlay, isOuting, type Play } from "./plays";
 import { BUTTON_OUT_FOR_MS, BUTTON_OUT_MS, SHRED_MS, shredPlan } from "../../lib/shred";
 import { CloseIcon, UndoIcon } from "../overlay/icons";
 
@@ -46,11 +48,18 @@ const SLEEP_AFTER_MS = 40_000;
 /** ...for a nap this long (ms, at random between), then it wakes up by itself. */
 const NAP_MS: [number, number] = [45_000, 90_000];
 /** Awake and left alone, it finds something to do this often (ms, at random between). */
-const IDLE_EVERY_MS: [number, number] = [6_000, 12_000];
+const IDLE_EVERY_MS: [number, number] = [3_500, 7_000];
+/** Before a nap it chases its own tail only now and then; otherwise it has a yawn and curls up. */
+const TAIL_CHASE_CHANCE = 0.2;
 /** This far into a nap (ms, at random between), a bubble starts swelling out of its nose. */
 const BUBBLE_AFTER_MS: [number, number] = [8_000, 26_000];
 /** If word that it's back from a walk never comes, it's back after this anyway. */
 const STROLL_AT_MOST_MS = 75_000;
+/** Stroked: the pointer has gone this far to and fro over it (px) without a pause this long. */
+const PET_AFTER_PX = 70;
+const PET_PAUSE_MS = 600;
+/** It goes on purring this long after the hand is gone. */
+const PURR_ON_MS = 900;
 
 const between = ([from, to]: [number, number]) => from + Math.random() * (to - from);
 const LOOK_EVERY_MS = 90;
@@ -85,7 +94,9 @@ export function Badge() {
   const [fetchDx, setFetchDx] = useState(0);
   const [asleep, setAsleep] = useState(false);
   const [poke, setPoke] = useState(0);
-  const [chasing, setChasing] = useState(false);
+  // Winding down before a nap: a chase after its own tail, or a yawn.
+  const [windDown, setWindDown] = useState<"chase" | "yawn" | null>(null);
+  const chasing = windDown === "chase";
   // Time for a nap: it finishes what it's doing (or comes back from its walk) and settles down.
   const [sleepy, setSleepy] = useState(false);
   // The turtle, before it nods off: worried, then in tears.
@@ -99,6 +110,14 @@ export function Badge() {
   const [noseBubble, setNoseBubble] = useState<NoseBubble | null>(null);
   const strollingRef = useRef(false);
   strollingRef.current = strolling;
+  // What it went down to the taskbar for.
+  const outing = useRef<Outing | null>(null);
+  // Its plays, dealt like a pack of cards (plays.ts).
+  const pack = useRef<Play[]>([]);
+  const lastPlay = useRef<Play | null>(null);
+  // Being stroked.
+  const [purring, setPurring] = useState(false);
+  const wantedHomeRef = useRef(false);
   // The queue is being saved: the cat is in a taped box ("in"), then pops out ("out").
   const [packing, setPacking] = useState<"in" | "out" | null>(null);
   const packedAt = useRef(0);
@@ -146,7 +165,7 @@ export function Badge() {
   const windDownMs = turtle ? TURTLE_SAD_MS : CHASE_MS;
   useEffect(() => {
     setAsleep(false);
-    setChasing(false);
+    setWindDown(null);
     setSad(false);
     setSleepy(false);
     if (state.pasting || hasUndo || packing !== null || !catsAround()) return;
@@ -160,20 +179,26 @@ export function Badge() {
   useEffect(() => {
     if (!sleepy || asleep) return;
     if (strolling) {
-      void badgeStrollHurry();
+      // A walk can wait; a mouse or a visitor it sees through to the end first.
+      if (outing.current === "walk") void badgeStrollHurry();
       return;
     }
     if (idle !== null) return;
+    // Mostly a big yawn before it curls up; now and then a chase after its own tail first.
+    const chase = Math.random() < TAIL_CHASE_CHANCE;
     if (turtle) {
       setSad(true);
     } else {
-      setChasing(true);
+      setWindDown(chase ? "chase" : "yawn");
     }
-    const timer = setTimeout(() => {
-      setChasing(false);
-      setSad(false);
-      setAsleep(true);
-    }, windDownMs);
+    const timer = setTimeout(
+      () => {
+        setWindDown(null);
+        setSad(false);
+        setAsleep(true);
+      },
+      turtle || chase ? windDownMs : CAT_IDLE_MS.yawn,
+    );
     return () => clearTimeout(timer);
   }, [sleepy, asleep, strolling, idle, turtle]);
 
@@ -215,11 +240,12 @@ export function Badge() {
   }, [noseBubble]);
 
   // Awake with nothing going on, it doesn't just sit there: it scratches its post, bats the
-  // pompom, has a stretch, hides behind the pill or goes for a walk along the taskbar.
-  const free =
+  // pompom, washes, kneads, yawns, hides behind the pill, or goes down to the taskbar, for a
+  // walk or because something has turned up there (plays.ts).
+  const calm =
     !asleep &&
     !sleepy &&
-    !chasing &&
+    windDown === null &&
     !strolling &&
     idle === null &&
     !state.pasting &&
@@ -229,6 +255,8 @@ export function Badge() {
     !dropHover &&
     hatch === null &&
     catsAround();
+  const purringNow = purring && calm && !turtle;
+  const free = calm && !purringNow;
   useEffect(() => {
     if (!free) return;
     const timer = setTimeout(() => {
@@ -240,13 +268,11 @@ export function Badge() {
         else setIdle("shell");
         return;
       }
-      const canWalk = state.corner.startsWith("bottom");
-      const roll = Math.random() * (canWalk ? 12 : 9);
-      if (roll < 3) setIdle("scratch");
-      else if (roll < 5.5) setIdle("bat");
-      else if (roll < 6.5) setIdle("stretch");
-      else if (roll < 9) setIdle("hide");
-      else void goForAWalk();
+      // The taskbar is only there to go down to from a badge along the bottom.
+      const play = drawPlay(pack.current, lastPlay.current, state.corner.startsWith("bottom"));
+      lastPlay.current = play;
+      if (isOuting(play)) void goOut(play);
+      else setIdle(play);
     }, between(IDLE_EVERY_MS));
     return () => clearTimeout(timer);
   }, [free, state.corner, turtle]);
@@ -258,13 +284,42 @@ export function Badge() {
     return () => clearTimeout(timer);
   }, [idle]);
 
-  // Off down to the taskbar: the walk itself is drawn by another window (stroll.rs), the seat
-  // stays empty until it's back.
-  const goForAWalk = async () => {
+  // Off down to the taskbar: what happens there is drawn by another window (stroll.rs), the
+  // seat stays empty until it's back.
+  const goOut = async (kind: Outing) => {
     const seat = seatRef.current?.getBoundingClientRect();
     if (!seat) return;
-    const off = await badgeStroll(seat.left + seat.width / 2, seat.bottom, fatness(state.count)).catch(() => false);
-    if (off) setStrolling(true);
+    const off = await badgeStroll(kind, seat.left + seat.width / 2, seat.bottom, fatness(state.count)).catch(
+      () => false,
+    );
+    if (!off) return;
+    outing.current = kind;
+    setStrolling(true);
+  };
+
+  // Stroked: the pointer going to and fro over it. Its eyes shut and it purrs, for as long as
+  // the hand stays and a little after.
+  const strokes = useRef({ x: 0, y: 0, far: 0, at: 0 });
+  const purrTimer = useRef(0);
+  const onPet = (e: React.MouseEvent) => {
+    const stroke = strokes.current;
+    const now = performance.now();
+    stroke.far = now - stroke.at > PET_PAUSE_MS ? 0 : stroke.far + Math.hypot(e.clientX - stroke.x, e.clientY - stroke.y);
+    stroke.x = e.clientX;
+    stroke.y = e.clientY;
+    stroke.at = now;
+    if (stroke.far < PET_AFTER_PX || !calm || turtle) return;
+    window.clearTimeout(purrTimer.current);
+    if (!purring) {
+      setPurring(true);
+      // Nobody falls asleep being stroked. Well, not straight away.
+      setPoke((n) => n + 1);
+    }
+  };
+  const onPetLeave = () => {
+    strokes.current.far = 0;
+    window.clearTimeout(purrTimer.current);
+    purrTimer.current = window.setTimeout(() => setPurring(false), PURR_ON_MS);
   };
 
   useEffect(() => {
@@ -343,6 +398,9 @@ export function Badge() {
       onWindowEvent<boolean>(BadgeEvents.packing, (on) => onPacking(on)),
       onWindowEvent(BadgeEvents.strollBack, () => {
         setStrolling(false);
+        // After a fight, as if nothing had happened: it sits down and licks a paw.
+        if (outing.current === "rival" && !wantedHomeRef.current) setIdle("lick");
+        outing.current = null;
         move(
           [
             { transform: "scale(1.12, 0.86)" },
@@ -408,6 +466,7 @@ export function Badge() {
   // There's only one cat. Wanted in its box (a paste or a clear to undo, a save) or carrying
   // things back, it can't still be out on the taskbar: the walk ends on the spot.
   const wantedHome = showingUndo || packing !== null || fetching !== null;
+  wantedHomeRef.current = wantedHome;
   useEffect(() => {
     if (wantedHome && strollingRef.current) void badgeStrollStop();
   }, [wantedHome]);
@@ -640,10 +699,13 @@ export function Badge() {
           pasting={state.pasting}
           onPress={onPress(() => (asleep ? wake() : void panelToggle()))}
           chasing={chasing}
-          idle={idle}
+          idle={windDown === "yawn" ? "yawn" : idle}
           away={strolling}
           tree={!turtle && catsAround()}
           bubble={noseBubble}
+          purring={purringNow}
+          onPet={onPet}
+          onLeave={onPetLeave}
           onToyPlay={() => {
             // Woken by it, or up for a game: it bats the pompom too, now and then.
             if (asleep) setPoke((n) => n + 1);

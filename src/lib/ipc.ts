@@ -193,7 +193,8 @@ export const badgeHitArea = (x: number, y: number, width: number, height: number
 /** A cat is needed in the panel: the one on the badge goes there for this long. */
 export const badgeCatAway = (ms: number) => invoke<void>("badge_cat_away", { ms });
 /** The cat goes for a walk along the taskbar from its seat (`x`, `bottom`: px in the badge). */
-export const badgeStroll = (x: number, bottom: number, fat: number) => invoke<boolean>("badge_stroll", { x, bottom, fat });
+export const badgeStroll = (kind: Outing, x: number, bottom: number, fat: number) =>
+  invoke<boolean>("badge_stroll", { kind, x, bottom, fat });
 /** Something came up: the walking cat runs home. */
 export const badgeStrollHurry = () => invoke<void>("badge_stroll_hurry");
 /** The walking cat is back on its seat. */
@@ -303,10 +304,20 @@ export const StrollEvents = {
   start: "stroll:start",
   /** Run home. */
   hurry: "stroll:hurry",
+  /** Over on the spot: the strip is already out of view. */
+  stop: "stroll:stop",
 } as const;
+
+/**
+ * What the badge's cat goes down to the taskbar for: a "walk", a mad dash ("zoomies"), a red
+ * dot to hunt ("laser"), a "mouse" come in from off the screen, and another cat come to visit,
+ * to fight with ("rival") or to say hello to ("friend").
+ */
+export type Outing = "walk" | "zoomies" | "laser" | "mouse" | "rival" | "friend";
 
 /** Where a walk starts, in the strip's px (stroll.rs). */
 export interface StrollStart {
+  kind: Outing;
   home: number;
   seat: number;
   width: number;

@@ -676,8 +676,8 @@ pub fn badge_hit_area(app: AppHandle, x: f64, y: f64, width: f64, height: f64) {
 /// The badge's cat goes for a walk along the taskbar from its seat (logical px in the badge).
 /// Async: the strip may have to be created, which must not happen on the main thread.
 #[tauri::command]
-pub async fn badge_stroll(app: AppHandle, x: f64, bottom: f64, fat: f64) -> bool {
-    crate::stroll::start(&app, x, bottom, fat)
+pub async fn badge_stroll(app: AppHandle, kind: String, x: f64, bottom: f64, fat: f64) -> bool {
+    crate::stroll::start(&app, kind, x, bottom, fat)
 }
 
 #[tauri::command]

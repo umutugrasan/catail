@@ -1,4 +1,5 @@
-/* A see-through strip along the top of the taskbar; only the cat is painted. */
+/* A see-through strip along the top of the taskbar; only the cat and whoever it meets there
+   are painted. */
 html:root {
   color-scheme: light;
 }
@@ -15,22 +16,28 @@ body,
   pointer-events: none;
 }
 
-/* Anchored by the middle of its feet; Stroll.tsx moves it along. */
-.stroll-cat {
+/* Everyone is anchored by the middle of their feet; Stroll.tsx moves them along. */
+.stroll-actor {
   position: absolute;
   bottom: 0;
   left: 0;
   will-change: transform;
 }
 
-.stroll-cat__facing {
+.stroll-actor__facing {
   display: block;
   translate: -50% 0;
   transform-origin: 50% 100%;
 }
 
-.stroll-cat__facing--right {
+.stroll-actor__facing--right {
   transform: scaleX(-1);
+}
+
+/* Making off: gone before it gets anywhere. */
+.stroll-actor--fleeing {
+  opacity: 0;
+  transition: opacity 380ms var(--ease-in) 140ms;
 }
 
 .stroll-cat .leaping-cat,
@@ -70,7 +77,7 @@ body,
   }
 }
 
-/* Running home: leaning in, quick little steps. */
+/* Running: leaning in, quick little steps. */
 .stroll-cat--run .leaping-cat {
   animation: stroll-run 170ms linear infinite alternate;
 }
@@ -86,6 +93,16 @@ body,
   to {
     transform: rotate(-8deg) translateY(-3px);
   }
+}
+
+/* Too fast to turn: back on its heels, sliding. */
+.stroll-cat--skid .leaping-cat {
+  transform: rotate(15deg) scale(1.08, 0.92);
+  transition: transform 90ms var(--ease-out);
+}
+
+.stroll-cat--skid .leaping-cat__foot {
+  animation: none;
 }
 
 /* Sitting somewhere: looking this way and that. */
@@ -108,32 +125,629 @@ body,
   }
 }
 
-/* A wash: head down to its chest, licking, now and then a look up. */
-.stroll-cat--groom .cat-seat__head {
-  animation: stroll-groom 2400ms linear infinite;
+/* About to spring: down on its front, its bottom going from side to side. */
+.stroll-cat--wiggle .cat-seat {
+  transform-origin: 30% 100%;
+  animation: stroll-wiggle 150ms var(--ease-in-out) infinite alternate;
 }
 
-@keyframes stroll-groom {
-  0%,
-  100% {
+@keyframes stroll-wiggle {
+  from {
+    transform: scale(1.12, 0.84) rotate(-4deg);
+  }
+  to {
+    transform: scale(1.12, 0.84) rotate(3deg);
+  }
+}
+
+/* Its back up: tall and thin, fur on end, ears flat, tail like a brush. */
+.stroll-cat--arch .cat-seat {
+  animation: stroll-arch 90ms linear infinite alternate;
+}
+
+@keyframes stroll-arch {
+  from {
+    transform: scale(0.9, 1.15) translateX(-0.5px);
+  }
+  to {
+    transform: scale(0.9, 1.17) translateX(0.5px);
+  }
+}
+
+.stroll-cat--arch .cat-seat__tail {
+  animation: none;
+  transform: rotate(-30deg) scale(1.3);
+}
+
+.stroll-cat--arch .cat-seat__ear--left {
+  transform: rotate(-16deg);
+}
+
+.stroll-cat--arch .cat-seat__ear--right {
+  transform: rotate(16deg);
+}
+
+/* Seen it off: chin up, eyes shut, very pleased with itself. */
+.stroll-cat--proud .cat-seat__head {
+  transform: rotate(7deg) translateY(-1.5px);
+  transition: transform 300ms var(--ease-pop);
+}
+
+.stroll-cat--proud .cat-seat__lid,
+.stroll-cat--rub .cat-seat__lid,
+.stroll-cat--dizzy .cat-seat__lid {
+  animation: none;
+  transform: scaleY(1);
+}
+
+/* Nose to nose: its head out, sniffing. */
+.stroll-cat--sniff .cat-seat__head {
+  animation: stroll-sniff 380ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes stroll-sniff {
+  from {
+    transform: translate(-2px, 0.5px);
+  }
+  to {
+    transform: translate(-3px, -0.5px) rotate(-3deg);
+  }
+}
+
+/* A friend: leaning in, cheek to cheek, eyes shut. */
+.stroll-cat--rub .cat-seat {
+  animation: stroll-rub 800ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes stroll-rub {
+  from {
+    transform: translateX(-2px) rotate(-10deg);
+  }
+  to {
+    transform: translateX(-1px) rotate(-3deg);
+  }
+}
+
+/* Worse for wear: swaying, eyes shut, stars going round its head. */
+.stroll-cat--dizzy .cat-seat {
+  animation: stroll-dizzy 460ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes stroll-dizzy {
+  from {
+    transform: rotate(-9deg);
+  }
+  to {
+    transform: rotate(9deg);
+  }
+}
+
+.stroll-cat--dizzy::after {
+  content: "★";
+  position: absolute;
+  bottom: 36px;
+  left: -5px;
+  color: #ffd84a;
+  font-size: 9px;
+  line-height: 1;
+  text-shadow: 0 0 1px #6b4a00, 0 1px 1px #6b4a00;
+  animation: stroll-dizzy-star 700ms linear infinite;
+}
+
+@keyframes stroll-dizzy-star {
+  from {
+    transform: rotate(0) translateX(9px) rotate(0);
+  }
+  to {
+    transform: rotate(360deg) translateX(9px) rotate(-360deg);
+  }
+}
+
+/* A roll: over on its back, wriggling, feet in the air. */
+.stroll-cat--roll .cat-seat {
+  transform-origin: 50% 55%;
+  animation: stroll-roll 1100ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes stroll-roll {
+  from {
+    transform: translateY(-3px) rotate(-150deg);
+  }
+  to {
+    transform: translateY(-3px) rotate(-205deg);
+  }
+}
+
+.stroll-cat--roll .cat-seat .leaping-cat__foot {
+  animation: stroll-step 300ms var(--ease-in-out) infinite alternate;
+}
+
+.stroll-cat--roll .cat-seat .leaping-cat__foot--right {
+  animation-direction: alternate-reverse;
+}
+
+/* What it thinks of all this, over its head. White with a dark edge, over any screen. */
+.stroll-emote {
+  position: absolute;
+  bottom: 43px;
+  left: -7px;
+  display: block;
+  pointer-events: none;
+  animation: stroll-emote 1100ms var(--ease-pop) both;
+}
+
+.stroll-guest .stroll-emote {
+  bottom: 18px;
+  left: -5px;
+}
+
+.stroll-emote--mark {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 2px #000, 0 1px 1px #000, 0 0 1px #000;
+}
+
+.stroll-guest .stroll-emote--mark {
+  font-size: 11px;
+}
+
+.stroll-emote--heart {
+  color: #ff6b9a;
+  font-size: 13px;
+  line-height: 1;
+  text-shadow: 0 0 2px #fff, 0 0 1px #7a1038, 0 1px 1px #7a1038;
+  animation-name: stroll-emote-heart;
+  animation-duration: 1500ms;
+}
+
+.stroll-emote--anger {
+  fill: none;
+  stroke: #ff3b30;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #5c0b06);
+  animation-name: stroll-emote-anger;
+}
+
+@keyframes stroll-emote {
+  0% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.2);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.35) rotate(-10deg);
+  }
+  32% {
+    transform: scale(1) rotate(6deg);
+  }
+  42% {
+    transform: rotate(-4deg);
+  }
+  82% {
+    opacity: 1;
     transform: none;
   }
-  10%,
-  20%,
-  30%,
-  40%,
-  50%,
-  60% {
-    transform: rotate(14deg) translate(1px, 2px);
+  100% {
+    opacity: 0;
+    transform: translateY(-5px);
   }
-  15%,
-  25%,
-  35%,
-  45%,
-  55% {
-    transform: rotate(9deg) translate(1px, 0.5px);
+}
+
+@keyframes stroll-emote-heart {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.3);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1.3);
+  }
+  30% {
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(3px, -16px) scale(1.15) rotate(12deg);
+  }
+}
+
+@keyframes stroll-emote-anger {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  14%,
+  40%,
+  66% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  27%,
+  53% {
+    transform: scale(0.9);
+  }
+  82% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* The mouse. */
+.mouse {
+  display: block;
+  overflow: visible;
+  transform-origin: 70% 100%;
+}
+
+.mouse__body {
+  fill: #c3c6cf;
+  stroke: #5d616d;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+.mouse__ear {
+  fill: #c3c6cf;
+  stroke: #5d616d;
+  stroke-width: 1.1;
+}
+
+.mouse__ear-in {
+  fill: #f7b9c9;
+}
+
+.mouse__eye {
+  fill: #17171c;
+}
+
+.mouse__nose {
+  fill: #f08aa5;
+  stroke: #9c4560;
+  stroke-width: 0.5;
+}
+
+.mouse__whiskers {
+  fill: none;
+  stroke: #5d616d;
+  stroke-width: 0.5;
+  stroke-linecap: round;
+}
+
+.mouse__tail {
+  fill: none;
+  stroke: #e58fa6;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  transform-origin: 0 80%;
+  animation: mouse-tail 900ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes mouse-tail {
+  from {
+    transform: rotate(-8deg);
+  }
+  to {
+    transform: rotate(10deg);
+  }
+}
+
+.mouse__feet ellipse {
+  fill: #f7b9c9;
+  stroke: #9c4560;
+  stroke-width: 0.5;
+}
+
+/* Scurrying: its feet a blur, its body bobbing. */
+.stroll-guest--run .mouse,
+.stroll-guest--walk .mouse {
+  animation: mouse-bob 110ms linear infinite alternate;
+}
+
+.stroll-guest--walk .mouse {
+  animation-duration: 190ms;
+}
+
+.stroll-guest--run .mouse__feet ellipse,
+.stroll-guest--walk .mouse__feet ellipse {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: mouse-feet 110ms linear infinite alternate;
+}
+
+.stroll-guest--walk .mouse__feet ellipse {
+  animation-duration: 190ms;
+}
+
+.stroll-guest--run .mouse__feet ellipse + ellipse,
+.stroll-guest--walk .mouse__feet ellipse + ellipse {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes mouse-bob {
+  from {
+    transform: translateY(0) rotate(0);
+  }
+  to {
+    transform: translateY(-1.4px) rotate(-3deg);
+  }
+}
+
+@keyframes mouse-feet {
+  from {
+    transform: translateX(-2px);
+  }
+  to {
+    transform: translateX(2px);
+  }
+}
+
+/* Up on its hind legs, nose in the air, twitching. */
+.stroll-guest--sniff .mouse {
+  animation: mouse-sniff 300ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes mouse-sniff {
+  from {
+    transform: rotate(20deg) translateY(-1px);
+  }
+  to {
+    transform: rotate(26deg) translateY(-1.5px);
+  }
+}
+
+/* Waiting for the cat, cheeky: a little bounce on the spot. */
+.stroll-guest--sit .mouse {
+  animation: mouse-wait 260ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes mouse-wait {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-2px) scale(0.96, 1.05);
+  }
+}
+
+/* The red dot. */
+.laser-dot {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 16%, #ff3b30 34% 58%, rgba(255, 59, 48, 0) 74%);
+  box-shadow: 0 0 6px 2px rgba(255, 59, 48, 0.55);
+  animation: laser-jitter 240ms linear infinite alternate;
+}
+
+@keyframes laser-jitter {
+  0% {
+    transform: translate(-1.5px, 0.5px);
+  }
+  35% {
+    transform: translate(1px, -1px);
   }
   70% {
+    transform: translate(-0.5px, -0.5px);
+  }
+  100% {
+    transform: translate(1.5px, 1px);
+  }
+}
+
+/* The scrap: a cloud of dust rolling about, bits of both cats coming out of it. */
+.scrap__in {
+  position: relative;
+  display: block;
+  width: 84px;
+  height: 56px;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  animation: scrap-in 200ms var(--ease-pop) both;
+}
+
+@keyframes scrap-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
     transform: none;
+  }
+}
+
+.scrap--over .scrap__in {
+  animation: scrap-out 640ms var(--ease-out) both;
+}
+
+@keyframes scrap-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+.scrap__dust {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: visible;
+  animation: scrap-roll 520ms linear infinite;
+}
+
+@keyframes scrap-roll {
+  0%,
+  100% {
+    transform: rotate(-5deg) scale(1, 0.96);
+  }
+  25% {
+    transform: translateY(-3px) rotate(4deg) scale(0.96, 1.05);
+  }
+  50% {
+    transform: rotate(6deg) scale(1.04, 0.95);
+  }
+  75% {
+    transform: translateY(-2px) rotate(-4deg) scale(0.97, 1.04);
+  }
+}
+
+.scrap__dust circle {
+  fill: #f1ede8;
+  stroke: #8d8782;
+  stroke-width: 1.4;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: scrap-puff 360ms var(--ease-in-out) infinite alternate;
+}
+
+.scrap__dust circle:nth-of-type(2n) {
+  animation-delay: -180ms;
+}
+
+.scrap__dust circle:nth-of-type(3n) {
+  animation-duration: 290ms;
+}
+
+/* The last puff, in the middle, has no edge: it hides where the others overlap. */
+.scrap__dust circle:nth-of-type(6) {
+  stroke: none;
+}
+
+@keyframes scrap-puff {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+.scrap__swirl {
+  fill: none;
+  stroke: #8d8782;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+/* A paw or a tail out of the dust for a moment, in the fur of the cat it belongs to. */
+.scrap__limb {
+  position: absolute;
+  top: 26px;
+  left: 37px;
+  width: 9px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 1.4px solid var(--tail-outline);
+  border-radius: 5px 5px 4px 4px;
+  background: var(--tail-body);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  animation: scrap-limb 760ms var(--ease-out) infinite;
+}
+
+.scrap__limb--1 {
+  --turn: -62deg;
+}
+
+.scrap__limb--2 {
+  --turn: 58deg;
+  animation-delay: -190ms;
+}
+
+.scrap__limb--3 {
+  --turn: 24deg;
+  width: 6px;
+  animation-delay: -420ms;
+}
+
+.scrap__limb--4 {
+  --turn: -22deg;
+  width: 6px;
+  animation-delay: -600ms;
+}
+
+@keyframes scrap-limb {
+  0%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--turn)) translateY(-8px);
+  }
+  20% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+    transform: rotate(var(--turn)) translateY(-27px);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(calc(var(--turn) * 1.15)) translateY(-22px);
+  }
+  90% {
+    opacity: 0;
+    transform: rotate(var(--turn)) translateY(-10px);
+  }
+}
+
+.scrap__star {
+  position: absolute;
+  top: 22px;
+  left: 38px;
+  color: #ffd84a;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  text-shadow: 0 0 1px #6b4a00, 0 1px 1px #6b4a00;
+  opacity: 0;
+  animation: scrap-star 900ms var(--ease-out) infinite;
+}
+
+.scrap__star--1 {
+  --sx: -44px;
+  --sy: -26px;
+}
+
+.scrap__star--2 {
+  --sx: 42px;
+  --sy: -30px;
+  animation-delay: -240ms;
+}
+
+.scrap__star--3 {
+  --sx: -30px;
+  --sy: -40px;
+  animation-delay: -470ms;
+}
+
+.scrap__star--4 {
+  --sx: 30px;
+  --sy: -42px;
+  animation-delay: -680ms;
+}
+
+@keyframes scrap-star {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sx), var(--sy)) scale(1.2) rotate(140deg);
   }
 }
