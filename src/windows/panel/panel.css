@@ -608,3 +608,365 @@ button {
   line-height: 1.25;
   text-align: center;
 }
+
+/* Picked with a click, for "Seçilenleri yapıştır": a ring, and a tick in place of the number. */
+.panel__slot--selected .panel__tile {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.panel__slot--selected .panel__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--accent);
+  color: var(--accent-text);
+  animation: pick-pop 260ms var(--ease-pop);
+}
+
+.panel__index svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 3;
+}
+
+@keyframes pick-pop {
+  from {
+    transform: scale(0.4);
+  }
+}
+
+/* Shown while tiles are picked: how many, and paste just those. */
+.panel__picked {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius);
+  background: var(--tint-100);
+  animation: picked-in var(--normal) var(--ease-pop) both;
+}
+
+@keyframes picked-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+
+.panel__picked-count {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.panel__picked-paste {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: var(--paw);
+  transition: background var(--fast) var(--ease-out), transform var(--fast) var(--ease-out);
+}
+
+.panel__picked-paste:hover {
+  background: var(--accent-hover);
+}
+
+.panel__picked-paste:active {
+  transform: scale(0.94);
+}
+
+.panel__picked-paste svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* A newcomer being sniffed: the cat stands beside it, on the side with room (cats.css). */
+.panel__slot--sniffed {
+  z-index: 1;
+}
+
+.panel__slot--sniffed .table-cat {
+  left: 66px;
+}
+
+.panel__slot--sniffed-right .table-cat {
+  right: 66px;
+  left: auto;
+}
+
+.panel__slot--sniffed-right .table-cat__facing {
+  scale: -1 1;
+}
+
+/* The card gives a little twitch at each sniff. */
+.panel__slot--sniffed .panel__tile {
+  animation: tile-in 340ms var(--ease-pop) backwards, sniffed 1700ms linear both;
+}
+
+@keyframes sniffed {
+  0%,
+  16%,
+  40%,
+  100% {
+    transform: none;
+  }
+  20%,
+  28%,
+  36% {
+    transform: rotate(-1.5deg);
+  }
+}
+
+/* The list layout: one column of tiles in a card as narrow as the badge's pill. The window is
+   see-through and a little bigger than the card (panel.rs): room for its shadow, and on the
+   side toward the middle of the screen, for the bubble that pops out beside a tile. */
+html[data-layout="list"],
+html[data-layout="list"] body,
+html[data-layout="list"] #root {
+  background: transparent;
+}
+
+html[data-layout="list"] #root {
+  box-sizing: border-box;
+  padding: 10px 10px 10px 48px;
+}
+
+html[data-layout="list"] #root[data-corner$="left"] {
+  padding: 10px 48px 10px 10px;
+}
+
+.panel--list {
+  padding: 6px;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(var(--shade-rgb), 0.22), 0 0 1px rgba(var(--shade-rgb), 0.3);
+  transform-origin: 50% 100%;
+}
+
+[data-corner^="top"] .panel--list {
+  transform-origin: 50% 0;
+}
+
+.panel--list .panel__header {
+  height: 24px;
+  padding-left: 3px;
+}
+
+.panel--list .panel__grid {
+  width: 98px;
+}
+
+/* 98 × 68, 6 px apart (GRID.pitch = 74 in Panel.tsx, LIST_TILE_PITCH in panel.rs). */
+.panel--list .panel__tile {
+  width: 98px;
+  height: 68px;
+}
+
+.panel--list .panel__text {
+  -webkit-line-clamp: 4;
+}
+
+.panel--list .panel__footer {
+  gap: 4px;
+}
+
+.panel--list .panel__button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 30px;
+}
+
+.panel--list .panel__button svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* While tiles are picked: let go of them, or paste just those. */
+.panel__footer--picked {
+  animation: picked-in var(--normal) var(--ease-pop) both;
+}
+
+.panel__footer--picked .panel__button--primary {
+  flex-grow: 2.2;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel__picked-number {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--accent-text);
+  color: var(--accent);
+  font-size: 10.5px;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* A cat pushing or sniffing a tile stands on its far end. */
+.panel--list .panel__slot--pushed .table-cat,
+.panel--list .panel__slot--sniffed .table-cat {
+  left: 70px;
+}
+
+/* The bubble: a speech bubble beside the tile the pointer is on, its tail pointing at the
+   tile. It slides along when the pointer moves to another tile, and its buttons pop out one
+   after another. */
+.panel__bubble {
+  position: fixed;
+  left: 10px;
+  z-index: 20;
+  display: flex;
+  translate: 0 -50%;
+  transition: top 200ms var(--ease-out);
+}
+
+#root[data-corner$="left"] .panel__bubble {
+  right: 10px;
+  left: auto;
+}
+
+.panel__bubble-buttons {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface-raised);
+  box-shadow: 0 2px 8px rgba(var(--shade-rgb), 0.25);
+  transform-origin: 100% 50%;
+  animation: bubble-in 300ms var(--ease-pop) both;
+}
+
+#root[data-corner$="left"] .panel__bubble-buttons {
+  transform-origin: 0 50%;
+}
+
+/* The tail, toward the tile. */
+.panel__bubble-buttons::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  background: var(--surface-raised);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+#root[data-corner$="left"] .panel__bubble-buttons::after {
+  right: auto;
+  left: -5px;
+  transform: translateY(-50%) rotate(-135deg);
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px) scale(0.4);
+  }
+}
+
+#root[data-corner$="left"] .panel__bubble-buttons {
+  animation-name: bubble-in-right;
+}
+
+@keyframes bubble-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.4);
+  }
+}
+
+.panel__bubble--leaving .panel__bubble-buttons {
+  animation: bubble-out 140ms var(--ease-in-out) both;
+}
+
+@keyframes bubble-out {
+  to {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.panel__bubble-button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tint-100);
+  color: var(--text);
+  cursor: var(--paw);
+  animation: bubble-button-in 280ms var(--ease-pop) both;
+  animation-delay: calc(60ms + var(--i) * 50ms);
+  transition: transform var(--fast) var(--ease-pop), background var(--fast) var(--ease-out),
+    color var(--fast) var(--ease-out);
+}
+
+@keyframes bubble-button-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3) rotate(-30deg);
+  }
+}
+
+.panel__bubble-button:hover {
+  background: var(--tint-200);
+  transform: scale(1.14);
+}
+
+.panel__bubble-button:active {
+  transform: scale(0.9);
+}
+
+/* "Seç": filled in while the tile is picked. */
+.panel__bubble-button--on,
+.panel__bubble-button--on:hover {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.panel__bubble-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.panel__bubble-button.panel__tile-button--danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.panel__bubble-button:hover .trash__lid {
+  transform: translateY(-1.5px) rotate(18deg);
+}

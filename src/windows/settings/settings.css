@@ -509,3 +509,123 @@ td:last-child {
 :root[data-cat="plain"] h2::before {
   display: none;
 }
+
+/* A label over what it sets, rather than beside it. */
+.field--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* "Panel düzeni": a little picture of the panel in each layout. */
+.layout-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.layout-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 2px solid var(--tint-200);
+  border-radius: var(--radius);
+  background: var(--tint-50);
+  color: var(--ink-900);
+  font: inherit;
+  text-align: left;
+  cursor: var(--paw);
+  transition: border-color var(--fast) var(--ease-out), transform var(--fast) var(--ease-pop);
+}
+
+.layout-card:hover {
+  transform: translateY(-2px);
+}
+
+.layout-card--active {
+  border-color: var(--tint-500);
+}
+
+.layout-card:focus-visible {
+  outline: 2px solid var(--tint-500);
+  outline-offset: 1px;
+}
+
+.layout-card__icon {
+  grid-row: span 2;
+}
+
+.layout-card strong {
+  align-self: end;
+  font-size: 13px;
+}
+
+.layout-card small {
+  align-self: start;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.layout-card__frame {
+  fill: var(--surface-raised, #fff);
+  stroke: var(--tint-400);
+  stroke-width: 1.5;
+}
+
+.layout-card__tile {
+  fill: var(--tint-200);
+}
+
+.layout-card__pill {
+  fill: var(--tint-300);
+}
+
+.layout-card__bubble {
+  fill: var(--tint-400);
+  transform-box: fill-box;
+  transform-origin: 100% 50%;
+}
+
+/* On hover the bubbles pop out beside the first tile, as they do in the panel. */
+.layout-card:hover .layout-card__bubble,
+.layout-card--active .layout-card__bubble {
+  animation: layout-bubble 1800ms var(--ease-pop) infinite;
+}
+
+@keyframes layout-bubble {
+  0% {
+    opacity: 0;
+    transform: translateX(4px) scale(0.3);
+  }
+  18%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(4px) scale(0.3);
+  }
+}
+
+/* "Rozet boyutu": a slider, and the size it is set to. A double click puts it back to 100. */
+.size-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.size-field input[type="range"] {
+  width: 160px;
+  accent-color: var(--tint-500);
+  cursor: var(--paw);
+}
+
+.size-field output {
+  min-width: 44px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

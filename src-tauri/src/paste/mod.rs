@@ -50,8 +50,14 @@ enum Outcome {
     Empty,
 }
 
-/// Paste hotkey entry point. Runs on a worker thread.
+/// Paste hotkey entry point: the whole queue. Runs on a worker thread.
 pub fn run<R: Runtime>(app: &AppHandle<R>) {
+    run_items(app, None);
+}
+
+/// Pastes only the queued items in `only` (in queue order), or the whole queue with `None`.
+/// The rest stays queued. Runs on a worker thread.
+pub fn run_items<R: Runtime>(app: &AppHandle<R>, only: Option<&[Uuid]>) {
     // The editor has the focus, so a paste would land in it instead of the target app.
     if crate::preview::is_open() {
         return;
@@ -62,7 +68,7 @@ pub fn run<R: Runtime>(app: &AppHandle<R>) {
     }
     // Our own Ctrl+V must reach the target app, not our Ctrl+V hotkey.
     hotkeys::suspend_queue_paste(app);
-    let result = paste(app, &state);
+    let result = paste(app, &state, only);
     state.pasting.store(false, Ordering::SeqCst);
     queue::changed(app);
 
@@ -95,8 +101,19 @@ fn shown_names(names: &[String]) -> String {
     text
 }
 
-fn paste<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<Outcome> {
-    let queued = state.queue.lock().unwrap().items().to_vec();
+fn paste<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &AppState,
+    only: Option<&[Uuid]>,
+) -> Result<Outcome> {
+    let queued: Vec<_> = {
+        let queue = state.queue.lock().unwrap();
+        let items = queue.items().iter();
+        items
+            .filter(|item| only.is_none_or(|ids| ids.contains(&item.id)))
+            .cloned()
+            .collect()
+    };
     if queued.is_empty() {
         return Ok(Outcome::Empty);
     }
@@ -145,8 +162,11 @@ fn paste<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> Result<Outcome> {
         // Only what this paste dealt with, gone files included: they'd otherwise hold Ctrl+V
         // forever. Anything captured meanwhile stays queued.
         queue::set_aside_pasted(app, &ids);
-        // Pasting finishes the job: Ctrl+C goes back to normal.
-        state.text_mode.store(false, Ordering::SeqCst);
+        // Pasting the queue finishes the job: Ctrl+C goes back to normal. After pasting a few
+        // picked items the rest is still being gathered.
+        if only.is_none() || state.queue.lock().unwrap().len() == 0 {
+            state.text_mode.store(false, Ordering::SeqCst);
+        }
     }
     Ok(Outcome::Done { missing })
 }

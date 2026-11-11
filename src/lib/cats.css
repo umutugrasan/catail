@@ -68,6 +68,128 @@
   }
 }
 
+/* The nose between a bar's two buttons; a press boops it. */
+.cat-nose {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: var(--paw);
+}
+
+.cat-nose svg {
+  overflow: visible;
+  transform-origin: 50% 25%;
+  transition: transform var(--fast) var(--ease-pop);
+}
+
+.cat-nose:hover svg {
+  transform: scale(1.14);
+}
+
+.cat-nose__nose {
+  fill: #f59ab0;
+  stroke: #c9647f;
+  stroke-width: 0.9;
+}
+
+.cat-nose__shine {
+  fill: #fff;
+  opacity: 0.75;
+}
+
+.cat-nose__mouth {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+
+.cat-nose--boop svg:first-child {
+  animation: nose-boop 520ms var(--ease-pop);
+}
+
+@keyframes nose-boop {
+  25% {
+    transform: scale(1.3, 0.68);
+  }
+  55% {
+    transform: scale(0.9, 1.14);
+  }
+}
+
+.cat-nose svg.cat-nose__heart {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  margin-left: -6px;
+  fill: #f26b8f;
+  pointer-events: none;
+  animation: heart-up 900ms var(--ease-out) forwards;
+}
+
+@keyframes heart-up {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.9) rotate(-14deg);
+  }
+}
+
+/* A boop makes the ears flick back and the whiskers spring. */
+.boop .cat-ear {
+  transform-origin: 50% 100%;
+  animation: ear-boop 520ms var(--ease-pop);
+}
+
+@keyframes ear-boop {
+  30% {
+    rotate: -16deg;
+  }
+  65% {
+    rotate: 6deg;
+  }
+}
+
+.boop .whiskers--left {
+  animation: whisker-boop-left 560ms var(--ease-pop);
+}
+
+.boop .whiskers--right {
+  animation: whisker-boop-right 560ms var(--ease-pop);
+}
+
+@keyframes whisker-boop-left {
+  30% {
+    transform: rotate(-10deg);
+  }
+  65% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes whisker-boop-right {
+  30% {
+    transform: rotate(10deg);
+  }
+  65% {
+    transform: rotate(-5deg);
+  }
+}
+
 .cat-ear {
   position: absolute;
   top: -11px;
@@ -1300,7 +1422,8 @@
 }
 
 :root[data-cat="turtle"] .whiskers,
-:root[data-cat="turtle"] .cat-ear {
+:root[data-cat="turtle"] .cat-ear,
+:root[data-cat="turtle"] .cat-nose {
   display: none;
 }
 
@@ -1328,57 +1451,6 @@
   }
 }
 
-/* The turtle's shell, where it sleeps on the badge: head, flippers and tail go in, and it
-   rocks side to side. */
-.cat-seat .cat-seat__shell {
-  display: none;
-}
-
-[data-cat="turtle"] .cat-seat .cat-seat__shell {
-  inset: auto;
-  bottom: 0;
-  left: 50%;
-  display: block;
-  width: calc(34px + var(--fat) * 9px);
-  height: auto;
-  aspect-ratio: 120 / 100;
-  opacity: 0;
-  scale: 0.5;
-  translate: -50% 0;
-  transform-origin: 50% 100%;
-  transition: opacity 220ms var(--ease-out), scale 320ms var(--ease-pop);
-}
-
-[data-cat="turtle"] .cat-seat__body,
-[data-cat="turtle"] .cat-seat__head,
-[data-cat="turtle"] .cat-seat__tail {
-  transform-origin: 45% 70%;
-  transition: opacity 220ms var(--ease-out), scale 300ms var(--ease-out);
-}
-
-[data-cat="turtle"] .cat-seat--asleep .cat-seat__body,
-[data-cat="turtle"] .cat-seat--asleep .cat-seat__head,
-[data-cat="turtle"] .cat-seat--asleep .cat-seat__tail {
-  opacity: 0;
-  scale: 0.4;
-}
-
-[data-cat="turtle"] .cat-seat--asleep .cat-seat__shell {
-  opacity: 1;
-  scale: 1;
-  animation: shell-sway 2.6s var(--ease-in-out) infinite;
-}
-
-@keyframes shell-sway {
-  0%,
-  100% {
-    transform: rotate(-9deg);
-  }
-  50% {
-    transform: rotate(9deg);
-  }
-}
-
 /* The turtle's "Geri al". */
 .shell-turtle {
   position: relative;
@@ -1388,14 +1460,15 @@
   height: 40px;
 }
 
+/* The picture has room round it: the shell itself sits from 18% to 89% of its height. */
 .shell-turtle__ball {
   position: absolute;
-  bottom: 0;
+  bottom: -5px;
   left: 50%;
-  width: 44px;
-  aspect-ratio: 120 / 100;
+  width: 48px;
+  height: 48px;
   transform: translateX(-50%);
-  transform-origin: 50% 70%;
+  transform-origin: 50% 80%;
 }
 
 .shell-turtle__shell {
@@ -1423,76 +1496,117 @@
   }
 }
 
-/* Two eyes in the front opening, now and then. */
-.shell-turtle__peek {
+/* It jumps over as it is, flippers out; past the top of the jump it pulls everything into
+   its shell, in a puff, and the shell drops in and bounces twice before it settles. */
+.shell-turtle__flyer {
   position: absolute;
-  bottom: 13%;
+  bottom: 0;
   left: 50%;
-  display: flex;
-  gap: 2px;
-  translate: -50% 0;
+  width: 40px;
+  height: 40px;
   opacity: 0;
-  animation: shell-peek 6.5s steps(1) infinite 2.6s;
+  pointer-events: none;
+  transform-origin: 50% 70%;
 }
 
-.shell-turtle__peek i {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: inset 0 -1.5px 0 #1c1c1c;
+.shell-turtle__flyer img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-@keyframes shell-peek {
-  0%,
+.shell-turtle--arrive .shell-turtle__flyer {
+  animation: turtle-jump-over 1000ms linear both;
+}
+
+@keyframes turtle-jump-over {
+  0% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--dx)), calc(var(--dy) - 6px)) rotate(0) scale(0.9, 0.9);
+    animation-timing-function: ease-out;
+  }
+  36% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--dx) * 0.45), calc(var(--dy) * 0.45 - 40px)) rotate(-12deg) scale(1, 1);
+    animation-timing-function: ease-in;
+  }
+  /* Head and flippers go in. */
+  44% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--dx) * 0.33), calc(var(--dy) * 0.33 - 36px)) rotate(-4deg) scale(0.72, 0.62);
+  }
+  45%,
   100% {
     opacity: 0;
-  }
-  62% {
-    opacity: 1;
-  }
-  66% {
-    opacity: 0;
-  }
-  68% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 0;
+    transform: translate(calc(-50% + var(--dx) * 0.33), calc(var(--dy) * 0.33 - 36px)) rotate(-4deg) scale(0.72, 0.62);
   }
 }
 
-/* Curled up, it comes flying in, spinning, and bounces twice before it settles. */
 .shell-turtle--arrive .shell-turtle__ball {
-  animation: shell-arrive 900ms linear backwards;
+  animation: shell-arrive 1000ms linear both;
 }
 
 @keyframes shell-arrive {
-  0% {
-    transform: translate(calc(-50% + var(--dx)), calc(var(--dy) - 11px)) rotate(0deg) scale(0.85);
-    animation-timing-function: ease-out;
+  0%,
+  44% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx) * 0.33), calc(var(--dy) * 0.33 - 33px)) rotate(0) scale(0.8, 0.8);
   }
-  40% {
-    transform: translate(calc(-50% + var(--dx) * 0.45), calc(var(--dy) * 0.45 - 40px)) rotate(-330deg);
+  45% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--dx) * 0.33), calc(var(--dy) * 0.33 - 33px)) rotate(0) scale(0.8, 0.8);
     animation-timing-function: ease-in;
   }
-  62% {
-    transform: translate(-50%, 0) rotate(-720deg) scale(1.16, 0.8);
+  64% {
+    transform: translate(-50%, 0) rotate(-14deg) scale(1.16, 0.8);
     animation-timing-function: ease-out;
   }
-  75% {
-    transform: translate(-50%, -16px) rotate(-720deg) scale(0.94, 1.06);
+  76% {
+    transform: translate(-50%, -14px) rotate(6deg) scale(0.94, 1.06);
     animation-timing-function: ease-in;
   }
-  86% {
-    transform: translate(-50%, 0) rotate(-720deg) scale(1.08, 0.9);
+  87% {
+    transform: translate(-50%, 0) rotate(-3deg) scale(1.08, 0.9);
     animation-timing-function: ease-out;
   }
-  93% {
-    transform: translate(-50%, -4px) rotate(-720deg);
+  94% {
+    transform: translate(-50%, -4px) rotate(0) scale(1, 1);
   }
   100% {
-    transform: translate(-50%, 0) rotate(-720deg);
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(0) scale(1, 1);
+  }
+}
+
+/* The puff where it curls up. */
+.shell-turtle__poof {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  animation: shell-poof 1000ms var(--ease-out) both;
+}
+
+@keyframes shell-poof {
+  0%,
+  43% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx) * 0.33), calc(var(--dy) * 0.33 - 38px)) scale(0.4);
+  }
+  46% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx) * 0.33), calc(var(--dy) * 0.33 - 38px)) scale(1.5);
   }
 }
 
@@ -1502,8 +1616,7 @@
   animation: shell-burst 1600ms linear forwards;
 }
 
-.shell-turtle--flee .shell-turtle__shell,
-.shell-turtle--flee .shell-turtle__peek {
+.shell-turtle--flee .shell-turtle__shell {
   animation: none;
 }
 
@@ -1630,82 +1743,6 @@
   display: none;
 }
 
-/* The bin: a shell pops out instead of a cat climbing out. */
-.trash-jump__shell {
-  display: none;
-}
-
-[data-cat="turtle"] .trash-jump .leaping-cat {
-  display: none;
-}
-
-[data-cat="turtle"] .trash-jump__shell {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  display: block;
-  width: 26px;
-  aspect-ratio: 120 / 100;
-  transform-origin: 50% 70%;
-  animation: shell-out-of-bin 760ms linear both;
-  animation-delay: 60ms;
-}
-
-[data-cat="turtle"] .trash-jump--handoff .trash-jump__shell {
-  width: 40px;
-  animation: shell-onto-bin 370ms linear both;
-}
-
-@keyframes shell-onto-bin {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, 90%) scale(0.5);
-    animation-timing-function: ease-out;
-  }
-  25% {
-    opacity: 1;
-  }
-  55% {
-    transform: translate(-50%, -40%) rotate(-200deg);
-    animation-timing-function: ease-in;
-  }
-  80% {
-    transform: translate(-50%, 0) rotate(-360deg) scale(1.15, 0.82);
-  }
-  100% {
-    transform: translate(-50%, 0) rotate(-360deg) scale(1);
-  }
-}
-
-@keyframes shell-out-of-bin {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, 90%) scale(0.5);
-    animation-timing-function: ease-out;
-  }
-  20% {
-    opacity: 1;
-    transform: translate(-50%, -60%) rotate(-120deg);
-    animation-timing-function: ease-in;
-  }
-  38% {
-    transform: translate(-80%, 0) rotate(-260deg) scale(1.12, 0.85);
-    animation-timing-function: ease-out;
-  }
-  60% {
-    transform: translate(-170%, -50%) rotate(-420deg);
-    animation-timing-function: ease-in;
-  }
-  78% {
-    opacity: 1;
-    transform: translate(-260%, 0) rotate(-560deg) scale(1.1, 0.88);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-340%, -20%) rotate(-680deg);
-  }
-}
-
 /* A bar that has the cat's ears and whiskers gets the turtle's head and flippers instead. */
 .turtle-bar {
   display: none;
@@ -1801,6 +1838,2797 @@
 :root[data-cat="plain"] .box-cat,
 :root[data-cat="plain"] .undo__cat,
 :root[data-cat="plain"] .whiskers,
-:root[data-cat="plain"] .cat-ear {
+:root[data-cat="plain"] .cat-ear,
+:root[data-cat="plain"] .cat-nose {
   display: none;
+}
+
+/* Pasting: the cat walks on a little keyboard under it. Each key goes down in turn, the feet
+   step one after the other, and now and then a key cap pops off. */
+.cat-keys {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  z-index: 0;
+  display: flex;
+  gap: 1px;
+  box-sizing: border-box;
+  width: 40px;
+  height: 8px;
+  padding: 1px 2px 2px;
+  border-radius: 3px;
+  background: #5b5560;
+  box-shadow: 0 1px 2px rgba(var(--shade-rgb), 0.4);
+  translate: -50% 0;
+  animation: keys-in 240ms var(--ease-pop) both;
+}
+
+@keyframes keys-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6, 0.2);
+  }
+}
+
+.cat-keys i {
+  flex: 1;
+  border-radius: 1.5px;
+  background: #fff;
+  box-shadow: inset 0 -1.5px 0 #cfcfd6;
+  animation: key-press 900ms steps(1, end) infinite;
+  animation-delay: calc(var(--i) * 180ms);
+}
+
+@keyframes key-press {
+  0%,
+  20% {
+    background: var(--tint-300);
+    box-shadow: none;
+    transform: translateY(1px);
+  }
+  21%,
+  100% {
+    transform: none;
+  }
+}
+
+.cat-keys b {
+  position: absolute;
+  bottom: 4px;
+  left: 30%;
+  width: 5px;
+  height: 4px;
+  border-radius: 1px;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgba(var(--shade-rgb), 0.5);
+  opacity: 0;
+  animation: key-pop 1800ms var(--ease-out) infinite 400ms;
+}
+
+.cat-keys b + b {
+  left: 64%;
+  animation-delay: 1300ms;
+}
+
+@keyframes key-pop {
+  0% {
+    opacity: 0;
+    transform: none;
+  }
+  8% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0;
+    transform: translate(4px, -16px) rotate(140deg);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The walk itself: weight from foot to foot, each foot lifting off its key. */
+.cat-slot--pasting .cat-seat .leaping-cat__foot {
+  animation: key-step 360ms var(--ease-in-out) infinite alternate;
+}
+
+.cat-slot--pasting .cat-seat .leaping-cat__foot--right {
+  animation-delay: -360ms;
+}
+
+@keyframes key-step {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-2.5px) rotate(-6deg);
+  }
+}
+
+/* Chasing its own tail (CHASE_MS, cats.tsx): the seated cat crouches, hops and vanishes in a puff;
+   seen from above, curled into a ring, it spins round after the tip of its tail; another puff and
+   it sits back down, wobbling, stars round its head. */
+.cat-slot--chase .cat-seat {
+  animation: chase-seat 2600ms linear both;
+}
+
+@keyframes chase-seat {
+  0% {
+    transform: none;
+  }
+  5% {
+    transform: scale(1.1, 0.86);
+    animation-timing-function: var(--ease-out);
+  }
+  11% {
+    opacity: 1;
+    transform: translateY(-5px) scale(0.94, 1.08);
+  }
+  13%,
+  85% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  87% {
+    opacity: 1;
+    transform: translateY(-3px);
+    animation-timing-function: var(--ease-in);
+  }
+  90% {
+    transform: scale(1.12, 0.84);
+  }
+  93% {
+    transform: rotate(-8deg);
+  }
+  96% {
+    transform: rotate(6deg);
+  }
+  98% {
+    transform: rotate(-3deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.chase-cat {
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  translate: -50% 0;
+}
+
+.chase-cat__shadow {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  width: 32px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(var(--shade-rgb), 0.16);
+  opacity: 0;
+  animation: chase-shadow 2600ms linear both;
+}
+
+@keyframes chase-shadow {
+  0%,
+  12%,
+  86%,
+  100% {
+    opacity: 0;
+  }
+  16%,
+  82% {
+    opacity: 1;
+  }
+}
+
+/* Seen from above but standing on the floor: the ring is squashed a little, like a plate. */
+.chase-cat__spin {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  opacity: 0;
+  animation: chase-spin 2600ms linear both;
+}
+
+@keyframes chase-spin {
+  0%,
+  12% {
+    opacity: 0;
+    transform: scale(1.06, 0.9) rotate(-30deg) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.06, 0.9) rotate(20deg);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+  }
+  32% {
+    transform: scale(1.06, 0.9) rotate(330deg);
+  }
+  /* Flat out. */
+  70% {
+    transform: scale(1.06, 0.9) rotate(1230deg);
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
+  84% {
+    opacity: 1;
+    transform: scale(1.06, 0.9) rotate(1470deg);
+  }
+  87%,
+  100% {
+    opacity: 0;
+    transform: scale(1.06, 0.9) rotate(1490deg) scale(0.7);
+  }
+}
+
+.chase-cat__line,
+.chase-cat__fur,
+.chase-cat__stripes {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.chase-cat__line {
+  stroke: var(--tail-outline);
+}
+
+.chase-cat__fur {
+  stroke: var(--tail-body);
+}
+
+.chase-cat__stripes {
+  stroke: var(--tail-stripe);
+  stroke-linecap: butt;
+}
+
+.chase-cat__skull,
+.chase-cat__ear {
+  fill: var(--tail-body);
+  stroke: var(--tail-outline);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.chase-cat__ear-in,
+.chase-cat__nose {
+  fill: #f39ab4;
+}
+
+.chase-cat__brow {
+  fill: none;
+  stroke: var(--tail-stripe);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+
+.chase-cat__muzzle {
+  fill: #fff;
+  opacity: 0.5;
+}
+
+.chase-cat__eye {
+  fill: var(--tail-outline);
+}
+
+.chase-cat__whiskers {
+  fill: none;
+  stroke: var(--tail-outline);
+  stroke-width: 0.35;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.chase-cat__swoosh path {
+  fill: none;
+  stroke: var(--tail-outline);
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+
+/* Snapping at the tip, which flicks away just in time. */
+.chase-cat__head {
+  animation: chase-snap 280ms var(--ease-out) infinite;
+}
+
+@keyframes chase-snap {
+  0%,
+  100% {
+    transform: none;
+  }
+  40% {
+    transform: translate(1.4px, -0.4px) rotate(-6deg);
+  }
+}
+
+.chase-cat__tail {
+  animation: chase-flick 280ms var(--ease-out) infinite;
+}
+
+@keyframes chase-flick {
+  0%,
+  20%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: rotate(22deg);
+  }
+}
+
+/* The paws scurry round. */
+.chase-cat__leg {
+  animation: chase-paw 160ms linear infinite alternate;
+}
+
+.chase-cat__leg--b {
+  animation-delay: -160ms;
+}
+
+@keyframes chase-paw {
+  from {
+    transform: rotate(-30deg);
+  }
+  to {
+    transform: rotate(30deg);
+  }
+}
+
+/* The dust it goes and comes in: one puff as it vanishes, one as it's back. */
+.chase-cat__puff {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+}
+
+.chase-cat__puff i {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tint-50);
+  box-shadow: inset -1px -1.5px 0 rgba(var(--shade-rgb), 0.1), 0 0 0 0.5px rgba(var(--shade-rgb), 0.16);
+  opacity: 0;
+  animation: chase-puff 2600ms var(--ease-out) both;
+}
+
+.chase-cat__puff i:nth-child(odd) {
+  top: -3.5px;
+  left: -3.5px;
+  width: 7px;
+  height: 7px;
+  animation-delay: 40ms;
+}
+
+@keyframes chase-puff {
+  0%,
+  9% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(2px) scale(0.3);
+  }
+  12% {
+    opacity: 1;
+    transform: rotate(var(--a)) translateX(9px) scale(1.15);
+  }
+  20% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(15px) scale(0.6);
+  }
+  20.1%,
+  83% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(2px) scale(0.3);
+  }
+  86% {
+    opacity: 1;
+    transform: rotate(var(--a)) translateX(9px) scale(1.15);
+  }
+  94%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(15px) scale(0.6);
+  }
+}
+
+/* Dizzy after: two little stars round its head. */
+.chase-cat__dizzy {
+  position: absolute;
+  top: 0;
+  left: 30%;
+  width: 16px;
+  height: 6px;
+}
+
+.chase-cat__dizzy i {
+  position: absolute;
+  top: 0;
+  left: 6px;
+  color: var(--tint-500);
+  font-size: 7px;
+  font-style: normal;
+  line-height: 1;
+  opacity: 0;
+  animation: chase-dizzy 2600ms linear both;
+}
+
+.chase-cat__dizzy i + i {
+  animation-delay: -250ms;
+}
+
+@keyframes chase-dizzy {
+  0%,
+  88% {
+    opacity: 0;
+    transform: translateX(-7px) scale(0.6);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(-7px) scale(0.6);
+  }
+  92.5% {
+    transform: translate(0, -2px) scale(1);
+  }
+  95% {
+    transform: translateX(7px) scale(0.6);
+  }
+  97.5% {
+    opacity: 1;
+    transform: translate(0, 2px) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-7px) scale(0.6);
+  }
+}
+
+/* A card has just joined the queue: the cat walks up and sniffs it. Timing: SNIFF_MS. It faces
+   left like the table cat. */
+.sniff-cat__body {
+  position: relative;
+  display: block;
+  transform-origin: 50% 100%;
+  animation: sniff-visit 1700ms linear both;
+}
+
+@keyframes sniff-visit {
+  0% {
+    opacity: 0;
+    transform: translateX(14px) scale(0.7);
+    animation-timing-function: var(--ease-pop);
+  }
+  12% {
+    opacity: 1;
+    transform: none;
+  }
+  /* Nose to the card, three quick sniffs. */
+  18%,
+  26%,
+  34% {
+    transform: translateX(-5px) rotate(8deg);
+  }
+  22%,
+  30%,
+  38% {
+    transform: translateX(-3px) rotate(5deg);
+  }
+  46% {
+    transform: none;
+  }
+  86% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(12px) scale(0.85);
+  }
+}
+
+/* It sneezes: a jerk back, then a shake. */
+.sniff-cat--sneeze .sniff-cat__body {
+  animation-name: sniff-sneeze;
+}
+
+@keyframes sniff-sneeze {
+  0% {
+    opacity: 0;
+    transform: translateX(14px) scale(0.7);
+    animation-timing-function: var(--ease-pop);
+  }
+  12% {
+    opacity: 1;
+    transform: none;
+  }
+  18%,
+  26%,
+  34% {
+    transform: translateX(-5px) rotate(8deg);
+  }
+  22%,
+  30%,
+  38% {
+    transform: translateX(-3px) rotate(5deg);
+  }
+  44% {
+    transform: translateX(-2px) rotate(-6deg) scale(1.04, 0.94);
+  }
+  50% {
+    transform: translateX(-6px) rotate(10deg) scale(0.96, 1.05);
+  }
+  56% {
+    transform: translateX(6px) rotate(-14deg) scale(1.06, 0.92);
+  }
+  66% {
+    transform: translateX(3px) rotate(-4deg);
+  }
+  86% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(12px) scale(0.85);
+  }
+}
+
+.sniff-cat__whiff,
+.sniff-cat__sneeze {
+  position: absolute;
+  top: 30%;
+  left: -8px;
+  width: 10px;
+  height: 12px;
+}
+
+.sniff-cat__whiff i,
+.sniff-cat__sneeze i {
+  position: absolute;
+  left: 0;
+  width: 5px;
+  height: 1.6px;
+  border-radius: 1px;
+  background: rgba(var(--shade-rgb), 0.55);
+  opacity: 0;
+}
+
+.sniff-cat__whiff i {
+  top: calc(var(--n, 0) * 4px);
+  animation: whiff 1700ms linear both;
+}
+
+.sniff-cat__whiff i:nth-child(2) {
+  --n: 1;
+  animation-delay: 80ms;
+}
+
+.sniff-cat__whiff i:nth-child(3) {
+  --n: 2;
+  animation-delay: 160ms;
+}
+
+/* Little lines drawn in toward the nose with each sniff. */
+@keyframes whiff {
+  0%,
+  16% {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  20%,
+  28%,
+  36% {
+    opacity: 1;
+    transform: none;
+  }
+  24%,
+  32% {
+    opacity: 0.3;
+    transform: translateX(-4px);
+  }
+  42%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The sneeze: puffs flying out of the nose. */
+.sniff-cat__sneeze i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(var(--shade-rgb), 0.35);
+  animation: sneeze-puff 1700ms var(--ease-out) both;
+}
+
+.sniff-cat__sneeze i:nth-child(1) {
+  --x: -14px;
+  --y: -6px;
+}
+
+.sniff-cat__sneeze i:nth-child(2) {
+  --x: -16px;
+  --y: 2px;
+}
+
+.sniff-cat__sneeze i:nth-child(3) {
+  --x: -10px;
+  --y: 8px;
+}
+
+.sniff-cat__sneeze i:nth-child(4) {
+  --x: -18px;
+  --y: -1px;
+  width: 6px;
+  height: 6px;
+}
+
+@keyframes sneeze-puff {
+  0%,
+  48% {
+    opacity: 0;
+    transform: none;
+  }
+  52% {
+    opacity: 1;
+    transform: translate(calc(var(--x) * 0.3), calc(var(--y) * 0.3)) scale(0.6);
+  }
+  72% {
+    opacity: 0.9;
+    transform: translate(var(--x), var(--y)) scale(1.2);
+  }
+  84%,
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--x) * 1.2), calc(var(--y) * 1.2)) scale(1.5);
+  }
+}
+
+/* It likes it: a heart floats up over its head. */
+.sniff-cat__heart {
+  position: absolute;
+  top: -4px;
+  left: 30%;
+  fill: #f26b8f;
+  opacity: 0;
+  animation: sniff-heart 1700ms var(--ease-out) both;
+}
+
+@keyframes sniff-heart {
+  0%,
+  44% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.4);
+  }
+  54% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.15);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.9);
+  }
+}
+
+/* Saving the queue (PackingCat, PACKING_MS): the box comes, the papers drop in, the flaps fold
+   shut one after the other, and the cat beside it runs the tape over the seam and down the
+   front, then bites it off. Everything is timed on the same 2600 ms. */
+.packing {
+  position: relative;
+  display: inline-block;
+}
+
+.packing--cat {
+  width: 84px;
+  height: 40px;
+}
+
+.packing__stage {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  /* In front of the cat, who reaches over it from behind. */
+  z-index: 1;
+  width: 63px;
+  height: 51px;
+  transform-origin: 50% 100%;
+}
+
+.packing__box {
+  display: block;
+  overflow: visible;
+  transform-origin: 50% 90%;
+  animation: pack-box 2600ms linear both;
+}
+
+@keyframes pack-box {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+    animation-timing-function: var(--ease-out);
+  }
+  8% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  12%,
+  50% {
+    transform: none;
+  }
+  /* Each flap shuts with a thump. */
+  52%,
+  58% {
+    transform: scale(1.03, 0.96);
+  }
+  55%,
+  62%,
+  100% {
+    transform: none;
+  }
+}
+
+.packing__inside {
+  fill: #a8702f;
+}
+
+.packing__front,
+.packing__flap {
+  fill: #e9b26a;
+  stroke: #8f5f22;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.packing__shade {
+  fill: #d49a51;
+}
+
+.packing__flap {
+  fill: #f0c27f;
+}
+
+/* The papers, one after another. */
+.packing__sheet rect {
+  fill: #fff;
+  stroke: #9b9ba8;
+  stroke-width: 0.8;
+}
+
+.packing__sheet path {
+  stroke: #b8b8c6;
+  stroke-width: 0.8;
+}
+
+.packing__sheet {
+  opacity: 0;
+  animation: pack-sheet 450ms var(--ease-in) both;
+  animation-delay: calc(250ms + var(--i) * 180ms);
+}
+
+@keyframes pack-sheet {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) rotate(-6deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(36px) rotate(4deg);
+  }
+}
+
+/* The flaps fold up and over, the left one first. */
+.packing__flap--left {
+  animation: pack-flap-left 2600ms linear both;
+}
+
+@keyframes pack-flap-left {
+  0%,
+  42% {
+    d: path("M 6 18 L 10 12 L -2 8 L -6 14 Z");
+    animation-timing-function: var(--ease-in-out);
+  }
+  47% {
+    d: path("M 6 18 L 10 12 L 10 -6 L 6 0 Z");
+    animation-timing-function: var(--ease-in);
+  }
+  52%,
+  100% {
+    d: path("M 6 18 L 10 12 L 30 12 L 30 18 Z");
+  }
+}
+
+.packing__flap--right {
+  animation: pack-flap-right 2600ms linear both;
+}
+
+@keyframes pack-flap-right {
+  0%,
+  48% {
+    d: path("M 54 18 L 50 12 L 62 8 L 66 14 Z");
+    animation-timing-function: var(--ease-in-out);
+  }
+  53% {
+    d: path("M 54 18 L 50 12 L 50 -6 L 54 0 Z");
+    animation-timing-function: var(--ease-in);
+  }
+  58%,
+  100% {
+    d: path("M 54 18 L 50 12 L 30 12 L 30 18 Z");
+  }
+}
+
+/* The tape, over the seam and down the front, as the roll goes. */
+.packing__tape {
+  fill: none;
+  stroke: #f3dba8;
+  stroke-width: 5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.95;
+  animation: pack-tape 2600ms linear both;
+}
+
+@keyframes pack-tape {
+  0%,
+  63% {
+    stroke-dashoffset: 1;
+  }
+  88%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.packing__roll circle {
+  fill: #c98f45;
+  stroke: #7d4f17;
+  stroke-width: 1.2;
+}
+
+.packing__roll .packing__roll-hole {
+  fill: #f6e6c6;
+  stroke-width: 0.8;
+}
+
+.packing__roll {
+  opacity: 0;
+  animation: pack-roll 2600ms linear both;
+}
+
+@keyframes pack-roll {
+  0%,
+  58% {
+    opacity: 0;
+    transform: translate(36px, 4px) rotate(0);
+  }
+  61% {
+    opacity: 1;
+    transform: translate(30px, 8px) rotate(0);
+  }
+  63% {
+    transform: translate(30px, 12px) rotate(0);
+  }
+  88% {
+    opacity: 1;
+    transform: translate(30px, 31px) rotate(-300deg);
+  }
+  /* Bitten off with a tug. */
+  91% {
+    opacity: 1;
+    transform: translate(33px, 29px) rotate(-330deg);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translate(40px, 24px) rotate(-360deg);
+  }
+}
+
+/* The cat, beside and a little behind the box: it comes over, watches the papers go in, then
+   leans over the top and runs the tape down, and straightens up. */
+.packing__cat {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  transform-origin: 50% 100%;
+  animation: pack-cat 2600ms linear both;
+}
+
+.packing__cat .leaping-cat {
+  display: block;
+}
+
+.packing__cat .leaping-cat__foot {
+  animation: none;
+}
+
+@keyframes pack-cat {
+  0% {
+    opacity: 0;
+    transform: translate(10px, -10px) scale(0.9);
+    animation-timing-function: var(--ease-out);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1.06, 0.9);
+  }
+  12%,
+  56% {
+    transform: none;
+    animation-timing-function: var(--ease-in-out);
+  }
+  60% {
+    transform: translate(-9px, -3px) rotate(-12deg);
+  }
+  63% {
+    transform: translate(-10px, -2px) rotate(-13deg);
+    animation-timing-function: linear;
+  }
+  /* Following the roll down the front, head still over the top. */
+  88% {
+    transform: translate(-10px, 0) rotate(-9deg) scale(1.02, 0.96);
+  }
+  91% {
+    transform: translate(-7px, -2px) rotate(-16deg);
+  }
+  96%,
+  100% {
+    transform: none;
+  }
+}
+
+/* The save is over: the box gives a hop and goes; the cat hops for joy. */
+.packing--done .packing__stage {
+  animation: pack-done-box 1000ms var(--ease-in-out) both;
+}
+
+@keyframes pack-done-box {
+  0% {
+    transform: none;
+  }
+  18% {
+    transform: translateY(-4px) scale(1.05, 0.96);
+  }
+  34%,
+  62% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.5);
+  }
+}
+
+.packing__cat-hop {
+  display: block;
+  transform-origin: 50% 100%;
+}
+
+.packing--done .packing__cat-hop {
+  animation: pack-done-cat 1000ms var(--ease-out) both;
+}
+
+@keyframes pack-done-cat {
+  0%,
+  100% {
+    transform: none;
+  }
+  12% {
+    transform: scale(1.08, 0.9);
+  }
+  30% {
+    transform: translateY(-8px) scale(0.95, 1.06);
+  }
+  46% {
+    transform: scale(1.06, 0.92);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+  72% {
+    transform: none;
+  }
+}
+
+.packing--cat .packing__pop {
+  right: auto;
+  width: 63px;
+}
+
+/* A little burst over the box when the save is done. */
+.packing__pop {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.packing__pop i {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  width: 3px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--tint-400);
+  opacity: 0;
+  transform-origin: 50% 300%;
+  animation: pop-ray 520ms var(--ease-out) both 220ms;
+}
+
+.packing__pop i:nth-child(1) {
+  rotate: -50deg;
+}
+
+.packing__pop i:nth-child(3) {
+  rotate: 50deg;
+}
+
+@keyframes pop-ray {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scaleY(0.4);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scaleY(0.6);
+  }
+}
+
+/* Selecting an area: a cat peeks up from the screen's bottom edge and watches. When the
+   selection is let go it wiggles and pounces on its corner (Overlay.tsx plays the jump). */
+.pounce-cat {
+  position: absolute;
+  bottom: 0;
+  z-index: 4;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  transition: left 260ms var(--ease-out);
+}
+
+.pounce-cat .leaping-cat {
+  display: block;
+}
+
+.pounce-cat .leaping-cat__foot {
+  animation: none;
+}
+
+.pounce-cat--watch {
+  animation: pounce-peek 420ms var(--ease-pop) both;
+}
+
+@keyframes pounce-peek {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(58%);
+  }
+}
+
+.pounce-cat__look {
+  display: block;
+}
+
+/* The turtle doesn't pounce: it only pokes its head up to watch. */
+[data-cat="turtle"] .pounce-cat--watch {
+  animation-name: pounce-peek-turtle;
+}
+
+@keyframes pounce-peek-turtle {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(66%);
+  }
+}
+
+/* The scratching post beside the seat (CatTree). Behind the cat, never in the way of a click. */
+.cat-tree {
+  position: absolute;
+  right: calc(100% + 1px);
+  bottom: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+  animation: tree-in 420ms var(--ease-pop) both;
+}
+
+@keyframes tree-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+  }
+}
+
+.cat-tree__carpet {
+  fill: var(--tint-300);
+  stroke: var(--tint-500);
+  stroke-width: 0.8;
+}
+
+.cat-tree__cushion {
+  fill: var(--tint-100);
+  opacity: 0.85;
+}
+
+.cat-tree__rope-bg {
+  fill: #e8cc95;
+  stroke: #9c7642;
+  stroke-width: 0.7;
+}
+
+.cat-tree__rope {
+  stroke: #c49a5a;
+  stroke-width: 0.9;
+  stroke-linecap: round;
+}
+
+.cat-tree__marks path {
+  fill: none;
+  stroke: #8a6436;
+  stroke-width: 0.55;
+  stroke-linecap: round;
+}
+
+.cat-tree__marks {
+  opacity: 0;
+}
+
+.cat-tree__string {
+  stroke: #8a6d4f;
+  stroke-width: 0.55;
+}
+
+.cat-tree__pompom {
+  fill: #ffcf4a;
+  stroke: #c9951d;
+  stroke-width: 0.6;
+}
+
+.cat-tree__pompom-shine {
+  fill: #fff6d6;
+}
+
+.cat-tree__fluff circle {
+  fill: #f3e2bf;
+  stroke: #b08a52;
+  stroke-width: 0.3;
+  opacity: 0;
+}
+
+.cat-tree__post,
+.cat-tree__toy {
+  transform-box: view-box;
+}
+
+.cat-tree__post {
+  transform-origin: 15px 36px;
+}
+
+/* The pompom sways on its string all the time, a little. */
+.cat-tree__toy {
+  transform-origin: 25px 9.8px;
+  animation: toy-sway 3.4s var(--ease-in-out) infinite;
+}
+
+@keyframes toy-sway {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+/* Off to the post for a scratch (CAT_IDLE_MS.scratch): a hop over, up on its hind legs with its
+   claws in the rope, then it turns round and hops back. */
+.cat-slot--scratch .cat-slot__trot {
+  animation: idle-scratch-trip 3200ms linear both;
+}
+
+@keyframes idle-scratch-trip {
+  0% {
+    transform: none;
+  }
+  6% {
+    transform: translateX(calc((-15px - var(--belly, 0px)) * 0.12)) scale(1.08, 0.9);
+    animation-timing-function: var(--ease-out);
+  }
+  14% {
+    transform: translate(calc((-15px - var(--belly, 0px)) * 0.55), -6px) scale(0.95, 1.07);
+    animation-timing-function: var(--ease-in);
+  }
+  20% {
+    transform: translateX(calc(-15px - var(--belly, 0px))) scale(1.08, 0.9);
+  }
+  25%,
+  80% {
+    transform: translate(calc(-15px - var(--belly, 0px)), -2px) rotate(-6deg) scale(0.96, 1.08);
+  }
+  85% {
+    transform: translateX(calc(-15px - var(--belly, 0px)));
+    animation-timing-function: var(--ease-out);
+  }
+  91% {
+    transform: translate(calc((-15px - var(--belly, 0px)) * 0.45), -6px) scale(0.95, 1.07);
+    animation-timing-function: var(--ease-in);
+  }
+  97% {
+    transform: scale(1.08, 0.9);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.cat-slot--scratch .cat-slot__facing {
+  animation: idle-scratch-claw 3200ms linear both;
+}
+
+/* Up on its hind legs, three long strokes down the rope: a reach up the post, then a slow
+   pull down with all its weight (the paws on the post: .scratch-paws). 460 ms a stroke,
+   from 800 ms. */
+@keyframes idle-scratch-claw {
+  0%,
+  25% {
+    transform: translateY(0) scale(1, 1) rotate(0);
+  }
+  28%,
+  42.4%,
+  56.8% {
+    transform: translateY(-2.5px) scale(0.95, 1.1) rotate(-7deg);
+    animation-timing-function: var(--ease-in-out);
+  }
+  39.4%,
+  53.8%,
+  68% {
+    transform: translateY(0.5px) scale(1.03, 0.96) rotate(-2deg);
+    animation-timing-function: var(--ease-out);
+  }
+  74%,
+  100% {
+    transform: translateY(0) scale(1, 1) rotate(0);
+  }
+}
+
+/* Its front paws on the post, one after the other: claws in up high, dragged down, lifted
+   back up while the other one pulls. On top of the cat, at the post (CatTree: the post is
+   12 to 20 px left of the seat). */
+.scratch-paws {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  animation: scratch-paws-on 3200ms linear both;
+}
+
+@keyframes scratch-paws-on {
+  0%,
+  24% {
+    opacity: 0;
+  }
+  26%,
+  67% {
+    opacity: 1;
+  }
+  71%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.scratch-paws i {
+  position: absolute;
+  top: 12px;
+  left: -17.5px;
+  width: 4.6px;
+  height: 3.8px;
+  box-sizing: border-box;
+  border: 0.7px solid var(--tail-outline);
+  border-radius: 50% 50% 45% 45%;
+  background: var(--tail-body);
+  animation: scratch-stroke 920ms linear 800ms 1.5 both;
+}
+
+.scratch-paws i + i {
+  top: 10.5px;
+  left: -14.5px;
+  animation-delay: 1260ms;
+  animation-iteration-count: 1;
+}
+
+/* A claw stroke, then the paw back up off the rope. */
+@keyframes scratch-stroke {
+  0% {
+    transform: translate(0, -1px);
+    animation-timing-function: var(--ease-in);
+  }
+  45%,
+  50% {
+    transform: translate(0, 8px) scaleY(0.9);
+    animation-timing-function: var(--ease-in-out);
+  }
+  75% {
+    transform: translate(1px, 2px);
+  }
+  100% {
+    transform: translate(0, -1px);
+  }
+}
+
+/* The post shakes under its claws and sheds bits of rope; the marks stay a while. */
+.cat-slot--scratch .cat-tree__post {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: tree-tug 460ms var(--ease-in-out) 800ms 3;
+}
+
+@keyframes tree-tug {
+  0%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: rotate(-0.6deg);
+  }
+  70% {
+    transform: translateX(0.6px) rotate(1.4deg);
+  }
+}
+
+.cat-slot--scratch .cat-tree__marks {
+  animation: tree-marks 3200ms linear both;
+}
+
+@keyframes tree-marks {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.35;
+  }
+  54% {
+    opacity: 0.6;
+  }
+  68%,
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--scratch .cat-tree__fluff circle {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: tree-fluff 580ms var(--ease-out) 900ms 3;
+}
+
+.cat-slot--scratch .cat-tree__fluff circle:nth-child(2) {
+  animation-delay: 1050ms;
+}
+
+.cat-slot--scratch .cat-tree__fluff circle:nth-child(3) {
+  animation-delay: 1180ms;
+}
+
+.cat-slot--scratch .cat-tree__fluff circle:nth-child(4) {
+  animation-delay: 1320ms;
+}
+
+@keyframes tree-fluff {
+  0% {
+    opacity: 0;
+    transform: none;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(6px, 4px) rotate(90deg);
+  }
+}
+
+/* Batting the pompom (CAT_IDLE_MS.bat): eyes on it, a crouch, a swipe; again. */
+.cat-slot--bat .cat-slot__trot {
+  animation: idle-bat 2400ms linear both;
+}
+
+@keyframes idle-bat {
+  0% {
+    transform: none;
+  }
+  14% {
+    transform: translateX(2px) scale(1.08, 0.88);
+    animation-timing-function: var(--ease-in);
+  }
+  22% {
+    transform: translate(calc(-6px - var(--belly, 0px)), -3px) rotate(-12deg) scale(0.95, 1.08);
+    animation-timing-function: var(--ease-out);
+  }
+  32% {
+    transform: translateX(1px);
+  }
+  50% {
+    transform: translateX(2px) scale(1.07, 0.9);
+    animation-timing-function: var(--ease-in);
+  }
+  58% {
+    transform: translate(calc(-7px - var(--belly, 0px)), -4px) rotate(-15deg) scale(0.95, 1.08);
+    animation-timing-function: var(--ease-out);
+  }
+  68%,
+  100% {
+    transform: none;
+  }
+}
+
+.cat-slot--bat .cat-tree__toy {
+  animation: toy-batted 2400ms linear both;
+}
+
+@keyframes toy-batted {
+  0%,
+  21% {
+    transform: none;
+  }
+  26% {
+    transform: rotate(40deg);
+  }
+  34% {
+    transform: rotate(-24deg);
+  }
+  42% {
+    transform: rotate(13deg);
+  }
+  50% {
+    transform: rotate(-6deg);
+  }
+  57% {
+    transform: rotate(2deg);
+  }
+  62% {
+    transform: rotate(44deg);
+  }
+  70% {
+    transform: rotate(-26deg);
+  }
+  78% {
+    transform: rotate(15deg);
+  }
+  86% {
+    transform: rotate(-7deg);
+  }
+  93% {
+    transform: rotate(3deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* A long stretch, front paws forward and bottom up, then a shake. */
+.cat-slot--stretch .cat-slot__trot {
+  animation: idle-stretch 1900ms var(--ease-in-out) both;
+}
+
+@keyframes idle-stretch {
+  0% {
+    transform: none;
+  }
+  30%,
+  55% {
+    transform: translateX(-2px) scale(1.2, 0.78);
+  }
+  70% {
+    transform: translateY(-1px) scale(0.94, 1.08);
+  }
+  78% {
+    transform: rotate(-4deg);
+  }
+  86% {
+    transform: rotate(3deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* Out for a walk: the strip along the taskbar draws it. */
+.cat-slot--away .cat-slot__trot,
+.cat-slot--away .cat-keys {
+  visibility: hidden;
+}
+
+/* Fast asleep, a bubble swells out of the nose with each breath, bigger each time, and pops
+   (NOSE_BUBBLE_MS). It hangs from the nostril (the picture faces left). */
+.nose-bubble {
+  position: absolute;
+  top: 24.5%;
+  left: 26.5%;
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
+  border: 1px solid rgba(110, 165, 215, 0.75);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 38% 34%,
+    rgba(255, 255, 255, 0.95) 0 14%,
+    rgba(214, 236, 255, 0.6) 34%,
+    rgba(160, 205, 245, 0.42) 100%
+  );
+  box-shadow: inset -1px -1px 2px rgba(90, 150, 210, 0.35);
+  translate: -86% -12%;
+  transform-origin: 86% 12%;
+  pointer-events: none;
+  animation: nose-bubble 5200ms both;
+}
+
+.nose-bubble__shine {
+  position: absolute;
+  top: 18%;
+  left: 22%;
+  width: 28%;
+  height: 18%;
+  border-radius: 50%;
+  background: #fff;
+  rotate: -35deg;
+}
+
+@keyframes nose-bubble {
+  0% {
+    transform: scale(0);
+    animation-timing-function: var(--ease-out);
+  }
+  12% {
+    transform: scale(0.32, 0.3);
+    animation-timing-function: var(--ease-in-out);
+  }
+  22% {
+    transform: scale(0.16);
+    animation-timing-function: var(--ease-in-out);
+  }
+  37% {
+    transform: scale(0.56, 0.52);
+    animation-timing-function: var(--ease-in-out);
+  }
+  47% {
+    transform: scale(0.34);
+    animation-timing-function: var(--ease-in-out);
+  }
+  63% {
+    transform: scale(0.84, 0.78);
+    animation-timing-function: var(--ease-in-out);
+  }
+  73% {
+    transform: scale(0.6);
+    animation-timing-function: var(--ease-in-out);
+  }
+  /* The last breath: too big, a wobble, and pop. */
+  90% {
+    transform: scale(1.06, 1);
+  }
+  93% {
+    transform: scale(1, 1.08);
+  }
+  96% {
+    transform: scale(1.12, 1.04);
+  }
+  100% {
+    transform: scale(1.16, 1.12);
+  }
+}
+
+/* The pop: a ring flashes out and drops fly off where the bubble was. */
+.nose-pop {
+  position: absolute;
+  top: calc(24.5% + 3px);
+  left: calc(26.5% - 8px);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.nose-pop::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(110, 165, 215, 0.6);
+  animation: nose-pop-ring 380ms var(--ease-out) both;
+}
+
+@keyframes nose-pop-ring {
+  from {
+    opacity: 1;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+.nose-pop i {
+  position: absolute;
+  top: -1.5px;
+  left: -1.5px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #e6f3ff;
+  box-shadow: 0 0 0 0.5px rgba(90, 150, 210, 0.8);
+  animation: nose-pop-drop 520ms var(--ease-out) both;
+}
+
+@keyframes nose-pop-drop {
+  from {
+    opacity: 1;
+    transform: rotate(var(--a)) translateX(7px);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(17px) translateY(3px) scale(0.5);
+  }
+}
+
+/* It jumps awake: a "!" over its head. White with a dark edge, over any screen. */
+.cat-seat__startle {
+  position: absolute;
+  top: -13px;
+  left: 30%;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 2px #000, 0 1px 1px #000, 0 0 1px #000;
+  pointer-events: none;
+  animation: startle-mark 900ms var(--ease-pop) both;
+}
+
+@keyframes startle-mark {
+  0% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.2);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.35) rotate(-10deg);
+  }
+  34% {
+    transform: scale(1) rotate(6deg);
+  }
+  44% {
+    transform: rotate(-4deg);
+  }
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+/* Hide and seek (CAT_IDLE_MS.hide): it scurries behind the badge's pill (--dx away, as for
+   "Geri al"), ducks with its ear tips showing, turns round, peeks out round the pill's edge
+   twice, and scurries back to its seat. */
+.cat-slot--hide {
+  /* Under the pill, which comes after it in the row. */
+  z-index: 0;
+}
+
+.cat-slot--hide .cat-slot__trot {
+  animation: idle-hide-trip 6400ms linear both;
+}
+
+@keyframes idle-hide-trip {
+  0% {
+    transform: translate(0, 0) scale(1, 1);
+  }
+  3% {
+    transform: translate(0, 0) scale(1.06, 0.92);
+    animation-timing-function: var(--ease-in-out);
+  }
+  9% {
+    transform: translate(calc(var(--dx) * 0.4), -3px) scale(1, 1);
+    animation-timing-function: var(--ease-in-out);
+  }
+  17%,
+  78% {
+    transform: translate(var(--dx), 0) scale(1, 1);
+    animation-timing-function: var(--ease-in-out);
+  }
+  86% {
+    transform: translate(calc(var(--dx) * 0.5), -3px) scale(1, 1);
+    animation-timing-function: var(--ease-in-out);
+  }
+  94% {
+    transform: translate(0, 0) scale(1.06, 0.92);
+  }
+  100% {
+    transform: translate(0, 0) scale(1, 1);
+  }
+}
+
+.cat-slot--hide .cat-slot__facing {
+  animation: idle-hide-peek 6400ms linear both;
+}
+
+@keyframes idle-hide-peek {
+  0%,
+  2.9% {
+    transform: translate(0, 0) scale(1, 1) rotate(0);
+  }
+  /* Off to the right, the picture flipped. */
+  3% {
+    transform: translate(0, 0) scale(-1, 1) rotate(0);
+  }
+  7%,
+  13% {
+    transform: translate(0, -1.5px) scale(-1, 1.04) rotate(0);
+  }
+  10% {
+    transform: translate(0, 0) scale(-1, 0.96) rotate(0);
+  }
+  17% {
+    transform: translate(0, 0) scale(-1, 1) rotate(0);
+  }
+  /* Behind the pill: down it goes, and turns round. */
+  21%,
+  29% {
+    transform: translate(0, 0) scale(-1, 0.9) rotate(0);
+    animation-timing-function: var(--ease-in-out);
+  }
+  34%,
+  39% {
+    transform: translate(0, 0) scale(1, 0.9) rotate(0);
+    animation-timing-function: var(--ease-out);
+  }
+  /* A good long look round the pill's edge... */
+  44%,
+  51% {
+    transform: translate(-22px, -1px) scale(1, 1) rotate(-14deg);
+    animation-timing-function: var(--ease-in);
+  }
+  48% {
+    transform: translate(-21px, -1px) scale(1, 1) rotate(-9deg);
+  }
+  54%,
+  61% {
+    transform: translate(0, 0) scale(1, 0.9) rotate(0);
+    animation-timing-function: var(--ease-out);
+  }
+  /* ...and a quick one. */
+  64%,
+  68% {
+    transform: translate(-18px, -1px) scale(1, 1) rotate(-12deg);
+    animation-timing-function: var(--ease-in);
+  }
+  71%,
+  78% {
+    transform: translate(0, 0) scale(1, 0.9) rotate(0);
+  }
+  /* Out it comes, facing home. */
+  82%,
+  90% {
+    transform: translate(0, -1.5px) scale(1, 1.04) rotate(0);
+  }
+  86% {
+    transform: translate(0, 0) scale(1, 0.96) rotate(0);
+  }
+  100% {
+    transform: translate(0, 0) scale(1, 1) rotate(0);
+  }
+}
+
+/* ---------------------------------------------------------------------------------------
+   The turtle in the badge's seat (TurtleSeat): a picture for each mood and game, all stacked,
+   one shown at a time. Swaps are hard cuts, hidden in a squash or a hop.
+   --------------------------------------------------------------------------------------- */
+[data-cat="turtle"] .leaping-cat__foot {
+  display: none;
+}
+
+/* Anything that drops below the seat's bottom edge is under water, or under the sand. */
+.turtle-seat__ground {
+  position: absolute;
+  top: -64px;
+  right: -30px;
+  bottom: 0;
+  left: -30px;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.turtle-seat__act {
+  position: absolute;
+  bottom: 0;
+  left: 30px;
+  width: 40px;
+  height: 40px;
+  transform-origin: 50% 100%;
+}
+
+.turtle-seat__body {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+  scale: calc(1 + var(--fat) * 0.2) 1;
+  pointer-events: auto;
+  transition: scale 520ms var(--ease-pop);
+  animation: turtle-sway 3.6s var(--ease-in-out) infinite;
+}
+
+.turtle-seat .turtle-seat__pose {
+  opacity: 0;
+}
+
+.turtle-seat .turtle-seat__pose--happy,
+.turtle-seat--asleep .turtle-seat__pose--sleep {
+  opacity: 1;
+}
+
+.turtle-seat--asleep .turtle-seat__pose--happy {
+  opacity: 0;
+}
+
+/* Awake it rocks gently from flipper to flipper; asleep it breathes. */
+@keyframes turtle-sway {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+.turtle-seat--asleep .turtle-seat__body {
+  animation: turtle-breathe 3.4s var(--ease-in-out) infinite;
+}
+
+@keyframes turtle-breathe {
+  50% {
+    transform: scale(1.04, 0.97);
+  }
+}
+
+.cat-slot:hover .turtle-seat:not(.turtle-seat--asleep) .turtle-seat__body {
+  animation: turtle-wiggle 700ms var(--ease-in-out) infinite;
+}
+
+@keyframes turtle-wiggle {
+  0%,
+  100% {
+    transform: rotate(-6deg) translateY(0);
+  }
+  50% {
+    transform: rotate(6deg) translateY(-1.5px);
+  }
+}
+
+/* While it plays, the play sets the moves. */
+.cat-slot--dive .turtle-seat__body,
+.cat-slot--silly .turtle-seat__body,
+.cat-slot--shell .turtle-seat__body,
+.cat-slot--hatch-egg .turtle-seat__body,
+.cat-slot--hatch-sand .turtle-seat__body {
+  animation: none;
+}
+
+.turtle-seat__pool,
+.turtle-seat__drops,
+.turtle-seat__tears {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Diving (CAT_IDLE_MS.dive): a pool opens up, a hop and in it goes headfirst; ripples and
+   bubbles while it is under; up it pops with a splash, and shakes the water off. */
+.cat-slot--dive .turtle-seat__pose--happy {
+  animation: dive-happy 4200ms steps(1, end) both;
+}
+
+@keyframes dive-happy {
+  0% {
+    opacity: 1;
+  }
+  15% {
+    opacity: 0;
+  }
+  84% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--dive .turtle-seat__pose--dive {
+  animation: dive-dive 4200ms steps(1, end) both;
+}
+
+@keyframes dive-dive {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--dive .turtle-seat__pose--splash {
+  animation: dive-splash 4200ms steps(1, end) both;
+}
+
+@keyframes dive-splash {
+  0% {
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  84% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--dive .turtle-seat__act {
+  animation: dive-act 4200ms linear both;
+}
+
+@keyframes dive-act {
+  0% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+  9% {
+    transform: translateY(1px) rotate(0) scale(1.08, 0.9);
+    animation-timing-function: var(--ease-out);
+  }
+  15% {
+    transform: translateY(-10px) rotate(-8deg) scale(0.95, 1.06);
+  }
+  22% {
+    transform: translateY(-7px) rotate(6deg) scale(1, 1);
+    animation-timing-function: var(--ease-in);
+  }
+  40%,
+  60% {
+    transform: translateY(40px) rotate(12deg) scale(1, 1);
+    animation-timing-function: var(--ease-out);
+  }
+  67% {
+    transform: translateY(-6px) rotate(0) scale(0.96, 1.08);
+  }
+  74% {
+    transform: translateY(1px) rotate(0) scale(1.06, 0.94);
+  }
+  80%,
+  84% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+  88% {
+    transform: translateY(-2px) rotate(-7deg) scale(1, 1);
+  }
+  92% {
+    transform: translateY(0) rotate(6deg) scale(1, 1);
+  }
+  96% {
+    transform: translateY(0) rotate(-3deg) scale(1, 1);
+  }
+  100% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+}
+
+.turtle-seat__pool {
+  bottom: -1px;
+  left: 50%;
+  width: 46px;
+  height: 9px;
+  border: 1px solid #2a8fc9;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 45% 40%, #c8efff 0 18%, #6cc8f2 45%, #3aa6dd 100%);
+  translate: -50% 0;
+}
+
+.cat-slot--dive .turtle-seat__pool {
+  animation: dive-pool 4200ms linear both;
+}
+
+@keyframes dive-pool {
+  0%,
+  8% {
+    opacity: 0;
+    transform: scale(0.2, 0.4);
+  }
+  14% {
+    opacity: 1;
+    transform: scale(1.06, 1);
+    animation-timing-function: var(--ease-out);
+  }
+  18%,
+  86% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: var(--ease-in);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3, 0.4);
+  }
+}
+
+/* Ripples and bubbles while it is under. */
+.turtle-seat__pool i {
+  position: absolute;
+  inset: 1px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.cat-slot--dive .turtle-seat__pool i {
+  animation: dive-ripple 900ms var(--ease-out) 1700ms 2;
+}
+
+.cat-slot--dive .turtle-seat__pool i:nth-child(2) {
+  animation-delay: 2000ms;
+}
+
+.cat-slot--dive .turtle-seat__pool i:nth-child(3) {
+  inset: auto auto 4px 44%;
+  width: 3px;
+  height: 3px;
+  border-width: 0.8px;
+  animation: dive-bubble 600ms var(--ease-out) 1750ms 3;
+}
+
+@keyframes dive-ripple {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15, 1.3);
+  }
+}
+
+@keyframes dive-bubble {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-11px) scale(1.4);
+  }
+}
+
+/* Water thrown up going in and coming out. */
+.turtle-seat__drops {
+  bottom: 3px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  opacity: 1;
+}
+
+.turtle-seat__drops i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50% 50% 50% 0;
+  background: #8fdcff;
+  box-shadow: 0 0 0 0.6px #2a8fc9;
+  opacity: 0;
+  rotate: 45deg;
+}
+
+.cat-slot--dive .turtle-seat__drops i {
+  animation: dive-drop 4200ms linear both;
+}
+
+@keyframes dive-drop {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  36% {
+    opacity: 1;
+    transform: translate(0, 0);
+    animation-timing-function: var(--ease-out);
+  }
+  44% {
+    opacity: 1;
+    transform: translate(calc(var(--x) * 0.8), calc(var(--y) * 0.6));
+    animation-timing-function: var(--ease-in);
+  }
+  50%,
+  62% {
+    opacity: 0;
+    transform: translate(var(--x), 4px);
+  }
+  63% {
+    opacity: 1;
+    transform: translate(0, 0);
+    animation-timing-function: var(--ease-out);
+  }
+  71% {
+    opacity: 1;
+    transform: translate(var(--x), var(--y));
+    animation-timing-function: var(--ease-in);
+  }
+  78%,
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--x) * 1.2), 4px);
+  }
+}
+
+/* A silly dance (CAT_IDLE_MS.silly): tongue out, a wink, side to side, hop, hop. */
+.cat-slot--silly .turtle-seat__pose--happy {
+  animation: silly-happy 2400ms steps(1, end) both;
+}
+
+@keyframes silly-happy {
+  0% {
+    opacity: 1;
+  }
+  6% {
+    opacity: 0;
+  }
+  92% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--silly .turtle-seat__pose--silly {
+  animation: silly-silly 2400ms steps(1, end) both;
+}
+
+@keyframes silly-silly {
+  0% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--silly .turtle-seat__act {
+  animation: silly-act 2400ms var(--ease-in-out) both;
+}
+
+@keyframes silly-act {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+  6% {
+    transform: translateY(0) rotate(0) scale(1.07, 0.92);
+  }
+  14% {
+    transform: translateY(-5px) rotate(-11deg) scale(1, 1);
+  }
+  22% {
+    transform: translateY(0) rotate(-10deg) scale(1.04, 0.96);
+  }
+  30% {
+    transform: translateY(-5px) rotate(11deg) scale(1, 1);
+  }
+  38% {
+    transform: translateY(0) rotate(10deg) scale(1.04, 0.96);
+  }
+  46% {
+    transform: translateY(-5px) rotate(-11deg) scale(1, 1);
+  }
+  54% {
+    transform: translateY(0) rotate(-9deg) scale(1.04, 0.96);
+  }
+  64% {
+    transform: translateY(-7px) rotate(9deg) scale(0.97, 1.05);
+  }
+  72% {
+    transform: translateY(0) rotate(8deg) scale(1.05, 0.95);
+  }
+  80% {
+    transform: translateY(-4px) rotate(-5deg) scale(1, 1);
+  }
+  88% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+  93% {
+    transform: translateY(0) rotate(0) scale(1.05, 0.95);
+  }
+}
+
+/* A roll in its shell (CAT_IDLE_MS.shell): in it goes, the shell rocks and bounces about,
+   then out it pops. */
+.cat-slot--shell .turtle-seat__pose--happy {
+  animation: shell-happy 3000ms steps(1, end) both;
+}
+
+@keyframes shell-happy {
+  0% {
+    opacity: 1;
+  }
+  11% {
+    opacity: 0;
+  }
+  80% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--shell .turtle-seat__pose--shell {
+  animation: shell-shell 3000ms steps(1, end) both;
+}
+
+@keyframes shell-shell {
+  0% {
+    opacity: 0;
+  }
+  11% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--shell .turtle-seat__act {
+  animation: shell-act 3000ms linear both;
+}
+
+@keyframes shell-act {
+  0% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+  10% {
+    transform: translateY(0) rotate(0) scale(1.12, 0.84);
+  }
+  11% {
+    transform: translateY(1px) rotate(0) scale(0.94, 0.9);
+    animation-timing-function: var(--ease-out);
+  }
+  21% {
+    transform: translateY(-9px) rotate(-14deg) scale(0.92, 0.92);
+    animation-timing-function: var(--ease-in);
+  }
+  29% {
+    transform: translateY(1px) rotate(8deg) scale(1, 0.84);
+    animation-timing-function: var(--ease-out);
+  }
+  38% {
+    transform: translateY(-7px) rotate(16deg) scale(0.92, 0.92);
+    animation-timing-function: var(--ease-in);
+  }
+  46% {
+    transform: translateY(1px) rotate(-6deg) scale(1, 0.85);
+    animation-timing-function: var(--ease-in-out);
+  }
+  54% {
+    transform: translateY(0) rotate(-16deg) scale(0.94, 0.9);
+    animation-timing-function: var(--ease-in-out);
+  }
+  62% {
+    transform: translateY(0) rotate(13deg) scale(0.94, 0.9);
+    animation-timing-function: var(--ease-in-out);
+  }
+  70% {
+    transform: translateY(0) rotate(-7deg) scale(0.94, 0.9);
+  }
+  78% {
+    transform: translateY(0) rotate(0) scale(0.97, 0.88);
+  }
+  80% {
+    transform: translateY(-4px) rotate(0) scale(0.95, 1.1);
+    animation-timing-function: var(--ease-out);
+  }
+  88% {
+    transform: translateY(0) rotate(0) scale(1.06, 0.94);
+  }
+  100% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+}
+
+/* Left alone too long (TURTLE_SAD_MS): worried, wringing its flippers, then in tears, until
+   it cries itself to sleep. */
+.cat-slot--sad .turtle-seat__pose--happy {
+  opacity: 0;
+}
+
+.cat-slot--sad .turtle-seat__pose--worried {
+  animation: sad-worried 5200ms steps(1, end) both;
+}
+
+@keyframes sad-worried {
+  0% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--sad .turtle-seat__pose--cry {
+  animation: sad-cry 5200ms steps(1, end) both;
+}
+
+@keyframes sad-cry {
+  0% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--sad .turtle-seat__act {
+  animation: sad-act 5200ms var(--ease-in-out) both;
+}
+
+@keyframes sad-act {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+  10% {
+    transform: translateY(0) rotate(-4deg) scale(1, 1);
+  }
+  22% {
+    transform: translateY(0) rotate(3deg) scale(1, 1);
+  }
+  /* A sigh. */
+  34% {
+    transform: translateY(1px) rotate(0) scale(1.04, 0.95);
+  }
+  44% {
+    transform: translateY(0) rotate(0) scale(1, 1);
+  }
+  /* Sobs. */
+  50%,
+  62%,
+  74%,
+  86% {
+    transform: translateY(1px) rotate(0) scale(1.03, 0.96);
+  }
+  56%,
+  68%,
+  80%,
+  92% {
+    transform: translateY(-0.5px) rotate(0) scale(0.99, 1.02);
+  }
+}
+
+/* Its tears, rolling down from both eyes. */
+.turtle-seat__tears {
+  inset: 0;
+}
+
+.cat-slot--sad .turtle-seat__tears {
+  opacity: 1;
+}
+
+.turtle-seat__tears i {
+  position: absolute;
+  top: 38%;
+  left: 29%;
+  width: 2.4px;
+  height: 3.2px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: #8fdcff;
+  box-shadow: 0 0 0 0.5px #2a8fc9;
+  opacity: 0;
+}
+
+.turtle-seat__tears i + i {
+  left: 52%;
+}
+
+.cat-slot--sad .turtle-seat__tears i {
+  animation: tear-fall 1100ms var(--ease-in) 2400ms infinite;
+}
+
+.cat-slot--sad .turtle-seat__tears i + i {
+  animation-delay: 2950ms;
+}
+
+@keyframes tear-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.8);
+  }
+}
+
+/* Arriving (TURTLE_HATCH_MS): out of an egg in the sand, or digging up out of the sand. In
+   front of the turtle, so it climbs out from behind the sand and the broken egg. */
+.turtle-nest {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+}
+
+.turtle-nest__mound {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 40px;
+  height: 11px;
+  box-sizing: border-box;
+  border: 1px solid #b98d4a;
+  border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+  background:
+    radial-gradient(circle at 30% 45%, #c49a55 0 1px, transparent 1.5px),
+    radial-gradient(circle at 62% 35%, #c49a55 0 1px, transparent 1.5px),
+    radial-gradient(circle at 78% 62%, #c49a55 0 0.8px, transparent 1.3px),
+    radial-gradient(ellipse at 50% 30%, #f6e2b4, #ddbb78);
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  animation: nest-mound 2800ms linear both;
+}
+
+@keyframes nest-mound {
+  0% {
+    opacity: 0;
+    transform: scale(0.2, 0.1);
+  }
+  8% {
+    opacity: 1;
+    transform: scale(1.06, 1.1);
+    animation-timing-function: var(--ease-out);
+  }
+  12% {
+    transform: none;
+  }
+  80% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: var(--ease-in);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7, 0.2);
+  }
+}
+
+/* Digging: the sand heaves before the head comes up. */
+.turtle-nest--sand .turtle-nest__mound {
+  animation: nest-mound 2800ms linear both, nest-heave 220ms var(--ease-in-out) 500ms 4 alternate;
+}
+
+@keyframes nest-heave {
+  to {
+    translate: -50% -1.5px;
+    scale: 1.04 1.12;
+  }
+}
+
+.turtle-nest__egg {
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  overflow: visible;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  animation: nest-egg 2800ms linear both;
+}
+
+@keyframes nest-egg {
+  0%,
+  4% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  18%,
+  26%,
+  34% {
+    transform: rotate(-8deg);
+  }
+  22%,
+  30% {
+    transform: rotate(8deg);
+  }
+  38% {
+    transform: rotate(13deg);
+  }
+  42% {
+    transform: rotate(-13deg);
+  }
+  46%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+.turtle-nest__shell {
+  fill: #fff7e8;
+}
+
+.turtle-nest__whole {
+  animation: nest-whole 2800ms steps(1, end) both;
+}
+
+@keyframes nest-whole {
+  0% {
+    opacity: 1;
+  }
+  52% {
+    opacity: 0;
+  }
+}
+
+.turtle-nest__rim,
+.turtle-nest__crack {
+  fill: none;
+  stroke: #8a6436;
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.turtle-nest__spot {
+  fill: #e6d3a6;
+}
+
+/* The crack runs along the seam, then the top flies off. */
+.turtle-nest__crack {
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  animation: nest-crack 2800ms linear both;
+}
+
+@keyframes nest-crack {
+  0%,
+  36% {
+    stroke-dashoffset: 26;
+  }
+  48% {
+    stroke-dashoffset: 0;
+  }
+  /* Gone with the top half; the bottom half's jagged edge stays. */
+  52%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.turtle-nest__egg-top {
+  transform-box: fill-box;
+  transform-origin: 80% 100%;
+  animation: nest-lid 2800ms linear both;
+}
+
+@keyframes nest-lid {
+  0%,
+  52% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: var(--ease-out);
+  }
+  64% {
+    opacity: 1;
+    transform: translate(9px, -16px) rotate(50deg);
+    animation-timing-function: var(--ease-in);
+  }
+  76%,
+  100% {
+    opacity: 0;
+    transform: translate(15px, -6px) rotate(110deg);
+  }
+}
+
+/* Sand thrown up. */
+.turtle-nest__grains {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.turtle-nest__grains i {
+  position: absolute;
+  width: 2.2px;
+  height: 2.2px;
+  border-radius: 40%;
+  background: #d8b06a;
+  box-shadow: 0 0 0 0.4px #9c733c;
+  opacity: 0;
+}
+
+.turtle-nest__grains i:nth-child(odd) {
+  width: 1.6px;
+  height: 1.6px;
+  background: #ecd09a;
+}
+
+.turtle-nest--egg .turtle-nest__grains i {
+  animation: grain-burst 900ms var(--ease-out) 1460ms both;
+}
+
+.turtle-nest--sand .turtle-nest__grains i {
+  animation: grain-burst 900ms var(--ease-out) calc(1000ms + var(--i) * 40ms) 2 both;
+}
+
+@keyframes grain-burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  6% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+    transform: translate(var(--x), var(--y));
+    animation-timing-function: var(--ease-in);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--x) * 1.25), calc(var(--y) * 0.2 + 8px));
+  }
+}
+
+/* The turtle itself: out of sight until it breaks out. */
+.cat-slot--hatch-egg .turtle-seat__pose--happy,
+.cat-slot--hatch-sand .turtle-seat__pose--happy {
+  animation: hatch-happy 2800ms steps(1, end) both;
+}
+
+@keyframes hatch-happy {
+  0% {
+    opacity: 0;
+  }
+  36% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--hatch-egg .turtle-seat__act {
+  animation: hatch-egg-act 2800ms linear both;
+}
+
+@keyframes hatch-egg-act {
+  0%,
+  52% {
+    transform: translateY(40px) scale(0.7, 0.7);
+    animation-timing-function: var(--ease-out);
+  }
+  64% {
+    transform: translateY(-9px) scale(0.95, 1.1);
+    animation-timing-function: var(--ease-in);
+  }
+  72% {
+    transform: translateY(0) scale(1.08, 0.92);
+  }
+  80% {
+    transform: translateY(-3px) scale(0.98, 1.03);
+  }
+  88%,
+  100% {
+    transform: none;
+  }
+}
+
+.cat-slot--hatch-sand .turtle-seat__act {
+  animation: hatch-sand-act 2800ms linear both;
+}
+
+@keyframes hatch-sand-act {
+  0%,
+  36% {
+    transform: translateY(40px) rotate(0) scale(1, 1);
+    animation-timing-function: var(--ease-out);
+  }
+  46% {
+    transform: translateY(19px) rotate(-5deg) scale(1, 1);
+  }
+  52% {
+    transform: translateY(21px) rotate(5deg) scale(1, 1);
+  }
+  60% {
+    transform: translateY(12px) rotate(-6deg) scale(1, 1);
+    animation-timing-function: var(--ease-out);
+  }
+  68% {
+    transform: translateY(-8px) rotate(0) scale(0.95, 1.08);
+    animation-timing-function: var(--ease-in);
+  }
+  76% {
+    transform: translateY(0) rotate(0) scale(1.08, 0.92);
+  }
+  /* Shakes the sand off. */
+  82% {
+    transform: translateY(0) rotate(-7deg) scale(1, 1);
+  }
+  87% {
+    transform: translateY(0) rotate(7deg) scale(1, 1);
+  }
+  92% {
+    transform: translateY(0) rotate(-4deg) scale(1, 1);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* The pompom can be pushed about with the pointer (CatTree); the rest of the tree lets clicks
+   through to the badge's cat. */
+.cat-tree__toy {
+  pointer-events: auto;
+  cursor: var(--paw);
+}
+
+.cat-tree__toy-hit {
+  fill: transparent;
+  pointer-events: all;
 }

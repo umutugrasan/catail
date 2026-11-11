@@ -1,12 +1,33 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { catsAround, useWornTheme } from "../../lib/cat";
 import { fatness } from "../../lib/catSeat";
-import { BadgeCat, BoxCat, FETCH_DROP_MS, FETCH_MS, ShellTurtle } from "../../lib/cats";
+import {
+  BadgeCat,
+  BoxCat,
+  CAT_IDLE_MS,
+  CHASE_MS,
+  type CatIdle,
+  FETCH_DROP_MS,
+  FETCH_MS,
+  NOSE_BUBBLE_MS,
+  NOSE_POP_MS,
+  type NoseBubble,
+  PACKING_MS,
+  PackingCat,
+  ShellTurtle,
+  UNPACKED_MS,
+  TURTLE_HATCH_MS,
+  TURTLE_SAD_MS,
+  type TurtleHatch,
+} from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   BadgeEvents,
   badgeCursor,
-  badgeMakeRoom,
+  badgeHitArea,
+  badgeStroll,
+  badgeStrollHurry,
+  badgeStrollStop,
   badgeState,
   onWindowEvent,
   panelToggle,
@@ -20,13 +41,21 @@ import {
 import { BUTTON_OUT_FOR_MS, BUTTON_OUT_MS, SHRED_MS, shredPlan } from "../../lib/shred";
 import { CloseIcon, UndoIcon } from "../overlay/icons";
 
-/** With nothing happening for this long, the badge's cat nods off. */
-const SLEEP_AFTER_MS = 20_000;
+/** With nothing happening for this long, the badge's cat nods off... */
+const SLEEP_AFTER_MS = 40_000;
+/** ...for a nap this long (ms, at random between), then it wakes up by itself. */
+const NAP_MS: [number, number] = [45_000, 90_000];
+/** Awake and left alone, it finds something to do this often (ms, at random between). */
+const IDLE_EVERY_MS: [number, number] = [6_000, 12_000];
+/** This far into a nap (ms, at random between), a bubble starts swelling out of its nose. */
+const BUBBLE_AFTER_MS: [number, number] = [8_000, 26_000];
+/** If word that it's back from a walk never comes, it's back after this anyway. */
+const STROLL_AT_MOST_MS = 75_000;
+
+const between = ([from, to]: [number, number]) => from + Math.random() * (to - from);
 const LOOK_EVERY_MS = 90;
-/** The cat hopping from its seat into the box: the box's own leap, plus a little. */
-const HOP_IN_MS = 1000;
-/** How long a jump or a hop needs the window taller than the badge. */
-const JUMP_MS = 800;
+/** Packing for a save: all of it plays, the box closed and taped, however quick the save. */
+const PACK_AT_LEAST_MS = PACKING_MS;
 
 export function Badge() {
   const [state, setState] = useState<BadgeState>({
@@ -35,6 +64,7 @@ export function Badge() {
     pasting: false,
     undo: null,
     corner: "bottom-right",
+    zoom: 1,
   });
   // Bumped whenever an item arrives, restarting the pill's "caught it" bounce.
   const [bump, setBump] = useState(0);
@@ -55,15 +85,24 @@ export function Badge() {
   const [fetchDx, setFetchDx] = useState(0);
   const [asleep, setAsleep] = useState(false);
   const [poke, setPoke] = useState(0);
-  // Something wants the window taller for a moment (a jump, a hop into the box).
-  const [jumping, setJumping] = useState(false);
+  const [chasing, setChasing] = useState(false);
+  // Time for a nap: it finishes what it's doing (or comes back from its walk) and settles down.
+  const [sleepy, setSleepy] = useState(false);
+  // The turtle, before it nods off: worried, then in tears.
+  const [sad, setSad] = useState(false);
+  // The turtle arriving on the badge: out of an egg, or out of the sand.
+  const [hatch, setHatch] = useState<TurtleHatch | null>(null);
+  // Up to something by its scratching post, or out for a walk along the taskbar.
+  const [idle, setIdle] = useState<CatIdle | null>(null);
+  const [strolling, setStrolling] = useState(false);
+  // Asleep, a bubble swelling out of its nose; then it pops and the cat jumps awake.
+  const [noseBubble, setNoseBubble] = useState<NoseBubble | null>(null);
+  const strollingRef = useRef(false);
+  strollingRef.current = strolling;
+  // The queue is being saved: the cat is in a taped box ("in"), then pops out ("out").
+  const [packing, setPacking] = useState<"in" | "out" | null>(null);
+  const packedAt = useRef(0);
 
-  const jumpFor = (ms: number) => {
-    setJumping(true);
-    window.clearTimeout(jumpTimer.current);
-    jumpTimer.current = window.setTimeout(() => setJumping(false), ms);
-  };
-  const jumpTimer = useRef(0);
 
   /** Plays a move on the cat in its seat. */
   const move = (keyframes: Keyframe[], ms: number, fill: FillMode = "none") =>
@@ -75,7 +114,6 @@ export function Badge() {
       setBump((n) => n + 1);
       const up = down ? 1 : -1;
       if (asleep) {
-        jumpFor(JUMP_MS);
         move(
           [
             { transform: "none" },
@@ -101,19 +139,168 @@ export function Badge() {
     lastCount.current = state.count;
   }, [state.count]);
 
-  // Anything happening, or the pointer coming over, keeps the cat awake.
+  // Anything happening, or the pointer coming over, keeps the cat awake. Its own goings-on
+  // (a walk, a scratch) don't: left alone that long, it gets sleepy.
   const hasUndo = state.undo !== null;
+  // How it winds down before sleep: the cat chases its tail, the turtle mopes.
+  const windDownMs = turtle ? TURTLE_SAD_MS : CHASE_MS;
   useEffect(() => {
     setAsleep(false);
-    if (state.pasting || hasUndo || !catsAround()) return;
-    const timer = setTimeout(() => setAsleep(true), SLEEP_AFTER_MS);
+    setChasing(false);
+    setSad(false);
+    setSleepy(false);
+    if (state.pasting || hasUndo || packing !== null || !catsAround()) return;
+    const timer = setTimeout(() => setSleepy(true), SLEEP_AFTER_MS - windDownMs);
     return () => clearTimeout(timer);
-  }, [state.count, state.textMode, state.pasting, hasUndo, poke]);
+  }, [state.count, state.textMode, state.pasting, hasUndo, poke, packing, turtle]);
+
+  // Sleepy: home from its walk first, done with what it's at, then it chases its own tail a few
+  // times and curls up. The turtle has no tail to chase: nobody's come, and it's sad about it,
+  // worried at first and then in tears, until it cries itself to sleep.
+  useEffect(() => {
+    if (!sleepy || asleep) return;
+    if (strolling) {
+      void badgeStrollHurry();
+      return;
+    }
+    if (idle !== null) return;
+    if (turtle) {
+      setSad(true);
+    } else {
+      setChasing(true);
+    }
+    const timer = setTimeout(() => {
+      setChasing(false);
+      setSad(false);
+      setAsleep(true);
+    }, windDownMs);
+    return () => clearTimeout(timer);
+  }, [sleepy, asleep, strolling, idle, turtle]);
+
+  // A nap doesn't last for ever: it wakes up by itself and has a good stretch.
+  useEffect(() => {
+    if (!asleep) return;
+    const timer = setTimeout(() => {
+      setPoke((n) => n + 1);
+      // The cat stretches; the turtle's up for a dance.
+      setIdle(turtle ? "silly" : "stretch");
+    }, between(NAP_MS));
+    return () => clearTimeout(timer);
+  }, [asleep, turtle]);
+
+  // Fast asleep, a bubble swells out of its nose with each breath until it pops. That gives it
+  // such a fright it's wide awake.
+  useEffect(() => {
+    if (!asleep || turtle) return;
+    let pop = 0;
+    const swell = setTimeout(() => {
+      setNoseBubble("grow");
+      pop = window.setTimeout(() => {
+        setNoseBubble("pop");
+        startle();
+      }, NOSE_BUBBLE_MS);
+    }, between(BUBBLE_AFTER_MS));
+    return () => {
+      clearTimeout(swell);
+      clearTimeout(pop);
+      // Woken some other way, the bubble goes with the nap; a pop plays out.
+      setNoseBubble((bubble) => (bubble === "grow" ? null : bubble));
+    };
+  }, [asleep, turtle]);
+
+  useEffect(() => {
+    if (noseBubble !== "pop") return;
+    const timer = setTimeout(() => setNoseBubble(null), NOSE_POP_MS);
+    return () => clearTimeout(timer);
+  }, [noseBubble]);
+
+  // Awake with nothing going on, it doesn't just sit there: it scratches its post, bats the
+  // pompom, has a stretch, hides behind the pill or goes for a walk along the taskbar.
+  const free =
+    !asleep &&
+    !sleepy &&
+    !chasing &&
+    !strolling &&
+    idle === null &&
+    !state.pasting &&
+    !hasUndo &&
+    packing === null &&
+    fetching === null &&
+    !dropHover &&
+    hatch === null &&
+    catsAround();
+  useEffect(() => {
+    if (!free) return;
+    const timer = setTimeout(() => {
+      // The turtle's own games: in for a dive, a dance, a roll in its shell.
+      if (turtle) {
+        const roll = Math.random() * 10;
+        if (roll < 4) setIdle("dive");
+        else if (roll < 7) setIdle("silly");
+        else setIdle("shell");
+        return;
+      }
+      const canWalk = state.corner.startsWith("bottom");
+      const roll = Math.random() * (canWalk ? 12 : 9);
+      if (roll < 3) setIdle("scratch");
+      else if (roll < 5.5) setIdle("bat");
+      else if (roll < 6.5) setIdle("stretch");
+      else if (roll < 9) setIdle("hide");
+      else void goForAWalk();
+    }, between(IDLE_EVERY_MS));
+    return () => clearTimeout(timer);
+  }, [free, state.corner, turtle]);
+
+
+  useEffect(() => {
+    if (idle === null) return;
+    const timer = setTimeout(() => setIdle(null), CAT_IDLE_MS[idle]);
+    return () => clearTimeout(timer);
+  }, [idle]);
+
+  // Off down to the taskbar: the walk itself is drawn by another window (stroll.rs), the seat
+  // stays empty until it's back.
+  const goForAWalk = async () => {
+    const seat = seatRef.current?.getBoundingClientRect();
+    if (!seat) return;
+    const off = await badgeStroll(seat.left + seat.width / 2, seat.bottom, fatness(state.count)).catch(() => false);
+    if (off) setStrolling(true);
+  };
+
+  useEffect(() => {
+    if (!strolling) return;
+    const timer = setTimeout(() => setStrolling(false), STROLL_AT_MOST_MS);
+    return () => clearTimeout(timer);
+  }, [strolling]);
+
+  // Something's happening: home it runs.
+  useEffect(() => {
+    if (strollingRef.current) void badgeStrollHurry();
+  }, [state.count, state.textMode, state.pasting, hasUndo, packing]);
+
+  // Saving: into the box with it, tape on; when the save is over, out pops its head.
+  const unpackTimer = useRef(0);
+  const onPacking = (on: boolean) => {
+    window.clearTimeout(unpackTimer.current);
+    if (on) {
+      if (!catsAround()) return;
+      packedAt.current = Date.now();
+      setPacking("in");
+      return;
+    }
+    const wait = Math.max(0, PACK_AT_LEAST_MS - (Date.now() - packedAt.current));
+    unpackTimer.current = window.setTimeout(() => {
+      setPacking((current) => (current === null ? null : "out"));
+      unpackTimer.current = window.setTimeout(() => setPacking(null), UNPACKED_MS);
+    }, wait);
+  };
 
   // The panel needs the cat (to push a card off, or to jump out of the bin): up it goes, and
   // drops back into its seat afterwards.
   const awayTimer = useRef(0);
   const goAway = (ms: number) => {
+    // Only ever one cat: if it was out walking, the walk ends here.
+    if (strollingRef.current) void badgeStrollStop();
     const sign = (document.getElementById("root")!.dataset.corner ?? "").startsWith("top") ? 1 : -1;
     const leaving = move(
       [
@@ -153,6 +340,18 @@ export function Badge() {
         setFetching(count);
       }),
       onWindowEvent<number>(BadgeEvents.catAway, goAway),
+      onWindowEvent<boolean>(BadgeEvents.packing, (on) => onPacking(on)),
+      onWindowEvent(BadgeEvents.strollBack, () => {
+        setStrolling(false);
+        move(
+          [
+            { transform: "scale(1.12, 0.86)" },
+            { transform: "scale(0.97, 1.04)", offset: 0.5 },
+            { transform: "none" },
+          ],
+          260,
+        );
+      }),
     ];
     return () => subscriptions.forEach((s) => void s.then((u) => u()));
   }, []);
@@ -162,11 +361,57 @@ export function Badge() {
     document.getElementById("root")!.dataset.corner = state.corner;
   }, [state.corner]);
 
+  // Only the badge itself takes the mouse; clicks anywhere else in its window go through.
+  // Measured after every change, and again once size transitions (a fatter cat) have settled.
+  const hitArea = useRef("");
+  useLayoutEffect(() => {
+    const report = () => {
+      const content = document.getElementById("root")?.firstElementChild;
+      if (!content) return;
+      // The scratching post stands outside the row, and its pompom can be played with.
+      const parts = [content, document.querySelector(".cat-tree")].filter((el): el is Element => el !== null);
+      const rects = parts.map((el) => el.getBoundingClientRect());
+      const left = Math.min(...rects.map((b) => b.left));
+      const top = Math.min(...rects.map((b) => b.top));
+      const r = {
+        left,
+        top,
+        width: Math.max(...rects.map((b) => b.right)) - left,
+        height: Math.max(...rects.map((b) => b.bottom)) - top,
+      };
+      const pad = 4;
+      const area = [r.left - pad, r.top - pad, r.width + 2 * pad, r.height + 2 * pad].map(Math.round);
+      const key = area.join();
+      if (key === hitArea.current) return;
+      hitArea.current = key;
+      void badgeHitArea(area[0], area[1], area[2], area[3]);
+    };
+    report();
+    const settled = setTimeout(report, 700);
+    return () => clearTimeout(settled);
+  });
+
+  // "Rozet boyutu": everything on the badge is drawn that much smaller or bigger. Positions
+  // measured on the page or sent by the app are window px; moves set in CSS are zoomed, so
+  // they're divided by this.
+  const zoom = state.zoom || 1;
+  useEffect(() => {
+    document.documentElement.style.zoom = String(zoom);
+  }, [zoom]);
+
   // The box appears where the cat sat. A cat leaps into it: from the panel's bin when the bin
   // was used, otherwise the one from the seat, hopping in where it is.
   const leapPending = useRef<LeapStart | null>(null);
   const [leapFrom, setLeapFrom] = useState<{ x: number; y: number } | null>(null);
   const showingUndo = state.undo !== null && !state.pasting;
+
+  // There's only one cat. Wanted in its box (a paste or a clear to undo, a save) or carrying
+  // things back, it can't still be out on the taskbar: the walk ends on the spot.
+  const wantedHome = showingUndo || packing !== null || fetching !== null;
+  useEffect(() => {
+    if (wantedHome && strollingRef.current) void badgeStrollStop();
+  }, [wantedHome]);
+
   // A new offer (e.g. a clear while a paste's undo is still up) can bring a new leap.
   const offer = showingUndo && state.undo ? `${state.undo.kind}-${state.undo.count}` : "";
   useLayoutEffect(() => {
@@ -184,10 +429,9 @@ export function Badge() {
     const anchorX = r.left + r.width / 2;
     const anchorBottom = r.bottom - r.height * 0.28;
     if (start) {
-      setLeapFrom({ x: start.x - anchorX, y: start.y - anchorBottom });
+      setLeapFrom({ x: (start.x - anchorX) / zoom, y: (start.y - anchorBottom) / zoom });
     } else if (catsAround()) {
-      setLeapFrom({ x: 0, y: r.height * 0.28 });
-      jumpFor(HOP_IN_MS);
+      setLeapFrom({ x: 0, y: (r.height * 0.28) / zoom });
     }
   }, [showingUndo, offer]);
 
@@ -210,13 +454,6 @@ export function Badge() {
     return () => clearTimeout(timer);
   }, [undoLeft]);
 
-  // The pieces and the jumps need more than the badge's own height.
-  const needsRoom = shredding || fetching !== null || jumping;
-  useEffect(() => {
-    if (!needsRoom) return;
-    void badgeMakeRoom(true);
-    return () => void badgeMakeRoom(false);
-  }, [needsRoom]);
 
   const shredAt = useMemo(() => shredPlan(state.corner), [state.corner]);
 
@@ -245,14 +482,32 @@ export function Badge() {
     };
   }, [onShow, asleep]);
 
+  // The badge comes up: the turtle arrives, out of an egg or digging itself out of the sand.
+  const shownBefore = useRef(false);
+  useEffect(() => {
+    const arriving = onShow && !shownBefore.current;
+    shownBefore.current = onShow;
+    if (!arriving || !turtle || !catsAround()) return;
+    setIdle(null);
+    setHatch(Math.random() < 0.5 ? "egg" : "sand");
+  }, [onShow, turtle]);
+
+  useEffect(() => {
+    if (hatch === null) return;
+    const timer = setTimeout(() => setHatch(null), TURTLE_HATCH_MS);
+    return () => clearTimeout(timer);
+  }, [hatch]);
+
   // The badge is laid out: how far the cat has to go with the papers.
+  // Going behind the pill takes it the same way.
+  const toPill = fetching !== null || idle === "hide";
   useLayoutEffect(() => {
-    if (fetching === null || showingUndo) return;
+    if (!toPill || showingUndo) return;
     const slot = slotRef.current?.getBoundingClientRect();
     const pill = pillRef.current?.getBoundingClientRect();
     if (!slot || !pill) return;
-    setFetchDx(pill.left + Math.min(pill.width / 2, 34) - (slot.left + slot.width / 2));
-  }, [fetching, showingUndo]);
+    setFetchDx((pill.left + Math.min(pill.width / 2, 34 * zoom) - (slot.left + slot.width / 2)) / zoom);
+  }, [toPill, showingUndo]);
 
   useEffect(() => {
     if (fetching === null) return;
@@ -267,10 +522,28 @@ export function Badge() {
     };
   }, [fetching]);
 
+  /** Its nose bubble popped: it leaps up with a start, fur on end, and looks round. */
+  const startle = () => {
+    setPoke((n) => n + 1);
+    const up = down ? 1 : -1;
+    move(
+      [
+        { transform: "none" },
+        { transform: "scale(1.2, 0.74)", offset: 0.1 },
+        { transform: `translateY(${up * 20}px) scale(0.84, 1.24) rotate(6deg)`, offset: 0.38 },
+        { transform: `translateY(${up * 6}px) scale(0.92, 1.1) rotate(-4deg)`, offset: 0.6 },
+        { transform: "scale(1.14, 0.84)", offset: 0.76 },
+        { transform: "rotate(-3deg)", offset: 0.86 },
+        { transform: "rotate(2deg)", offset: 0.93 },
+        { transform: "none" },
+      ],
+      900,
+    );
+  };
+
   /** A press on the sleeping animal: up it jumps (the turtle out of its shell), wide awake. */
   const wake = () => {
     setPoke((n) => n + 1);
-    jumpFor(JUMP_MS);
     move(
       [
         { transform: "none" },
@@ -350,19 +623,38 @@ export function Badge() {
 
   return (
     <div className="badge-row">
-      <BadgeCat
-        fat={fatness(shownCount)}
-        asleep={asleep}
-        fetching={fetching}
-        dx={fetchDx}
-        hop={down ? 6 : -22}
-        title={t("badge.open_panel")}
-        seatRef={seatRef}
-        slotRef={slotRef}
-        pasting={state.pasting}
-        onPress={onPress(() => (asleep ? wake() : void panelToggle()))}
-        onHover={() => asleep && !turtle && setPoke((n) => n + 1)}
-      />
+      {packing !== null ? (
+        <span className="packing-slot">
+          <PackingCat done={packing === "out"} turtle={turtle} />
+        </span>
+      ) : (
+        <BadgeCat
+          fat={fatness(shownCount)}
+          asleep={asleep}
+          fetching={fetching}
+          dx={fetchDx}
+          hop={down ? 6 : -22}
+          title={t("badge.open_panel")}
+          seatRef={seatRef}
+          slotRef={slotRef}
+          pasting={state.pasting}
+          onPress={onPress(() => (asleep ? wake() : void panelToggle()))}
+          chasing={chasing}
+          idle={idle}
+          away={strolling}
+          tree={!turtle && catsAround()}
+          bubble={noseBubble}
+          onToyPlay={() => {
+            // Woken by it, or up for a game: it bats the pompom too, now and then.
+            if (asleep) setPoke((n) => n + 1);
+            else if (free && Math.random() < 0.6) setIdle("bat");
+          }}
+          turtle={turtle}
+          sad={sad}
+          hatch={hatch}
+          onHover={() => asleep && setPoke((n) => n + 1)}
+        />
+      )}
       <div ref={pillRef} className="badge-wrap">
         {dropHover ? (
           <span className="badge badge--drop">{t("panel.drop_hint")}</span>

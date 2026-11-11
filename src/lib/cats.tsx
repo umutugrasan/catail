@@ -1,13 +1,20 @@
 // The Catail cats: a small SVG face, and two drawn cats cut into parts so they can move.
 // Motion lives in cats.css.
-import { useEffect, useState, type CSSProperties, type Ref } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type Ref } from "react";
 import { TrashIcon } from "../windows/overlay/icons";
 import boxFront from "./cats/box-front.png";
 import boxHead from "./cats/box-head.png";
 import footLeft from "./cats/foot-left.png";
 import footRight from "./cats/foot-right.png";
 import standingBody from "./cats/standing-body.png";
-import turtleShell from "./animals/turtle/shell.svg";
+import turtleCry from "./animals/turtle/cry.png";
+import turtleDive from "./animals/turtle/dive.png";
+import turtleHappy from "./animals/turtle/happy.png";
+import turtleInShell from "./animals/turtle/shell.png";
+import turtleSilly from "./animals/turtle/silly.png";
+import turtleSleep from "./animals/turtle/sleep.png";
+import turtleSplash from "./animals/turtle/splash.png";
+import turtleWorried from "./animals/turtle/worried.png";
 import { SEAT_STRIPS } from "./catSeat";
 import { BOX_H, BOX_W, BURST_MS, CHIP_MS, HOP_MS, SHARD_MS, type Flight, type ShredPlan } from "./shred";
 import "./cats.css";
@@ -52,6 +59,27 @@ export function Whiskers({ side }: { side: "left" | "right" }) {
         <path d="M32 17C22 19 12 22 3 25" />
       </g>
     </svg>
+  );
+}
+
+/**
+ * The cat's pink nose, for the middle of a bar that has its ears and whiskers. A press is a boop:
+ * the nose squishes and a heart floats up. `boops` counts them, so each one plays afresh.
+ */
+export function CatNose({ boops, title, onBoop }: { boops: number; title: string; onBoop: () => void }) {
+  return (
+    <button type="button" className={`cat-nose${boops > 0 ? " cat-nose--boop" : ""}`} title={title} onClick={onBoop}>
+      <svg key={boops} viewBox="0 0 22 18" width={22} height={18} aria-hidden="true">
+        <path className="cat-nose__nose" d="M6.4 4.4C6.4 2.9 8.4 2 11 2s4.6.9 4.6 2.4c0 1.7-2.5 4-4.6 4S6.4 6.1 6.4 4.4Z" />
+        <ellipse className="cat-nose__shine" cx="9.3" cy="3.7" rx="1.3" ry="0.7" />
+        <path className="cat-nose__mouth" d="M11 8.4v2.4M11 10.8c-.8 1.7-3.1 1.9-4.3.4M11 10.8c.8 1.7 3.1 1.9 4.3.4" />
+      </svg>
+      {boops > 0 && (
+        <svg key={`heart-${boops}`} className="cat-nose__heart" viewBox="0 0 24 22" width={12} height={11} aria-hidden="true">
+          <path d="M12 21C5 15.6 1.5 12 1.5 7.4 1.5 4 4 1.5 7.2 1.5c2 0 3.7 1 4.8 2.7 1.1-1.7 2.8-2.7 4.8-2.7 3.2 0 5.7 2.5 5.7 5.9 0 4.6-3.5 8.2-10.5 13.6Z" />
+        </svg>
+      )}
+    </button>
   );
 }
 
@@ -215,15 +243,25 @@ export function BoxCat({ leapFrom, shred }: { leapFrom?: { x: number; y: number 
  * The cat sitting beside the badge, wherever the queue is on show. `fat` (0..1) fills out its
  * belly and `asleep` shuts its eyes. The head, ears, tail and body are one picture cut apart.
  */
+/**
+ * Asleep, a bubble swells out of the cat's nose with each breath (NOSE_BUBBLE_MS) until it
+ * pops, startling it awake (NOSE_POP_MS).
+ */
+export const NOSE_BUBBLE_MS = 5200;
+export const NOSE_POP_MS = 900;
+export type NoseBubble = "grow" | "pop";
+
 export function SeatCat({
   fat = 0,
   asleep = false,
+  bubble = null,
   className = "",
   style,
   seatRef,
 }: {
   fat?: number;
   asleep?: boolean;
+  bubble?: NoseBubble | null;
   className?: string;
   style?: CSSProperties;
   seatRef?: Ref<HTMLSpanElement>;
@@ -258,9 +296,21 @@ export function SeatCat({
         <img className="cat-seat__ear cat-seat__ear--right" src={standingBody} alt="" draggable={false} />
         <span className="cat-seat__lid cat-seat__lid--left" />
         <span className="cat-seat__lid cat-seat__lid--right" />
+        {bubble === "grow" && (
+          <span className="nose-bubble" aria-hidden="true">
+            <i className="nose-bubble__shine" />
+          </span>
+        )}
+        {/* Where it was: a splash, and the cat's eyes wide open. */}
+        {bubble === "pop" && (
+          <span className="nose-pop" aria-hidden="true">
+            {Array.from({ length: 6 }, (_, i) => (
+              <i key={i} style={{ "--a": `${i * 60 + 15}deg` } as CSSProperties} />
+            ))}
+          </span>
+        )}
       </span>
-      {/* The turtle sleeps inside its shell. */}
-      <img className="cat-seat__shell" src={turtleShell} alt="" draggable={false} />
+      {bubble === "pop" && <span className="cat-seat__startle">!</span>}
       {asleep && (
         <span className="cat-seat__zzz">
           <i>z</i>
@@ -291,6 +341,15 @@ export function BadgeCat({
   seatRef,
   slotRef,
   pasting,
+  chasing = false,
+  idle = null,
+  away = false,
+  tree = false,
+  bubble = null,
+  onToyPlay,
+  turtle = false,
+  sad = false,
+  hatch = null,
   onPress,
   onHover,
 }: {
@@ -303,6 +362,24 @@ export function BadgeCat({
   seatRef: Ref<HTMLSpanElement>;
   slotRef: Ref<HTMLSpanElement>;
   pasting: boolean;
+  /** Chasing its own tail: a puff, the cat spins round after it seen from above, then sits back dizzy. */
+  chasing?: boolean;
+  /** Up to something by its scratching post. */
+  idle?: CatIdle | null;
+  /** Out for a walk along the taskbar (another window draws it meanwhile). */
+  away?: boolean;
+  /** Its scratching post stands beside it. */
+  tree?: boolean;
+  /** Asleep: a bubble swelling out of its nose, or just popped. */
+  bubble?: NoseBubble | null;
+  /** Someone pushed the pompom about. */
+  onToyPlay?: () => void;
+  /** The turtle sits here instead, with its own pictures and games. */
+  turtle?: boolean;
+  /** The turtle, left alone too long: worried, then in tears, before it nods off. */
+  sad?: boolean;
+  /** The turtle arrives: it hatches from an egg or digs itself out of the sand. */
+  hatch?: TurtleHatch | null;
   onPress: (e: React.MouseEvent) => void;
   onHover: () => void;
 }) {
@@ -310,16 +387,40 @@ export function BadgeCat({
   return (
     <span
       ref={slotRef}
-      className={`cat-slot${carrying ? " cat-slot--fetch" : ""}${pasting ? " cat-slot--pasting" : ""}`}
-      style={{ "--dx": `${dx}px`, "--hop": `${hop}px`, "--fetch-ms": `${FETCH_MS}ms` } as CSSProperties}
+      className={`cat-slot${carrying ? " cat-slot--fetch" : ""}${pasting ? " cat-slot--pasting" : ""}${chasing ? " cat-slot--chase" : ""}${idle ? ` cat-slot--${idle}` : ""}${away ? " cat-slot--away" : ""}${sad ? " cat-slot--sad" : ""}${hatch ? ` cat-slot--hatch-${hatch}` : ""}`}
+      style={
+        {
+          "--dx": `${dx}px`,
+          "--hop": `${hop}px`,
+          "--fetch-ms": `${FETCH_MS}ms`,
+          // The belly pushes its front out: further to go to reach the post.
+          "--belly": `${(fat * 8).toFixed(1)}px`,
+        } as CSSProperties
+      }
       title={title}
       onMouseDown={onPress}
       onMouseEnter={onHover}
     >
       {carrying && <img className="cat-fetch__box" src={boxFront} alt="" draggable={false} />}
+      {/* Pasting: it walks up and down a little keyboard, a key going down under each step. */}
+      {pasting && (
+        <span className="cat-keys" aria-hidden="true">
+          {Array.from({ length: KEYS }, (_, i) => (
+            <i key={i} style={{ "--i": i } as CSSProperties} />
+          ))}
+          <b />
+          <b />
+        </span>
+      )}
+      {tree && <CatTree onPlay={onToyPlay} />}
+      {chasing && <ChaseCat />}
       <span className="cat-slot__trot">
         <span className="cat-slot__facing">
-          <SeatCat fat={fat} asleep={asleep} seatRef={seatRef} />
+          {turtle ? (
+            <TurtleSeat fat={fat} asleep={asleep} hatch={hatch} seatRef={seatRef} />
+          ) : (
+            <SeatCat fat={fat} asleep={asleep} bubble={bubble} seatRef={seatRef} />
+          )}
           {carrying && (
             <span className="cat-fetch__sheets">
               {Array.from({ length: Math.min(Math.max(fetching, 1), 3) }, (_, i) => (
@@ -329,6 +430,415 @@ export function BadgeCat({
           )}
         </span>
       </span>
+      {idle === "scratch" && (
+        <span className="scratch-paws" aria-hidden="true">
+          <i />
+          <i />
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** Keys on the keyboard the cat walks on while pasting. */
+const KEYS = 5;
+
+/**
+ * What the cat gets up to beside the badge when nothing's going on, and how long each takes.
+ * "hide": it scurries behind the badge's pill, ducks, peeks out over the top, and comes back.
+ * The turtle has games of its own: "dive" into a pool and back out with a splash, a "silly"
+ * dance with its tongue out, and a roll about in its "shell".
+ */
+export type CatIdle = "scratch" | "bat" | "stretch" | "hide" | "dive" | "silly" | "shell";
+export const CAT_IDLE_MS: Record<CatIdle, number> = {
+  scratch: 3200,
+  bat: 2400,
+  stretch: 1900,
+  hide: 6400,
+  dive: 4200,
+  silly: 2400,
+  shell: 3000,
+};
+
+/** The turtle's moods and games, a picture each. */
+const TURTLE_POSES = {
+  happy: turtleHappy,
+  splash: turtleSplash,
+  dive: turtleDive,
+  worried: turtleWorried,
+  silly: turtleSilly,
+  sleep: turtleSleep,
+  shell: turtleInShell,
+  cry: turtleCry,
+} as const;
+
+/** Left alone too long, the turtle is worried, then cries, for this long before it nods off. */
+export const TURTLE_SAD_MS = 5200;
+/** How the turtle arrives on the badge, and how long that takes. */
+export type TurtleHatch = "egg" | "sand";
+export const TURTLE_HATCH_MS = 2800;
+
+/** Sand thrown up as it digs out or the egg breaks: [x, y] where each grain flies (px). */
+const GRAINS: [number, number][] = [
+  [-17, -14],
+  [-12, -22],
+  [-6, -27],
+  [2, -25],
+  [9, -21],
+  [15, -15],
+  [-20, -6],
+  [19, -7],
+  [-9, -17],
+  [6, -16],
+];
+
+/**
+ * The turtle in the badge's seat. Every picture is there at once, stacked, so a change of
+ * pose never waits for one to load; cats.css shows the one for its state or game.
+ */
+export function TurtleSeat({
+  fat,
+  asleep,
+  hatch,
+  seatRef,
+}: {
+  fat: number;
+  asleep: boolean;
+  hatch: TurtleHatch | null;
+  seatRef?: Ref<HTMLSpanElement>;
+}) {
+  return (
+    <span
+      ref={seatRef}
+      className={`cat-seat turtle-seat${asleep ? " turtle-seat--asleep" : ""}`}
+      style={{ "--fat": fat } as CSSProperties}
+      aria-hidden="true"
+    >
+      {/* Its pool, under it while it dives. */}
+      <span className="turtle-seat__pool">
+        <i />
+        <i />
+        <i />
+      </span>
+      {/* Anything below the seat's bottom edge is under water, or under the sand. */}
+      <span className="turtle-seat__ground">
+        <span className="turtle-seat__act">
+          <span className="turtle-seat__body">
+            {Object.entries(TURTLE_POSES).map(([pose, src]) => (
+              <img key={pose} className={`turtle-seat__pose turtle-seat__pose--${pose}`} src={src} alt="" draggable={false} />
+            ))}
+            <span className="turtle-seat__tears">
+              <i />
+              <i />
+            </span>
+          </span>
+        </span>
+      </span>
+      <span className="turtle-seat__drops">
+        {GRAINS.slice(0, 6).map(([x, y], i) => (
+          <i key={i} style={{ "--x": `${x}px`, "--y": `${y}px` } as CSSProperties} />
+        ))}
+      </span>
+      {hatch && (
+        <span className={`turtle-nest turtle-nest--${hatch}`}>
+          <span className="turtle-nest__mound" />
+          {hatch === "egg" && (
+            <svg className="turtle-nest__egg" viewBox="0 0 24 28" width={24} height={28}>
+              {/* Two halves that fit along a zigzag; only the crack draws the seam. Until it
+                  breaks, a whole egg behind them hides the join. */}
+              <path
+                className="turtle-nest__shell turtle-nest__whole"
+                d="M 2.3 15 C 2.6 7 6.7 1 12 1 C 17.3 1 21.4 7 21.7 15 C 21.9 22.5 17.6 27 12 27 C 6.4 27 2.1 22.5 2.3 15 Z"
+              />
+              <g className="turtle-nest__egg-bottom">
+                <path
+                  className="turtle-nest__shell"
+                  d="M 2.3 15 L 5.5 12.4 L 8.6 15.4 L 12 12 L 15.2 15.4 L 18.4 12.3 L 21.7 15 C 21.9 22.5 17.6 27 12 27 C 6.4 27 2.1 22.5 2.3 15 Z"
+                />
+                <path className="turtle-nest__rim" d="M 2.3 15 C 2.1 22.5 6.4 27 12 27 C 17.6 27 21.9 22.5 21.7 15" />
+                <circle className="turtle-nest__spot" cx="16" cy="21" r="1.1" />
+              </g>
+              <g className="turtle-nest__egg-top">
+                <path
+                  className="turtle-nest__shell"
+                  d="M 2.3 15 L 5.5 12.4 L 8.6 15.4 L 12 12 L 15.2 15.4 L 18.4 12.3 L 21.7 15 C 21.4 7 17.3 1 12 1 C 6.7 1 2.6 7 2.3 15 Z"
+                />
+                <path className="turtle-nest__rim" d="M 2.3 15 C 2.6 7 6.7 1 12 1 C 17.3 1 21.4 7 21.7 15" />
+                <circle className="turtle-nest__spot" cx="8" cy="8" r="1.2" />
+                <circle className="turtle-nest__spot" cx="15.5" cy="6" r="0.9" />
+                <path
+                  className="turtle-nest__crack"
+                  d="M 2.3 15 L 5.5 12.4 L 8.6 15.4 L 12 12 L 15.2 15.4 L 18.4 12.3 L 21.7 15"
+                />
+              </g>
+              <path
+                className="turtle-nest__crack"
+                d="M 2.3 15 L 5.5 12.4 L 8.6 15.4 L 12 12 L 15.2 15.4 L 18.4 12.3 L 21.7 15"
+              />
+            </svg>
+          )}
+          <span className="turtle-nest__grains">
+            {GRAINS.map(([x, y], i) => (
+              <i key={i} style={{ "--x": `${x}px`, "--y": `${y}px`, "--i": i } as CSSProperties} />
+            ))}
+          </span>
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** Rope turns round the post. */
+const ROPE = Array.from({ length: 11 }, (_, i) => 11.2 + i * 2.25);
+
+/**
+ * The cat's scratching post, beside its seat: a rope-wound post on a carpet base, a perch on top
+ * and a pompom hanging off it on a string. It shakes and sheds fluff while the cat scratches
+ * it, and the pompom swings when it's batted.
+ */
+export function CatTree({ onPlay }: { onPlay?: () => void }) {
+  const toy = useRef<SVGGElement>(null);
+  const swing = useRef({ until: 0, amp: 0 });
+  /** A push sends the pompom swinging away from the pointer, higher if it's swinging already. */
+  const push = (e: React.MouseEvent<SVGGElement>, hard: boolean) => {
+    const el = toy.current;
+    if (!el) return;
+    const now = performance.now();
+    const swinging = now < swing.current.until;
+    if (!hard && swinging) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const dir = e.clientX < r.left + r.width / 2 ? 1 : -1;
+    const amp = hard ? Math.min(46, (swinging ? swing.current.amp * 0.6 : 0) + 26) : 12;
+    const ms = hard ? 2200 : 1100;
+    swing.current = { until: now + ms, amp };
+    const turns = [1, -0.75, 0.55, -0.38, 0.24, -0.12, 0.05, 0];
+    el.animate(
+      turns.map((k) => ({ transform: `rotate(${(dir * amp * k).toFixed(1)}deg)` })),
+      { duration: ms, easing: "ease-out" },
+    );
+    if (hard) onPlay?.();
+  };
+  return (
+    <svg className="cat-tree" viewBox="0 0 30 40" width={30} height={40} aria-hidden="true">
+      <rect className="cat-tree__carpet" x={1} y={35.4} width={28} height={4.2} rx={2} />
+      <g className="cat-tree__post">
+        <rect className="cat-tree__rope-bg" x={11} y={9.6} width={8} height={26.2} />
+        {ROPE.map((y) => (
+          <line key={y} className="cat-tree__rope" x1={11.4} y1={y} x2={18.6} y2={y + 0.5} />
+        ))}
+        <g className="cat-tree__marks">
+          <path d="M 13 15 L 14 22 M 15 14.5 L 16 21.5 M 17 15 L 17.8 21.8" />
+        </g>
+      </g>
+      {/* Push it about: a press swings it hard, the pointer coming by just nudges it. */}
+      <g
+        ref={toy}
+        className="cat-tree__toy"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          push(e, true);
+        }}
+        onMouseEnter={(e) => push(e, false)}
+      >
+        <circle className="cat-tree__toy-hit" cx={25} cy={20} r={5.5} />
+        <line className="cat-tree__string" x1={25} y1={9.8} x2={25} y2={20.6} />
+        <circle className="cat-tree__pompom" cx={25} cy={23} r={2.7} />
+        <circle className="cat-tree__pompom-shine" cx={24.1} cy={22.1} r={0.8} />
+      </g>
+      <rect className="cat-tree__carpet" x={2} y={5.4} width={26} height={4.6} rx={2} />
+      <rect className="cat-tree__cushion" x={3.6} y={6.1} width={22.8} height={1.2} rx={0.6} />
+      <g className="cat-tree__fluff">
+        <circle cx={19} cy={17} r={0.9} />
+        <circle cx={19} cy={21} r={0.7} />
+        <circle cx={19} cy={25} r={1} />
+        <circle cx={19} cy={19} r={0.6} />
+      </g>
+    </svg>
+  );
+}
+
+/** The whole tail chase, from the hop to the dizzy wobble after. Its keyframes are in cats.css. */
+export const CHASE_MS = 2600;
+
+/** Where the curled-up body runs, seen from above: a ring of this radius round the middle. */
+const CHASE_RING = 9.5;
+/** The paws stick out of the ring at these angles (degrees, clockwise from the right). */
+const CHASE_PAWS = [-130, -155, 15, 30];
+
+/**
+ * Chasing its own tail, seen from above: curled into a ring, head at one end and tail at the
+ * other, spinning round after the tip that's always just out of reach. It comes and goes in a
+ * puff of dust, the seated cat hidden meanwhile.
+ */
+export function ChaseCat() {
+  return (
+    <span className="chase-cat" aria-hidden="true">
+      <span className="chase-cat__shadow" />
+      <svg className="chase-cat__spin" viewBox="-20 -20 40 40" width={40} height={40}>
+        {/* Speed lines on the trailing side. */}
+        <g className="chase-cat__swoosh">
+          <path d="M -15.6 6.4 A 16.9 16.9 0 0 1 -12.2 -11.7" />
+          <path d="M -8.4 15.2 A 17.4 17.4 0 0 1 -16.6 3.2" />
+        </g>
+        {CHASE_PAWS.map((angle, i) => {
+          const rad = (angle * Math.PI) / 180;
+          const [x, y] = [Math.cos(rad) * CHASE_RING, Math.sin(rad) * CHASE_RING];
+          return (
+            <g key={angle} transform={`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${angle})`}>
+              <g className={`chase-cat__leg chase-cat__leg--${i % 2 ? "b" : "a"}`}>
+                <line className="chase-cat__line" x1={2} y1={0} x2={5.6} y2={0} strokeWidth={3.6} />
+                <line className="chase-cat__fur" x1={2} y1={0} x2={5.6} y2={0} strokeWidth={2.2} />
+              </g>
+            </g>
+          );
+        })}
+        {/* The tail, from the hips round toward the nose. */}
+        <g transform="translate(9.36 -1.65)">
+          <g className="chase-cat__tail">
+            <path className="chase-cat__line" d="M 0 0 C 1.64 -3.35 2.14 -7.35 -1.56 -10.95" strokeWidth={3.8} />
+            <path className="chase-cat__fur" d="M 0 0 C 1.64 -3.35 2.14 -7.35 -1.56 -10.95" strokeWidth={2.4} />
+            <path
+              className="chase-cat__stripes"
+              d="M 0.5 -1.5 C 1.64 -3.35 2.14 -7.35 -1.2 -10.6"
+              strokeWidth={2.4}
+              strokeDasharray="1 1.6"
+            />
+          </g>
+        </g>
+        {/* The body: most of a ring, neck at the top, hips on the right. */}
+        <path className="chase-cat__line" d="M -2.46 -9.18 A 9.5 9.5 0 1 0 9.36 -1.65" strokeWidth={9.6} />
+        <path className="chase-cat__fur" d="M -2.46 -9.18 A 9.5 9.5 0 1 0 9.36 -1.65" strokeWidth={8} />
+        <path
+          className="chase-cat__stripes"
+          d="M -4.6 -8.3 A 9.5 9.5 0 1 0 8.9 -3.3"
+          strokeWidth={4.4}
+          strokeDasharray="1.3 2.9"
+        />
+        {/* The head, nose to the tail's tip. */}
+        <g transform="translate(-0.2 -10.4) rotate(-10)">
+          <g className="chase-cat__head">
+            <path className="chase-cat__ear" d="M -2.6 -2.4 L 1.2 -3.4 L -1.9 -6.6 Z" />
+            <path className="chase-cat__ear" d="M -2.6 2.4 L 1.2 3.4 L -1.9 6.6 Z" />
+            <path className="chase-cat__ear-in" d="M -1.7 -3.1 L 0.2 -3.5 L -1.5 -5.2 Z" />
+            <path className="chase-cat__ear-in" d="M -1.7 3.1 L 0.2 3.5 L -1.5 5.2 Z" />
+            <ellipse className="chase-cat__skull" cx={-0.3} cy={0} rx={4.4} ry={4.1} />
+            <path className="chase-cat__brow" d="M -3.4 -1.3 L -0.4 -0.7 M -3.7 0 L 0 0 M -3.4 1.3 L -0.4 0.7" />
+            <ellipse className="chase-cat__muzzle" cx={3} cy={0} rx={2.1} ry={2.3} />
+            <ellipse className="chase-cat__eye" cx={1.9} cy={-2} rx={0.6} ry={0.85} />
+            <ellipse className="chase-cat__eye" cx={1.9} cy={2} rx={0.6} ry={0.85} />
+            <ellipse className="chase-cat__nose" cx={4.8} cy={0} rx={0.75} ry={0.95} />
+            <path className="chase-cat__whiskers" d="M 3.6 -1.2 L 6.4 -3.6 M 3.8 -0.6 L 7 -1.6 M 3.6 1.2 L 6.4 3.6 M 3.8 0.6 L 7 1.6" />
+          </g>
+        </g>
+      </svg>
+      <span className="chase-cat__puff">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <i key={i} style={{ "--a": `${i * 60 + 15}deg` } as CSSProperties} />
+        ))}
+      </span>
+      <span className="chase-cat__dizzy">
+        <i>✦</i>
+        <i>✦</i>
+      </span>
+    </span>
+  );
+}
+
+/** How long a new card's sniff takes, before the cat goes back to the badge. */
+export const SNIFF_MS = 1700;
+
+/**
+ * Comes over to a card that has just joined the queue and sniffs it. `mood`: it likes it (tail
+ * up, a heart) or it sneezes (files are dusty).
+ */
+export function SniffCat({ mood, size = 46 }: { mood: "like" | "sneeze"; size?: number }) {
+  return (
+    <span className={`table-cat sniff-cat sniff-cat--${mood}`} aria-hidden="true">
+      <span className="table-cat__facing">
+        <span className="sniff-cat__body">
+          <LeapingCat size={size} />
+          <span className="sniff-cat__whiff">
+            <i />
+            <i />
+            <i />
+          </span>
+          {mood === "like" ? (
+            <svg className="sniff-cat__heart" viewBox="0 0 24 22" width={12} height={11}>
+              <path d="M12 21C5 15.6 1.5 12 1.5 7.4 1.5 4 4 1.5 7.2 1.5c2 0 3.7 1 4.8 2.7 1.1-1.7 2.8-2.7 4.8-2.7 3.2 0 5.7 2.5 5.7 5.9 0 4.6-3.5 8.2-10.5 13.6Z" />
+            </svg>
+          ) : (
+            <span className="sniff-cat__sneeze">
+              <i />
+              <i />
+              <i />
+              <i />
+            </span>
+          )}
+        </span>
+      </span>
+    </span>
+  );
+}
+
+/** Saving: the box comes, the papers go in, the flaps close and the cat tapes it shut. */
+export const PACKING_MS = 2600;
+/** The save is over: the box bounces and goes, the cat hops for joy. */
+export const UNPACKED_MS = 1000;
+
+/** The flaps, from hinge to tip: folded out to the sides (as the box is drawn), then shut. */
+const FLAP_LEFT_OPEN = "M 6 18 L 10 12 L -2 8 L -6 14 Z";
+const FLAP_RIGHT_OPEN = "M 54 18 L 50 12 L 62 8 L 66 14 Z";
+
+/**
+ * Saving the queue. The cat brings a box over: the papers drop in, one flap and then the other
+ * folds shut, and the cat runs the tape over the seam and down the front, and bites it off.
+ * When the save is over (`done`) the box gives a hop and goes, and the cat hops for joy. The
+ * turtle curls up in its shell instead. Timings: PACKING_MS, UNPACKED_MS.
+ */
+export function PackingCat({ done, turtle }: { done: boolean; turtle: boolean }) {
+  if (turtle) {
+    return (
+      <span className={`packing${done ? " packing--done" : ""}`} aria-hidden="true">
+        <ShellTurtle leapFrom={{ x: 0, y: 11 }} />
+      </span>
+    );
+  }
+  return (
+    <span className={`packing packing--cat${done ? " packing--done" : ""}`} aria-hidden="true">
+      <span className="packing__stage">
+        <svg className="packing__box" viewBox="-8 -16 76 62" width={63} height={51}>
+          <path className="packing__inside" d="M 10 12 L 50 12 L 54 18 L 6 18 Z" />
+          {/* The papers drop in behind the front. */}
+          {[22, 30, 26].map((x, i) => (
+            <g key={i} className="packing__sheet" style={{ "--i": i } as CSSProperties}>
+              <rect x={x - 6} y={-14} width={12} height={9} rx={1} />
+              <path d={`M ${x - 4} -11 h 8 M ${x - 4} -8.5 h 6`} />
+            </g>
+          ))}
+          <path className="packing__front" d="M 6 18 L 54 18 L 52 44 L 8 44 Z" />
+          <path className="packing__shade" d="M 7.4 36 L 52.6 36 L 52 44 L 8 44 Z" />
+          <path className="packing__flap packing__flap--left" d={FLAP_LEFT_OPEN} />
+          <path className="packing__flap packing__flap--right" d={FLAP_RIGHT_OPEN} />
+          <path className="packing__tape" d="M 30 12 L 30 18 L 30 31" pathLength={1} />
+          <g className="packing__roll">
+            <circle r={4.6} />
+            <circle className="packing__roll-hole" r={1.9} />
+          </g>
+        </svg>
+      </span>
+      <span className="packing__cat">
+        <span className="packing__cat-hop">
+          <LeapingCat size={38} />
+        </span>
+      </span>
+      {done && (
+        <span className="packing__pop">
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
     </span>
   );
 }
@@ -356,15 +866,14 @@ export const TRASH_JUMP_MS = 760;
 export const TRASH_HANDOFF_MS = 430;
 
 /**
- * The bin's lid flips and a cat climbs out of it, facing left. `handoff`: it stops crouched on
- * the bin, ready to jump (the badge window plays the jump); otherwise it leaps off to the left.
+ * The bin's lid flips and a cat (or the turtle, on its flippers) climbs out of it, facing left.
+ * `handoff`: it stops crouched on the bin, ready to jump (the badge window plays the jump);
+ * otherwise it leaps off to the left.
  */
 export function TrashJump({ size = 17, handoff = false }: { size?: number; handoff?: boolean }) {
   return (
     <span className={`trash-jump${handoff ? " trash-jump--handoff" : ""}`}>
       <LeapingCat size={handoff ? LEAP_CAT_SIZE : Math.round(size * 2.4)} />
-      {/* The turtle comes out of the bin curled up in its shell, bouncing like a ball. */}
-      <img className="trash-jump__shell" src={turtleShell} alt="" draggable={false} />
       <TrashIcon size={size} />
     </span>
   );
@@ -372,8 +881,9 @@ export function TrashJump({ size = 17, handoff = false }: { size?: number; hando
 
 /**
  * The turtle's "Geri al": no box for a turtle, it hides in its own shell. `leapFrom` (as for
- * BoxCat): the shell bounces in from there like a ball. Now and then it rocks, and two eyes peek
- * out. With `flee`, time is up: out come its head and flippers and it runs off (`runDir` -1 left).
+ * BoxCat): it jumps over from there as it is, pulls itself into its shell on the way down and
+ * lands with a bounce. Now and then the shell rocks. With `flee`, time is up: out come its head
+ * and flippers and it runs off (`runDir` -1 left).
  */
 export function ShellTurtle({
   leapFrom,
@@ -390,13 +900,15 @@ export function ShellTurtle({
       style={{ "--dx": `${leapFrom?.x ?? 0}px`, "--dy": `${leapFrom?.y ?? 0}px`, "--run": runDir } as CSSProperties}
       aria-hidden="true"
     >
-      <span className="shell-turtle__ball">
-        <img className="shell-turtle__shell" src={turtleShell} alt="" draggable={false} />
-        <span className="shell-turtle__peek">
-          <i />
-          <i />
+      {leapFrom && (
+        <span className="shell-turtle__flyer">
+          <img src={turtleHappy} alt="" draggable={false} />
         </span>
+      )}
+      <span className="shell-turtle__ball">
+        <img className="shell-turtle__shell" src={turtleInShell} alt="" draggable={false} />
       </span>
+      {leapFrom && <span className="shell-turtle__poof" />}
       {flee && (
         <span className="shell-turtle__runner">
           <span className="shell-turtle__facing">

@@ -910,16 +910,39 @@ html.pressing .overlay--resize-corner * {
 }
 
 /* The badge's cat, sitting where the badge will be: the tail comes out from under it. */
+/* The badge's cat, sitting where the badge sits while the badge hides for the screenshot. */
 .overlay__cat {
   position: absolute;
   z-index: 8;
+  display: block;
+  width: 40px;
+  height: 40px;
   margin: 0;
   translate: -50% -50%;
+  transform-origin: 50% 100%;
   transition: none;
+  animation: overlay-cat-in 240ms var(--ease-pop) backwards;
+  pointer-events: none;
+}
+
+/* Its tail has the capture: it gives a little jump as the capture goes in. */
+.overlay__cat--catch {
   animation:
     overlay-cat-in 240ms var(--ease-pop) backwards,
     overlay-cat-catch 460ms var(--ease-out) 820ms;
-  pointer-events: none;
+}
+
+.overlay__cat .cat-seat {
+  margin: 0 auto;
+}
+
+.overlay__face {
+  display: block;
+  transform-origin: 50% 50%;
+}
+
+.overlay__face .leaping-cat {
+  display: block;
 }
 
 @keyframes overlay-cat-in {

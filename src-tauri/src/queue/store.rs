@@ -18,6 +18,8 @@ pub struct QueueStore {
     next_seq: u32,
     /// Items just pasted or cleared, kept (with their files) so "Geri al" can bring them back.
     set_aside: Vec<QueueItem>,
+    /// The whole queue's order when they were set aside, so they go back to their places.
+    set_aside_order: Vec<Uuid>,
 }
 
 impl QueueStore {
@@ -28,6 +30,7 @@ impl QueueStore {
             items: Vec::new(),
             next_seq: 1,
             set_aside: Vec::new(),
+            set_aside_order: Vec::new(),
         }
     }
 
@@ -153,6 +156,7 @@ impl QueueStore {
     /// Takes the given items out of the queue but keeps them (and their files, which a
     /// target app may still be reading) for `restore`. Returns how many were set aside.
     pub fn set_aside(&mut self, ids: &[Uuid]) -> usize {
+        self.set_aside_order = self.items.iter().map(|item| item.id).collect();
         let (aside, keep) = std::mem::take(&mut self.items)
             .into_iter()
             .partition(|item| ids.contains(&item.id));
@@ -163,23 +167,35 @@ impl QueueStore {
 
     /// Empties the queue into the set-aside items.
     pub fn set_aside_all(&mut self) -> usize {
+        self.set_aside_order = self.items.iter().map(|item| item.id).collect();
         self.set_aside = std::mem::take(&mut self.items);
         self.set_aside.len()
     }
 
-    /// Puts the set-aside items back in front, in their old order, ahead of anything queued
-    /// since. Returns how many came back.
+    /// Puts the set-aside items back where they were among the items that stayed, ahead of
+    /// anything queued since. Returns how many came back.
     pub fn restore(&mut self) -> usize {
         let restored = std::mem::take(&mut self.set_aside);
         let count = restored.len();
-        let newer = std::mem::replace(&mut self.items, restored);
-        self.items.extend(newer);
+        let order = std::mem::take(&mut self.set_aside_order);
+        let place = |item: &QueueItem| {
+            order
+                .iter()
+                .position(|id| *id == item.id)
+                .unwrap_or(usize::MAX)
+        };
+        let mut all = restored;
+        all.append(&mut self.items);
+        // Stable: items queued since keep their own order, after the rest.
+        all.sort_by_key(place);
+        self.items = all;
         count
     }
 
     /// Gives up on undo. The files stay until exit or the next start, like pasted files.
     pub fn discard_set_aside(&mut self) {
         self.set_aside.clear();
+        self.set_aside_order.clear();
     }
 }
 
@@ -292,6 +308,29 @@ mod tests {
         assert_eq!(store.len(), 2);
         assert_eq!(store.restore(), 0);
         std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn undoing_a_paste_of_picked_items_puts_them_back_in_place() {
+        let mut store = QueueStore::new(&temp_root("picked"), "s1");
+        for text in ["a", "b", "c", "d"] {
+            store.push(QueueItem::text(text.into(), None));
+        }
+        let texts = |store: &QueueStore| -> Vec<String> {
+            store
+                .items()
+                .iter()
+                .filter_map(|i| i.text.clone())
+                .collect()
+        };
+        let picked = [store.items()[1].id, store.items()[3].id];
+
+        assert_eq!(store.set_aside(&picked), 2);
+        assert_eq!(texts(&store), ["a", "c"]);
+        store.push(QueueItem::text("new".into(), None));
+
+        assert_eq!(store.restore(), 2);
+        assert_eq!(texts(&store), ["a", "b", "c", "d", "new"]);
     }
 
     #[test]

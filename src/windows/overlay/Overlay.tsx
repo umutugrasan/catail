@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
+import { catsAround, useWornTheme } from "../../lib/cat";
 import { fatness } from "../../lib/catSeat";
-import { CatEar, SeatCat, TRASH_JUMP_MS, TrashJump, TurtleBar, Whiskers } from "../../lib/cats";
+import {
+  CatEar,
+  CatNose,
+  LeapingCat,
+  SeatCat,
+  TRASH_JUMP_MS,
+  TrashJump,
+  TurtleBar,
+  TurtleSeat,
+  Whiskers,
+} from "../../lib/cats";
 import { t } from "../../lib/i18n";
 import {
   captureDeliver,
@@ -74,6 +85,13 @@ const SIDEBAR_FALLBACK: Size = { width: 46, height: 560 };
 const TOOLBAR_FALLBACK_WIDTH = 300;
 
 const HANDLES: Handle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+/** The cat watching a selection being drawn, and pouncing on it. */
+const POUNCE_SIZE = 60;
+/** The badge's cat, from where it sits to the selection's corner and back. */
+const LEAP_MS = 1300;
+const POUNCE_MS = 1400;
+/** Smaller selections are left alone: they may be a slip. */
+const POUNCE_MIN = 24;
 
 type Drag =
   | { kind: "none" }
@@ -130,6 +148,88 @@ export function Overlay() {
   const [toolbarWidth, setToolbarWidth] = useState(TOOLBAR_FALLBACK_WIDTH);
   const [ocr, setOcr] = useState<OcrState | null>(null);
   /** Snapshot flying into the badge after "Kuyruğa ekle"; hides the rest of the UI. */
+  // The cat that watched the selection being drawn, now pouncing on its corner.
+  const turtle = useWornTheme() === "turtle";
+  const [pounce, setPounce] = useState<{ x: number; tx: number; ty: number; key: number } | null>(null);
+  const pounceRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const cat = pounceRef.current;
+    if (!pounce || !cat) return;
+    const { tx, ty } = pounce;
+    const tilt = tx < 0 ? 1 : -1;
+    const keyframes: Keyframe[] = turtle
+      ? [{ transform: "translateY(66%)" }, { transform: "translateY(100%)" }]
+      : [
+          { transform: "translate(0, 58%)", easing: "ease-out" },
+          { transform: "none", offset: 0.14 },
+          { transform: "scale(1.1, 0.86) rotate(-5deg)", offset: 0.2 },
+          { transform: "scale(1.1, 0.86) rotate(5deg)", offset: 0.26 },
+          { transform: "scale(1.1, 0.86) rotate(-5deg)", offset: 0.32 },
+          { transform: "scale(1.12, 0.84) rotate(4deg)", offset: 0.38 },
+          { transform: "scale(0.9, 1.14)", offset: 0.44, easing: "ease-out" },
+          {
+            transform: `translate(${tx * 0.6}px, ${ty - 90}px) rotate(${tilt * 14}deg)`,
+            offset: 0.68,
+            easing: "ease-in",
+          },
+          { transform: `translate(${tx}px, ${ty}px) scale(1.16, 0.84)`, offset: 0.84 },
+          { transform: `translate(${tx}px, ${ty}px)`, offset: 0.9, opacity: 1 },
+          { transform: `translate(${tx}px, ${ty}px) scale(0.9)`, opacity: 0 },
+        ];
+    const run = cat.animate(keyframes, { duration: turtle ? 320 : POUNCE_MS, fill: "forwards" });
+    run.onfinish = () => setPounce(null);
+    return () => run.cancel();
+  }, [pounce]);
+
+  // The badge's own cat leaping from where it sits onto the selection's corner, and back.
+  const [leap, setLeap] = useState<{ tx: number; ty: number; key: number } | null>(null);
+  const homeRef = useRef<HTMLSpanElement>(null);
+  const faceRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const cat = homeRef.current;
+    if (!leap || !cat) return;
+    const { tx, ty } = leap;
+    const dir = tx > 0 ? 1 : -1;
+    const up = Math.min(0, ty) - 70;
+    const run = cat.animate(
+      [
+        { transform: "none" },
+        { transform: "scale(1.12, 0.86)", offset: 0.12, easing: "ease-out" },
+        { transform: `translate(${tx * 0.5}px, ${up}px) rotate(${-dir * 12}deg)`, offset: 0.36, easing: "ease-in" },
+        { transform: `translate(${tx}px, ${ty}px) scale(1.16, 0.84)`, offset: 0.52 },
+        { transform: `translate(${tx}px, ${ty}px)`, offset: 0.6, easing: "ease-out" },
+        { transform: `translate(${tx * 0.5}px, ${up + 20}px) rotate(${dir * 10}deg)`, offset: 0.8, easing: "ease-in" },
+        { transform: "scale(1.12, 0.88)", offset: 0.94 },
+        { transform: "none" },
+      ],
+      { duration: LEAP_MS },
+    );
+    // The picture faces left: turned round for the way there if that's to the right, and the
+    // other way for the way back.
+    const out = dir > 0 ? -1 : 1;
+    faceRef.current?.animate(
+      [
+        { transform: `scaleX(${out})` },
+        { transform: `scaleX(${out})`, offset: 0.58 },
+        { transform: `scaleX(${-out})`, offset: 0.6 },
+        { transform: `scaleX(${-out})` },
+      ],
+      { duration: LEAP_MS },
+    );
+    run.onfinish = () => setLeap(null);
+    return () => run.cancel();
+  }, [leap]);
+
+  // Boops of the top bar's nose: each one restarts its little animation.
+  const [boops, setBoops] = useState(0);
+  const [booping, setBooping] = useState(false);
+  const boopTimer = useRef<number | undefined>(undefined);
+  const boop = () => {
+    setBoops((n) => n + 1);
+    setBooping(true);
+    window.clearTimeout(boopTimer.current);
+    boopTimer.current = window.setTimeout(() => setBooping(false), 600);
+  };
   const [flying, setFlying] = useState<{
     rect: Rect;
     drawings: string | null;
@@ -244,6 +344,8 @@ export function Overlay() {
     const scale = info.width / window.innerWidth;
     const target = { x: info.flyX / scale, y: info.flyY / scale };
     const cat = isOnView(target, viewSize()) ? target : null;
+    // Back in its seat at once if it was still mid-leap: the tail starts from there.
+    setLeap(null);
     setFlying({
       rect: selection,
       drawings: shapes.length > 0 ? (canvasRef.current?.toDataURL() ?? null) : null,
@@ -552,8 +654,41 @@ export function Overlay() {
     }
   };
 
+  // The badge's own cat, on this screen. The badge hides for the screenshot, so the cat stays
+  // where it sat: it watches the selection being drawn, pounces on it and comes back, and pulls
+  // it into the queue with its tail. One cat throughout. With the badge on another screen, a
+  // cat peeks up from this one's bottom edge instead.
+  const home = (() => {
+    if (!info || info.flyX == null || info.flyY == null || !catsAround()) return null;
+    if (document.documentElement.dataset.cat === "plain") return null;
+    const s = info.width / window.innerWidth;
+    const p = { x: info.flyX / s, y: info.flyY / s };
+    return isOnView(p, viewSize()) ? p : null;
+  })();
+
+  /** Where the watching cat stands, while a selection big enough to watch is being drawn. */
+  const pounceWatchX = () => {
+    if (home || drag.kind !== "select" || !selection || pounce || !catsAround()) return null;
+    if (selection.width < POUNCE_MIN || selection.height < POUNCE_MIN) return null;
+    const half = POUNCE_SIZE / 2 + 8;
+    return Math.min(Math.max(selection.x + selection.width / 2, half), window.innerWidth - half);
+  };
+
   const onPointerUp = () => {
     if (drag.kind === "select" && selection) {
+      // Let go: the badge's cat leaps onto the selection's nearer corner, and comes back.
+      if (home && !leap && selection.width >= POUNCE_MIN && selection.height >= POUNCE_MIN) {
+        const cornerX = home.x < selection.x + selection.width / 2 ? selection.x : selection.x + selection.width;
+        const cornerY = home.y < selection.y + selection.height / 2 ? selection.y : selection.y + selection.height;
+        setLeap({ tx: cornerX - home.x, ty: cornerY - home.y, key: Date.now() });
+      }
+      const watchX = pounceWatchX();
+      if (watchX !== null) {
+        // Let go: the watching cat pounces on the selection's nearer bottom corner.
+        const cornerX = watchX < selection.x + selection.width / 2 ? selection.x : selection.x + selection.width;
+        const cornerY = selection.y + selection.height;
+        setPounce({ x: watchX, tx: cornerX - watchX, ty: cornerY - window.innerHeight, key: Date.now() });
+      }
       if (selection.width < MIN_SELECTION || selection.height < MIN_SELECTION) {
         setSelection(null);
         // A plain click on a QR code opens its link, like tapping it on a phone.
@@ -592,6 +727,17 @@ export function Overlay() {
   if (!info) return <div className="overlay overlay--empty" />;
 
   const scale = info.width / window.innerWidth;
+  const watchX = pounceWatchX();
+  // The one cat: where it sits, how fat it is, and where it's looking.
+  const seatAt = flying ? flying.cat : home;
+  const seatFat = flying ? flying.fat : fatness(info.queueCount);
+  const look = (() => {
+    if (!seatAt || !selection || flying) return {};
+    const dx = selection.x + selection.width / 2 - seatAt.x;
+    const dy = selection.y + selection.height / 2 - seatAt.y;
+    const reach = Math.hypot(dx, dy) + 70;
+    return { "--look-x": (dx / reach).toFixed(3), "--look-y": (dy / reach).toFixed(3) };
+  })();
   const imageRect = selection && toImageRect(selection, scale, info);
   const settled =
     selection !== null && flying === null && (drag.kind === "none" || drag.kind === "draw" || drag.kind === "erase");
@@ -662,8 +808,36 @@ export function Overlay() {
       )}
 
       {flying && <svg ref={tailRef} className="overlay__tail" aria-hidden="true" />}
-      {flying?.cat && (
-        <SeatCat className="overlay__cat" fat={flying.fat} style={{ left: flying.cat.x, top: flying.cat.y }} />
+      {seatAt && (
+        <span
+          ref={homeRef}
+          className={`overlay__cat${flying ? " overlay__cat--catch" : ""}`}
+          style={{ left: seatAt.x, top: seatAt.y, ...look } as React.CSSProperties}
+        >
+          {leap ? (
+            <span ref={faceRef} className="overlay__face">
+              <LeapingCat size={40} />
+            </span>
+          ) : turtle ? (
+            <TurtleSeat fat={seatFat} asleep={false} hatch={null} />
+          ) : (
+            <SeatCat fat={seatFat} />
+          )}
+        </span>
+      )}
+
+      {(watchX !== null || pounce) && (
+        <span
+          ref={pounceRef}
+          key={pounce ? `pounce-${pounce.key}` : "watch"}
+          className={`pounce-cat${pounce ? "" : " pounce-cat--watch"}`}
+          style={{ left: (pounce ? pounce.x : (watchX ?? 0)) - POUNCE_SIZE / 2 }}
+        >
+          {/* It faces left; turned round to jump right. */}
+          <span className="pounce-cat__look" style={pounce && pounce.tx > 0 ? { scale: "-1 1" } : undefined}>
+            <LeapingCat size={POUNCE_SIZE} />
+          </span>
+        </span>
       )}
 
       {flying ? (
@@ -696,7 +870,7 @@ export function Overlay() {
       )}
 
       <div
-        className={`overlay__modes${flying ? " overlay__modes--hidden" : ""}`}
+        className={`overlay__modes${flying ? " overlay__modes--hidden" : ""}${booping ? " boop" : ""}`}
         onPointerDown={(e) => e.stopPropagation()}
       >
         <CatEar side="left" />
@@ -713,6 +887,7 @@ export function Overlay() {
           <CameraIcon />
           {t("overlay.mode_screenshot")}
         </button>
+        <CatNose boops={boops} title={t("overlay.nose")} onBoop={boop} />
         <button
           type="button"
           className={info.textMode ? "active" : undefined}

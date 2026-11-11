@@ -51,6 +51,12 @@ body,
   align-items: flex-start;
 }
 
+/* In a left corner the cat's scratching post needs room between the window's edge and the cat
+   (TREE_ROOM in badge.rs). */
+#root[data-corner$="left"] .badge-row {
+  padding-left: 34px;
+}
+
 .badge-wrap {
   position: relative;
   display: inline-flex;
@@ -301,4 +307,12 @@ body,
   to {
     transform: scaleX(0);
   }
+}
+
+/* Saving the queue: the cat in its taped box, where it sat. */
+.packing-slot {
+  position: relative;
+  z-index: 1;
+  display: block;
+  flex: none;
 }

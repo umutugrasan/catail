@@ -79,6 +79,19 @@ impl BadgeCorner {
     }
 }
 
+/// How the queue panel lays out its items. Unknown names, from a newer version's settings
+/// file, fall back to the grid.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PanelLayout {
+    /// One column as narrow as the badge's pill; a tile's buttons pop out beside it as bubbles.
+    List,
+    /// Two columns of square tiles; each tile's buttons sit on it.
+    #[default]
+    #[serde(other)]
+    Grid,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
@@ -98,6 +111,9 @@ pub struct Settings {
     /// Language "Çevir" translates into; the last one picked.
     pub translate_to: String,
     pub badge_corner: BadgeCorner,
+    /// The badge's size, in percent of its usual size (`BADGE_SIZE_RANGE`).
+    pub badge_size: u16,
+    pub panel_layout: PanelLayout,
     /// Which cat the app looks like; the theme follows it.
     pub cat: Cat,
     /// The plain theme's color, "#rrggbb".
@@ -191,12 +207,17 @@ impl Default for Settings {
             language: None,
             translate_to: "tr".into(),
             badge_corner: BadgeCorner::BottomRight,
+            badge_size: 100,
+            panel_layout: PanelLayout::Grid,
             cat: Cat::default(),
             plain_accent: PLAIN_ACCENT_DEFAULT.into(),
             custom_cat: CustomCat::default(),
         }
     }
 }
+
+/// How much smaller or bigger the badge can be made, in percent.
+pub const BADGE_SIZE_RANGE: std::ops::RangeInclusive<u16> = 70..=160;
 
 /// Delays outside this range are either pointless or would freeze pasting.
 const DELAY_RANGE_MS: std::ops::RangeInclusive<u32> = 50..=5000;
@@ -263,7 +284,15 @@ impl Settings {
             self.plain_accent = PLAIN_ACCENT_DEFAULT.into();
         }
         self.custom_cat = self.custom_cat.tidied();
+        self.badge_size = self
+            .badge_size
+            .clamp(*BADGE_SIZE_RANGE.start(), *BADGE_SIZE_RANGE.end());
         self
+    }
+
+    /// The badge's size as a factor of its usual one.
+    pub fn badge_zoom(&self) -> f64 {
+        f64::from(self.badge_size) / 100.0
     }
 
     pub fn rule_for(&self, process: &str) -> Option<&AppPasteRule> {
@@ -402,6 +431,33 @@ mod tests {
         // Settings saved before the color existed get the default.
         let old: Settings = serde_json::from_str(r#"{"cat":"plain"}"#).unwrap();
         assert_eq!(old.plain_accent, PLAIN_ACCENT_DEFAULT);
+    }
+
+    #[test]
+    fn badge_size_stays_in_range() {
+        let size = |percent: u16| {
+            Settings {
+                badge_size: percent,
+                ..Settings::default()
+            }
+            .sanitized()
+            .badge_size
+        };
+        assert_eq!(size(100), 100);
+        assert_eq!(size(10), *BADGE_SIZE_RANGE.start());
+        assert_eq!(size(900), *BADGE_SIZE_RANGE.end());
+        let old: Settings = serde_json::from_str(r#"{"cat":"gray"}"#).unwrap();
+        assert_eq!(old.badge_zoom(), 1.0);
+    }
+
+    #[test]
+    fn panel_layout_defaults_to_the_grid() {
+        let old: Settings = serde_json::from_str(r#"{"cat":"gray"}"#).unwrap();
+        assert_eq!(old.panel_layout, PanelLayout::Grid);
+        let list: Settings = serde_json::from_str(r#"{"panel_layout":"list"}"#).unwrap();
+        assert_eq!(list.panel_layout, PanelLayout::List);
+        let newer: Settings = serde_json::from_str(r#"{"panel_layout":"carousel"}"#).unwrap();
+        assert_eq!(newer.panel_layout, PanelLayout::Grid);
     }
 
     #[test]

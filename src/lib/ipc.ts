@@ -67,6 +67,9 @@ export interface Settings {
   /** Language "Çevir" translates into. */
   translate_to: string;
   badge_corner: BadgeCorner;
+  /** The badge's size, in percent of its usual size (BADGE_SIZES). */
+  badge_size: number;
+  panel_layout: PanelLayout;
   /** Which cat the app looks like; the theme follows it. */
   cat: Cat;
   /** The plain theme's color, "#rrggbb". */
@@ -93,6 +96,13 @@ export const catSet = (cat: Cat) => invoke<void>("cat_set", { cat });
 export const plainAccentSet = (color: string) => invoke<void>("plain_accent_set", { color });
 /** "Kendi kedin": its colors; also takes effect right away, in every window. */
 export const customCatSet = (custom: CustomCat) => invoke<void>("custom_cat_set", { custom });
+
+/** The panel's two columns of tiles, or one column with the buttons in bubbles beside it. */
+export type PanelLayout = "grid" | "list";
+export const PANEL_LAYOUTS: PanelLayout[] = ["grid", "list"];
+
+/** How much smaller or bigger the badge can be made, in percent (settings.rs). */
+export const BADGE_SIZES = { min: 70, max: 160, step: 5 } as const;
 
 export type BadgeCorner = "bottom-right" | "bottom-center" | "bottom-left" | "top-right" | "top-center" | "top-left";
 export const BADGE_CORNERS: BadgeCorner[] = [
@@ -131,6 +141,8 @@ export interface BadgeState {
   /** "Geri al" after a paste or clear, while it lasts. */
   undo: UndoView | null;
   corner: BadgeCorner;
+  /** The badge's size: its page is zoomed by this. */
+  zoom: number;
 }
 
 /** Where the panel's bin is, seen from the badge window (logical px): where the cat starts. */
@@ -165,17 +177,34 @@ export const queueClear = (leap = false) => invoke<void>("queue_clear", { leap }
 /** Turning it on also closes the overlay. */
 export const textModeSet = (enabled: boolean) => invoke<void>("text_mode_set", { enabled });
 export const badgeState = () => invoke<BadgeState>("badge_state");
-/** Grows the see-through badge window for a moment, or puts it back. */
-export const badgeMakeRoom = (room: boolean) => invoke<void>("badge_make_room", { room });
 /** Where the pointer is, in px from the badge window's corner. */
 export const badgeCursor = () => invoke<[number, number] | null>("badge_cursor");
+/** The badge's cat stops its walk on the spot: it's wanted somewhere else. */
+export const badgeStrollStop = () => invoke<void>("badge_stroll_stop");
+/** How the panel looks (its corner and size), for a panel that has only just loaded. */
+export interface PanelOpened {
+  corner: string;
+  zoom: number;
+}
+export const panelOpened = () => invoke<PanelOpened>("panel_opened");
+/** Where the badge is in its window (px): only there does the window take the mouse. */
+export const badgeHitArea = (x: number, y: number, width: number, height: number) =>
+  invoke<void>("badge_hit_area", { x, y, width, height });
 /** A cat is needed in the panel: the one on the badge goes there for this long. */
 export const badgeCatAway = (ms: number) => invoke<void>("badge_cat_away", { ms });
+/** The cat goes for a walk along the taskbar from its seat (`x`, `bottom`: px in the badge). */
+export const badgeStroll = (x: number, bottom: number, fat: number) => invoke<boolean>("badge_stroll", { x, bottom, fat });
+/** Something came up: the walking cat runs home. */
+export const badgeStrollHurry = () => invoke<void>("badge_stroll_hurry");
+/** The walking cat is back on its seat. */
+export const strollDone = () => invoke<void>("stroll_done");
 
 export const panelToggle = () => invoke<void>("panel_toggle");
 export const panelClose = () => invoke<void>("panel_close");
 /** Pastes the queue into the app that was in front (the panel never takes focus). */
 export const panelPaste = () => invoke<void>("panel_paste");
+/** Pastes only these items, in queue order; the rest stays queued. */
+export const panelPasteItems = (ids: string[]) => invoke<void>("panel_paste_items", { ids });
 export const queueItems = () => invoke<QueueItemView[]>("queue_items");
 export const queueRemove = (id: string) => invoke<void>("queue_remove", { id });
 export const queueReorder = (ids: string[]) => invoke<void>("queue_reorder", { ids });
@@ -263,7 +292,28 @@ export const BadgeEvents = {
   catAway: "badge:cat-away",
   /** Files are being dragged over the badge (true) or have left it (false). */
   dropHover: "badge:drop-hover",
+  /** The queue is being saved (true) or the save is over (false). */
+  packing: "badge:packing",
+  /** The cat is back from its walk along the taskbar. */
+  strollBack: "badge:stroll-back",
 } as const;
+
+export const StrollEvents = {
+  /** Off for a walk: a `StrollStart`. */
+  start: "stroll:start",
+  /** Run home. */
+  hurry: "stroll:hurry",
+} as const;
+
+/** Where a walk starts, in the strip's px (stroll.rs). */
+export interface StrollStart {
+  home: number;
+  seat: number;
+  width: number;
+  fat: number;
+  /** The badge's size: the cat out walking is as big as the one on it. */
+  zoom: number;
+}
 
 export const PreviewEvents = {
   show: "preview:show",

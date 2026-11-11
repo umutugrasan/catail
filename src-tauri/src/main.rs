@@ -21,6 +21,7 @@ mod queue;
 mod settings;
 mod shell_menu;
 mod state;
+mod stroll;
 mod translate;
 mod tray;
 mod updater;
@@ -88,6 +89,7 @@ fn main() {
             commands::panel_toggle,
             commands::panel_close,
             commands::panel_paste,
+            commands::panel_paste_items,
             commands::queue_items,
             commands::queue_remove,
             commands::queue_reorder,
@@ -113,8 +115,13 @@ fn main() {
             commands::preview_close,
             commands::preview_current,
             commands::badge_state,
-            commands::badge_make_room,
             commands::badge_cursor,
+            commands::panel_opened,
+            commands::badge_stroll_stop,
+            commands::badge_hit_area,
+            commands::badge_stroll,
+            commands::badge_stroll_hurry,
+            commands::stroll_done,
             commands::badge_cat_away,
             commands::ui_language,
             commands::ui_cat,
@@ -142,6 +149,7 @@ fn main() {
             std::thread::spawn(move || {
                 overlay::prewarm(&handle);
                 badge::prewarm(&handle);
+                stroll::prewarm(&handle);
                 if let Some(paths) = files_at_start {
                     queue::add_files(&handle, paths, None);
                 }

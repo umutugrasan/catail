@@ -226,6 +226,14 @@ export function PasteIcon() {
   );
 }
 
+export function CheckIcon({ size = 12 }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </Icon>
+  );
+}
+
 /** Corners of the whole screen: select everything. */
 export function SelectAllIcon() {
   return (

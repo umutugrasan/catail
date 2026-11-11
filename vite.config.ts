@@ -20,6 +20,7 @@ export default defineConfig({
         overlay: page("src/windows/overlay/index.html"),
         settings: page("src/windows/settings/index.html"),
         badge: page("src/windows/badge/index.html"),
+        stroll: page("src/windows/stroll/index.html"),
         panel: page("src/windows/panel/index.html"),
         preview: page("src/windows/preview/index.html"),
       },

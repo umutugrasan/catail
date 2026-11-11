@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWornTheme, wearCustomCat, wearPlainAccent } from "../../lib/cat";
 import { BoxCat, CatFace, LeapingCat, ShellTurtle } from "../../lib/cats";
-import { LANGUAGES, t } from "../../lib/i18n";
+import { LANGUAGES, t, uiLanguage } from "../../lib/i18n";
 import { CUSTOM_PRESETS, type CustomCat } from "../../lib/customCat";
 import {
   ANIMAL_THEMES,
   ANIMALS,
   animalOf,
   BADGE_CORNERS,
+  BADGE_SIZES,
+  PANEL_LAYOUTS,
   catSet,
   customCatSet,
   plainAccentSet,
@@ -20,6 +22,7 @@ import {
   type BadgeCorner,
   type Cat,
   type HotkeyMap,
+  type PanelLayout,
   type PasteMode,
   type Settings as SettingsModel,
   type UpdateInfo,
@@ -28,6 +31,33 @@ import { PLAIN_PRESETS } from "../../lib/plainAccent";
 import { ColorPicker } from "../overlay/ColorPicker";
 import { ChevronIcon } from "../overlay/icons";
 import { HotkeyField } from "./HotkeyField";
+
+/** A small picture of the panel in each layout, over the badge's pill. */
+function LayoutIcon({ layout }: { layout: PanelLayout }) {
+  return (
+    <svg className={`layout-card__icon layout-card__icon--${layout}`} viewBox="0 0 64 58" width={64} height={58} aria-hidden="true">
+      {layout === "grid" ? (
+        <>
+          <rect className="layout-card__frame" x="18" y="2" width="44" height="42" rx="4" />
+          {[0, 1, 2, 3].map((i) => (
+            <rect key={i} className="layout-card__tile" x={22 + (i % 2) * 19} y={6 + Math.floor(i / 2) * 17} width="16" height="14" rx="2" />
+          ))}
+        </>
+      ) : (
+        <>
+          <rect className="layout-card__frame" x="38" y="2" width="24" height="42" rx="4" />
+          {[0, 1, 2].map((i) => (
+            <rect key={i} className="layout-card__tile" x="41" y={6 + i * 12} width="18" height="10" rx="2" />
+          ))}
+          {[0, 1, 2].map((i) => (
+            <circle key={i} className="layout-card__bubble" cx="31" cy={6 + i * 6.5} r="2.6" style={{ animationDelay: `${i * 90}ms` }} />
+          ))}
+        </>
+      )}
+      <rect className="layout-card__pill" x={layout === "grid" ? 30 : 36} y="48" width={layout === "grid" ? 32 : 26} height="8" rx="4" />
+    </svg>
+  );
+}
 
 /** The plain theme's card shows a plain window; there's no cat to show. */
 function PlainThemeIcon() {
@@ -495,6 +525,41 @@ export function Settings() {
                 ))}
               </select>
             </label>
+            <label className="field">
+              <span>{t("settings.badge_size")}</span>
+              <span className="size-field">
+                <input
+                  type="range"
+                  min={BADGE_SIZES.min}
+                  max={BADGE_SIZES.max}
+                  step={BADGE_SIZES.step}
+                  value={settings.badge_size}
+                  onChange={(e) => change({ badge_size: Number(e.target.value) })}
+                  onDoubleClick={() => change({ badge_size: 100 })}
+                />
+                <output>
+                  {new Intl.NumberFormat(uiLanguage(), { style: "percent" }).format(settings.badge_size / 100)}
+                </output>
+              </span>
+            </label>
+            <div className="field field--stack">
+              <span>{t("settings.panel_layout")}</span>
+              <div className="layout-picker">
+                {PANEL_LAYOUTS.map((layout) => (
+                  <button
+                    key={layout}
+                    type="button"
+                    className={`layout-card${layout === settings.panel_layout ? " layout-card--active" : ""}`}
+                    aria-pressed={layout === settings.panel_layout}
+                    onClick={() => change({ panel_layout: layout })}
+                  >
+                    <LayoutIcon layout={layout} />
+                    <strong>{t(`settings.layout_${layout}`)}</strong>
+                    <small>{t(`settings.layout_${layout}_hint`)}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
             <label className="check">
               <input
                 type="checkbox"

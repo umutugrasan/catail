@@ -172,6 +172,13 @@ pub async fn panel_paste(app: AppHandle) {
     paste::run(&app);
 }
 
+/// "Seçilenleri yapıştır": only these items, in queue order.
+#[tauri::command]
+pub async fn panel_paste_items(app: AppHandle, ids: Vec<uuid::Uuid>) {
+    panel::hide(&app);
+    paste::run_items(&app, Some(&ids));
+}
+
 #[tauri::command]
 pub fn queue_items(app: AppHandle) -> Vec<ItemView> {
     panel::items(&app)
@@ -283,6 +290,8 @@ pub async fn settings_save(app: AppHandle, settings: Settings) -> Result<(), Str
         .map_err(|e| t_with("settings.save_failed", &[("error", &format!("{e:#}"))]))?;
     let language_changed = next.language != previous.language;
     let corner_changed = next.badge_corner != previous.badge_corner;
+    let layout_changed = next.panel_layout != previous.panel_layout;
+    let size_changed = next.badge_size != previous.badge_size;
     *app.state::<AppState>().settings.lock().unwrap() = next.clone();
     if language_changed {
         let before = crate::i18n::current();
@@ -293,9 +302,12 @@ pub async fn settings_save(app: AppHandle, settings: Settings) -> Result<(), Str
             let _ = app.emit(EVENT_LANGUAGE, crate::i18n::current());
         }
     }
-    if corner_changed {
+    if corner_changed || size_changed {
         panel::hide(&app);
         badge::reposition(&app);
+    }
+    if layout_changed {
+        panel::reset(&app);
     }
     Ok(())
 }
@@ -518,6 +530,8 @@ pub async fn queue_export(
     }
     // The panel is always on top and would cover the dialog.
     panel::hide(&app);
+    // Meanwhile the badge's cat climbs into a box and tapes it shut, until this returns.
+    let _packing = crate::badge::Packing::start(&app);
 
     let (extension, filter) = match format {
         ExportFormat::Zip => ("zip", t("export.zip_filter")),
@@ -632,18 +646,49 @@ pub fn badge_state(app: AppHandle) -> BadgeState {
 }
 
 #[tauri::command]
-pub fn badge_make_room(app: AppHandle, room: bool) {
-    badge::make_room(&app, room);
-}
-
-#[tauri::command]
 pub fn badge_cat_away(app: AppHandle, ms: u64) {
     badge::cat_away(&app, ms);
+}
+
+/// How the panel looks: its corner and size. Asked for by the page as it loads.
+#[tauri::command]
+pub fn panel_opened(app: AppHandle) -> panel::Opened {
+    panel::opened(&app)
+}
+
+/// Ends the badge cat's walk on the spot: it's wanted somewhere else (the panel, its box).
+#[tauri::command]
+pub fn badge_stroll_stop(app: AppHandle) {
+    crate::stroll::stop(&app);
 }
 
 #[tauri::command]
 pub fn badge_cursor(app: AppHandle) -> Option<(f64, f64)> {
     badge::cursor(&app)
+}
+
+/// Where the badge is in its window (logical px): only there does it take the mouse.
+#[tauri::command]
+pub fn badge_hit_area(app: AppHandle, x: f64, y: f64, width: f64, height: f64) {
+    badge::set_hit_area(&app, x, y, width, height);
+}
+
+/// The badge's cat goes for a walk along the taskbar from its seat (logical px in the badge).
+/// Async: the strip may have to be created, which must not happen on the main thread.
+#[tauri::command]
+pub async fn badge_stroll(app: AppHandle, x: f64, bottom: f64, fat: f64) -> bool {
+    crate::stroll::start(&app, x, bottom, fat)
+}
+
+#[tauri::command]
+pub fn badge_stroll_hurry(app: AppHandle) {
+    crate::stroll::hurry(&app);
+}
+
+/// The walking cat is back on its seat.
+#[tauri::command]
+pub async fn stroll_done(app: AppHandle) {
+    crate::stroll::done(&app);
 }
 
 /// The overlays are already closed, so the always-on-top windows don't cover the dialog.

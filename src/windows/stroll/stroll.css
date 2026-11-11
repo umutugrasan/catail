@@ -1,0 +1,139 @@
+/* A see-through strip along the top of the taskbar; only the cat is painted. */
+html:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Anchored by the middle of its feet; Stroll.tsx moves it along. */
+.stroll-cat {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.stroll-cat__facing {
+  display: block;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+}
+
+.stroll-cat__facing--right {
+  transform: scaleX(-1);
+}
+
+.stroll-cat .leaping-cat,
+.stroll-cat .cat-seat {
+  display: block;
+  transform-origin: 50% 100%;
+}
+
+/* Walking: a waddle from foot to foot, each foot lifting in turn. */
+.stroll-cat--walk .leaping-cat {
+  animation: stroll-waddle 460ms var(--ease-in-out) infinite alternate;
+}
+
+.stroll-cat--walk .leaping-cat__foot {
+  animation: stroll-step 460ms var(--ease-in-out) infinite alternate;
+}
+
+.stroll-cat--walk .leaping-cat__foot--right {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes stroll-waddle {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(6deg) translateY(-1.5px);
+  }
+}
+
+@keyframes stroll-step {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-3px) rotate(-12deg);
+  }
+}
+
+/* Running home: leaning in, quick little steps. */
+.stroll-cat--run .leaping-cat {
+  animation: stroll-run 170ms linear infinite alternate;
+}
+
+.stroll-cat--run .leaping-cat__foot {
+  animation-duration: 170ms;
+}
+
+@keyframes stroll-run {
+  from {
+    transform: rotate(-14deg) translateY(0);
+  }
+  to {
+    transform: rotate(-8deg) translateY(-3px);
+  }
+}
+
+/* Sitting somewhere: looking this way and that. */
+.stroll-cat--look .cat-seat__head {
+  animation: stroll-look 2600ms var(--ease-in-out) infinite;
+}
+
+@keyframes stroll-look {
+  0%,
+  100% {
+    transform: none;
+  }
+  20%,
+  40% {
+    transform: rotate(-7deg) translateX(-1px);
+  }
+  60%,
+  80% {
+    transform: rotate(8deg) translateX(1px);
+  }
+}
+
+/* A wash: head down to its chest, licking, now and then a look up. */
+.stroll-cat--groom .cat-seat__head {
+  animation: stroll-groom 2400ms linear infinite;
+}
+
+@keyframes stroll-groom {
+  0%,
+  100% {
+    transform: none;
+  }
+  10%,
+  20%,
+  30%,
+  40%,
+  50%,
+  60% {
+    transform: rotate(14deg) translate(1px, 2px);
+  }
+  15%,
+  25%,
+  35%,
+  45%,
+  55% {
+    transform: rotate(9deg) translate(1px, 0.5px);
+  }
+  70% {
+    transform: none;
+  }
+}
