@@ -44,6 +44,8 @@ pub struct StrollStart {
     /// How high the seat's bottom is above the strip's (the taskbar's top edge).
     pub seat: f64,
     pub width: f64,
+    /// The strip's height: the whole work area's for a climb to the top of the screen.
+    pub height: f64,
     /// The cat's belly, as on the badge.
     pub fat: f64,
     /// The badge's size: the cat out walking is as big as the one on it.
@@ -111,7 +113,12 @@ pub fn start<R: Runtime>(
     let (ax, ay) = (f64::from(area.position.x), f64::from(area.position.y));
     let (aw, ah) = (f64::from(area.size.width), f64::from(area.size.height));
     let zoom = crate::badge::zoom(app);
-    let h = (HEIGHT * zoom * scale).round();
+    // The monkey's leap to the top of the screen needs all of it; anything else just the taskbar's top.
+    let h = if kind == "climb" {
+        ah
+    } else {
+        (HEIGHT * zoom * scale).round().min(ah)
+    };
     let bottom = ay + ah;
     let _ = window.set_size(PhysicalSize::new(aw as u32, h as u32));
     let start = StrollStart {
@@ -119,6 +126,7 @@ pub fn start<R: Runtime>(
         home: (f64::from(corner.x) + seat_x * scale - ax) / scale,
         seat: (bottom - (f64::from(corner.y) + seat_bottom * scale)) / scale,
         width: aw / scale,
+        height: h / scale,
         fat,
         zoom,
     };

@@ -9,6 +9,7 @@ import {
   SeatCat,
   TRASH_JUMP_MS,
   TrashJump,
+  MonkeyBar,
   TurtleBar,
   TurtleSeat,
   Whiskers,
@@ -362,8 +363,9 @@ export function Overlay() {
     const tail = tailRef.current;
     if (!el || !tail) return;
     const spin = Math.random() < 0.5 ? 1 : -1;
-    // The turtle reaches out with a flipper; a cat curls its tail.
-    const kind = document.documentElement.dataset.cat === "turtle" ? "flipper" : "tail";
+    // The turtle reaches out with a flipper, the monkey with a long arm; a cat curls its tail.
+    const worn = document.documentElement.dataset.cat;
+    const kind = worn === "turtle" ? "flipper" : worn === "monkey" ? "hand" : "tail";
     const scene = makeTailScene(selection, target, viewSize(), spin, cat ? catTailRoot(cat) : undefined, kind);
     await playTail(el, tail, scene);
   }, [info, selection, shapes.length]);
@@ -878,6 +880,7 @@ export function Overlay() {
         <Whiskers side="left" />
         <Whiskers side="right" />
         <TurtleBar />
+        <MonkeyBar />
         <button
           type="button"
           className={info.textMode ? undefined : "active"}

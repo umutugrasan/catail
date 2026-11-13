@@ -178,6 +178,8 @@
     "animal_cat": "Cat",
     "animal_turtle": "Turtle",
     "cat_turtle": "Green turtle",
+    "animal_monkey": "Monkey",
+    "cat_monkey": "Brown monkey",
     "cat_custom": "Your own cat",
     "custom_fur": "Fur",
     "custom_belly": "Belly",

@@ -199,6 +199,39 @@
   --tail-stripe: #9ad3b5;
 }
 
+/* The monkey: banana yellows, monkey browns. */
+[data-cat="monkey"] {
+  --tint-50: #fffbec;
+  --tint-100: #fff3c9;
+  --tint-200: #ffe594;
+  --tint-300: #ffd65c;
+  --tint-400: #f5bf2f;
+  --tint-500: #8a5a12;
+  --ink-900: #3a2210;
+  --ink-700: #5a3720;
+  --ink-500: #7f5b3f;
+  --ink-300: #c2a586;
+  --surface-raised: #ffffff;
+  --accent-text: #3a2210;
+  --danger: #b3261e;
+  --danger-soft: #fde6e3;
+  --shadow-rgb: 58, 34, 16;
+  --shade-rgb: 30, 17, 8;
+  --ring-rgb: 58, 34, 16;
+  color-scheme: light;
+
+  --face: #9b6233;
+  --face-rim: #4a2810;
+  --face-eye: #1d120a;
+  --face-whisker: #4a2810;
+  --whisker: #fffbec;
+  --cat-lid: #f4cfa6;
+  --cat-lid-edge: #4a2810;
+  --tail-body: #9b6233;
+  --tail-outline: #4a2810;
+  --tail-stripe: #9b6233;
+}
+
 /* "Kendi kedin": customCat.ts works these out from the picked colors; until then, the orange
    cat's. */
 [data-cat="custom"] {

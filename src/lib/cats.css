@@ -5345,3 +5345,1075 @@
   --flick: 1;
   animation: ear-flick 700ms var(--ease-in-out) 5200ms 1;
 }
+
+/* ===================== The monkey =====================
+   Same seat as the cat, with its own pictures (cat-art.css, src/lib/animals/monkey); a tree
+   beside it instead of the scratching post (MonkeyTree), and games of its own. */
+
+.cat-face__monkey,
+[data-cat="monkey"] .cat-face__cat {
+  display: none;
+}
+
+[data-cat="monkey"] .cat-face__monkey {
+  display: inline;
+}
+
+:root[data-cat="monkey"] .whiskers,
+:root[data-cat="monkey"] .cat-ear,
+:root[data-cat="monkey"] .cat-nose {
+  display: none;
+}
+
+/* Its eyes, mouth and nose are where the monkey's picture has them. */
+[data-cat="monkey"] .cat-seat__lid {
+  width: 6.6%;
+  height: 7.6%;
+}
+
+[data-cat="monkey"] .cat-seat__lid--left {
+  top: 19.4%;
+  left: 14.8%;
+}
+
+[data-cat="monkey"] .cat-seat__lid--right {
+  top: 22.2%;
+  left: 37.6%;
+}
+
+[data-cat="monkey"] .cat-seat__yawn {
+  top: 12.4px;
+  left: 9.2px;
+}
+
+[data-cat="monkey"] .nose-bubble {
+  top: 28.6%;
+  left: 27.4%;
+}
+
+/* In a top corner the tree reaches above the badge: the row makes room for it. */
+#root[data-corner^="top"] .badge-row:has(.monkey-tree) {
+  padding-top: 20px;
+}
+
+/* The tree: taller than the cat's post, its branch reaching out over the monkey. */
+.monkey-tree__grass {
+  fill: #7cc35f;
+  opacity: 0.8;
+}
+
+.monkey-tree__wood-line,
+.monkey-tree__wood {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.monkey-tree__wood-line {
+  stroke: #4a2810;
+}
+
+.monkey-tree__wood {
+  stroke: #8a5a2b;
+}
+
+.monkey-tree__leaf-line circle {
+  fill: #2f6b25;
+  transform: scale(1.12);
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.monkey-tree__leaf circle {
+  fill: #5cae4a;
+}
+
+.monkey-tree__shine circle {
+  fill: #8fd36f;
+}
+
+.monkey-tree__crown {
+  transform-origin: 14px 15px;
+}
+
+.monkey-tree__bananas {
+  pointer-events: auto;
+  cursor: var(--paw);
+}
+
+.monkey-tree__stalk {
+  fill: none;
+  stroke: #6b4a1f;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.monkey-tree__banana {
+  fill: #ffd84a;
+  stroke: #8a5a12;
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+
+.monkey-tree__eyes {
+  opacity: 0;
+  transform: translate(8px, 11px);
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.monkey-tree__eyes ellipse {
+  fill: #fff;
+  stroke: #1d120a;
+  stroke-width: 0.4;
+}
+
+.monkey-tree__pupil {
+  fill: #1d120a;
+}
+
+.monkey-tree__fall ellipse {
+  fill: #5cae4a;
+  stroke: #2f6b25;
+  stroke-width: 0.4;
+  opacity: 0;
+}
+
+/* Hanging from the branch by one arm (CAT_IDLE_MS.swing). */
+.monkey-hang-arm {
+  position: absolute;
+  top: -3px;
+  left: calc(var(--belly, 0px) + 10.6px);
+  z-index: 2;
+  width: 5px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 1.2px solid var(--tail-outline);
+  border-radius: 3px;
+  background: var(--tail-body);
+  opacity: 0;
+  animation: hang-arm 4400ms linear both;
+}
+
+.monkey-hang-arm::before {
+  content: "";
+  position: absolute;
+  top: -3.2px;
+  left: -1.4px;
+  width: 5.4px;
+  height: 4.4px;
+  box-sizing: border-box;
+  border: 1.1px solid var(--tail-outline);
+  border-radius: 50%;
+  background: var(--cat-lid);
+}
+
+@keyframes hang-arm {
+  0%,
+  13% {
+    opacity: 0;
+  }
+  14%,
+  85% {
+    opacity: 1;
+  }
+  86%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Up it jumps, catches the branch, and swings: the trot does the jump, the facing the swing,
+   round the hand on the branch. */
+.cat-slot--swing .cat-slot__trot {
+  animation: swing-jump 4400ms linear both;
+}
+
+@keyframes swing-jump {
+  0% {
+    transform: none;
+  }
+  6% {
+    transform: scale(1.1, 0.88);
+    animation-timing-function: var(--ease-out);
+  }
+  12% {
+    transform: translateY(-14px) scale(0.94, 1.08);
+    animation-timing-function: var(--ease-in-out);
+  }
+  15%,
+  85% {
+    transform: translateY(-5.7px);
+    animation-timing-function: var(--ease-in);
+  }
+  91% {
+    transform: none;
+  }
+  94% {
+    transform: scale(1.1, 0.88);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.cat-slot--swing .cat-slot__facing {
+  transform-origin: calc(13px + var(--belly, 0px)) -3px;
+  animation: swing-sway 4400ms var(--ease-in-out) both;
+}
+
+@keyframes swing-sway {
+  0%,
+  16% {
+    transform: none;
+  }
+  24% {
+    transform: rotate(22deg);
+  }
+  34% {
+    transform: rotate(-20deg);
+  }
+  44% {
+    transform: rotate(17deg);
+  }
+  54% {
+    transform: rotate(-15deg);
+  }
+  64% {
+    transform: rotate(11deg);
+  }
+  73% {
+    transform: rotate(-8deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+  85%,
+  100% {
+    transform: none;
+  }
+}
+
+/* The branch dips under its weight. */
+.cat-slot--swing .monkey-tree__branch,
+.cat-slot--swing .monkey-tree__wood-line:nth-of-type(3) {
+  transform-origin: 17px 9px;
+  animation: branch-dip 4400ms var(--ease-in-out) both;
+}
+
+@keyframes branch-dip {
+  0%,
+  14%,
+  88%,
+  100% {
+    transform: none;
+  }
+  18%,
+  30%,
+  50%,
+  70% {
+    transform: rotate(4deg);
+  }
+  24%,
+  40%,
+  60%,
+  80% {
+    transform: rotate(2.5deg);
+  }
+}
+
+/* Into the leaves (CAT_IDLE_MS.peek): up into the tree, gone; a pair of eyes looks out of the
+   leaves here, then there; a peek out round the side; and down it jumps, leaves falling. */
+.cat-slot--peek .monkey-tree {
+  z-index: 2;
+}
+
+.cat-slot--peek .cat-slot__trot {
+  z-index: 1;
+  animation: peek-trip 5600ms linear both;
+}
+
+@keyframes peek-trip {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  5% {
+    transform: scale(1.1, 0.88);
+    animation-timing-function: var(--ease-out);
+  }
+  11% {
+    transform: translate(calc(-20px - var(--belly, 0px)), -30px) scale(0.72) rotate(-14deg);
+    animation-timing-function: var(--ease-in);
+  }
+  17% {
+    opacity: 1;
+    transform: translate(calc(-37px - var(--belly, 0px)), -36px) scale(0.5);
+  }
+  21% {
+    opacity: 1;
+    transform: translate(calc(-37px - var(--belly, 0px)), -30px) scale(0.5);
+  }
+  22%,
+  68% {
+    opacity: 0;
+    transform: translate(calc(-37px - var(--belly, 0px)), -30px) scale(0.5);
+  }
+  /* Its head out round the side of the leaves, turned to look out: this way and that. */
+  70% {
+    opacity: 1;
+    transform: translate(calc(-25px - var(--belly, 0px)), -34px) scale(-0.5, 0.5);
+  }
+  73% {
+    opacity: 1;
+    transform: translate(calc(-21px - var(--belly, 0px)), -34px) scale(-0.5, 0.5) rotate(-10deg);
+  }
+  76% {
+    transform: translate(calc(-21px - var(--belly, 0px)), -34px) scale(-0.5, 0.5) rotate(6deg);
+    animation-timing-function: var(--ease-out);
+  }
+  84% {
+    transform: translate(calc(-12px - var(--belly, 0px)), -26px) scale(0.8) rotate(10deg);
+    animation-timing-function: var(--ease-in);
+  }
+  91% {
+    transform: none;
+  }
+  94% {
+    transform: scale(1.1, 0.88);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cat-slot--peek .monkey-tree__eyes {
+  animation: peek-eyes 5600ms linear both;
+}
+
+@keyframes peek-eyes {
+  0%,
+  24% {
+    opacity: 0;
+    transform: translate(8px, 11px);
+  }
+  26%,
+  31%,
+  35%,
+  43% {
+    opacity: 1;
+    transform: translate(8px, 11px);
+  }
+  33% {
+    opacity: 1;
+    transform: translate(8px, 11px) scaleY(0.1);
+  }
+  45%,
+  47% {
+    opacity: 0;
+    transform: translate(19px, 10px);
+  }
+  50%,
+  55%,
+  59%,
+  66% {
+    opacity: 1;
+    transform: translate(19px, 10px);
+  }
+  57% {
+    opacity: 1;
+    transform: translate(19px, 10px) scaleY(0.1);
+  }
+  68%,
+  100% {
+    opacity: 0;
+    transform: translate(19px, 10px);
+  }
+}
+
+.cat-slot--peek .monkey-tree__crown {
+  animation: crown-rustle 5600ms linear both;
+}
+
+@keyframes crown-rustle {
+  0%,
+  16%,
+  25%,
+  67%,
+  82%,
+  100% {
+    transform: none;
+  }
+  18%,
+  22%,
+  69%,
+  75%,
+  79% {
+    transform: rotate(-3deg);
+  }
+  20%,
+  24%,
+  72%,
+  77%,
+  81% {
+    transform: rotate(3deg);
+  }
+}
+
+.cat-slot--peek .monkey-tree__fall ellipse {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: leaf-fall 5600ms linear both;
+}
+
+.cat-slot--peek .monkey-tree__fall ellipse:nth-child(2) {
+  --drift: 5px;
+  animation-delay: 120ms;
+}
+
+.cat-slot--peek .monkey-tree__fall ellipse:nth-child(3) {
+  --drift: -2px;
+  animation-delay: 260ms;
+}
+
+@keyframes leaf-fall {
+  0%,
+  78% {
+    opacity: 0;
+    transform: none;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--drift, -4px) * 2), 34px) rotate(160deg);
+  }
+}
+
+/* A banana (CAT_IDLE_MS.banana): off the tree, peeled, eaten in three bites, peel thrown. */
+.cat-slot--banana .cat-slot__trot {
+  animation: banana-trip 5600ms linear both;
+}
+
+@keyframes banana-trip {
+  0% {
+    transform: none;
+  }
+  3% {
+    transform: scale(1.08, 0.9);
+    animation-timing-function: var(--ease-out);
+  }
+  8% {
+    transform: translate(-9px, -12px) rotate(-8deg) scale(0.95, 1.08);
+  }
+  12% {
+    transform: translate(-6px, -6px);
+    animation-timing-function: var(--ease-in);
+  }
+  17% {
+    transform: scale(1.08, 0.9);
+  }
+  20%,
+  80% {
+    transform: none;
+  }
+  /* The throw. */
+  83% {
+    transform: rotate(-6deg);
+  }
+  87% {
+    transform: rotate(5deg);
+  }
+  92% {
+    transform: none;
+  }
+  95% {
+    transform: scale(1.05, 0.95);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.cat-slot--banana .monkey-tree__banana--picked {
+  animation: banana-picked 5600ms linear both;
+}
+
+@keyframes banana-picked {
+  0%,
+  9% {
+    opacity: 1;
+  }
+  10%,
+  99% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.banana {
+  position: absolute;
+  top: 17px;
+  left: calc(10px + var(--belly, 0px));
+  z-index: 3;
+  display: block;
+  pointer-events: none;
+  transform-origin: 50% 70%;
+  animation: banana-hold 5600ms linear both;
+}
+
+.banana svg {
+  display: block;
+  overflow: visible;
+}
+
+@keyframes banana-hold {
+  0%,
+  11% {
+    opacity: 0;
+    transform: translate(-10px, -10px) rotate(-30deg) scale(0.8);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-10px, -10px) rotate(-30deg) scale(0.8);
+    animation-timing-function: var(--ease-out);
+  }
+  19%,
+  40%,
+  48%,
+  52%,
+  60%,
+  64%,
+  72%,
+  78% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: var(--ease-in-out);
+  }
+  /* Up to its mouth for a bite, three times. */
+  44%,
+  56%,
+  68% {
+    opacity: 1;
+    transform: translate(-4px, -5px) rotate(-16deg);
+    animation-timing-function: var(--ease-in-out);
+  }
+  /* Wound up, and over its shoulder with the peel. */
+  81% {
+    opacity: 1;
+    transform: translate(2px, -2px) rotate(24deg);
+    animation-timing-function: var(--ease-out);
+  }
+  86% {
+    opacity: 1;
+    transform: translate(16px, -24px) rotate(200deg);
+    animation-timing-function: var(--ease-in);
+  }
+  92% {
+    opacity: 0.85;
+    transform: translate(28px, -14px) rotate(330deg);
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: translate(36px, 6px) rotate(430deg);
+  }
+}
+
+.banana__fruit {
+  fill: #fff4c8;
+  stroke: #c9a24a;
+  stroke-width: 0.5;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: banana-bites 5600ms steps(1, end) both;
+}
+
+@keyframes banana-bites {
+  0%,
+  45% {
+    transform: none;
+  }
+  46%,
+  57% {
+    transform: scaleY(0.66);
+  }
+  58%,
+  69% {
+    transform: scaleY(0.33);
+  }
+  70%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+.banana__peel {
+  fill: #ffd84a;
+  stroke: #8a5a12;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.banana__peel--base {
+  transform-origin: 50% 0;
+}
+
+.banana__tip {
+  fill: #5a3b12;
+}
+
+.banana__peel--left {
+  animation: peel-left 5600ms var(--ease-out) both;
+}
+
+@keyframes peel-left {
+  0%,
+  24% {
+    transform: none;
+  }
+  29%,
+  100% {
+    transform: rotate(-150deg);
+  }
+}
+
+.banana__peel--right {
+  animation: peel-right 5600ms var(--ease-out) both;
+}
+
+@keyframes peel-right {
+  0%,
+  30% {
+    transform: none;
+  }
+  35%,
+  100% {
+    transform: rotate(150deg);
+  }
+}
+
+.banana__peel--back {
+  animation: peel-back 5600ms var(--ease-out) both;
+}
+
+@keyframes peel-back {
+  0%,
+  36% {
+    transform: none;
+  }
+  41%,
+  100% {
+    transform: scaleY(-0.7);
+  }
+}
+
+/* Chewing, eyes shut with the taste of it. */
+.cat-slot--banana .cat-seat__head {
+  animation: banana-chew 5600ms linear both;
+}
+
+@keyframes banana-chew {
+  0%,
+  42%,
+  76%,
+  100% {
+    transform: none;
+  }
+  45%,
+  57%,
+  69% {
+    transform: rotate(-6deg) translateY(1px);
+  }
+  48%,
+  52%,
+  60%,
+  64%,
+  72% {
+    transform: rotate(-1deg) translateY(0.4px) scale(1.04, 0.98);
+  }
+  50%,
+  62%,
+  74% {
+    transform: rotate(-2deg) scale(0.99, 1.02);
+  }
+}
+
+.cat-slot--banana .cat-seat__lid {
+  animation: banana-yum 5600ms linear both;
+}
+
+@keyframes banana-yum {
+  0%,
+  45%,
+  76%,
+  100% {
+    transform: scaleY(0);
+  }
+  47%,
+  74% {
+    transform: scaleY(0.7);
+  }
+}
+
+/* A scratch (CAT_IDLE_MS.itch): a hind foot up behind its ear, scratching away, eyes half
+   shut; a rest, and again. */
+.cat-slot--itch .cat-seat .leaping-cat__foot--right {
+  z-index: 3;
+  animation: itch-foot 3200ms linear both;
+}
+
+@keyframes itch-foot {
+  0%,
+  58%,
+  92%,
+  100% {
+    transform: none;
+  }
+  10% {
+    transform: translate(1px, -12px) rotate(-30deg);
+  }
+  16.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  18.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  20.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  22.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  24.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  26.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  28.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  30.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  32.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  34.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  36.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  38.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  40.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  42.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  44.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  46.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  48.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  52% {
+    transform: translate(1px, -10px) rotate(-20deg);
+  }
+  63% {
+    transform: translate(1px, -12px) rotate(-30deg);
+  }
+  66.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  68.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  70.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  72.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  74.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  76.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  78.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  80.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  82.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+  84.0% {
+    transform: translate(3.4px, -20.6px) rotate(-48deg);
+  }
+  86.0% {
+    transform: translate(2px, -22px) rotate(-55deg);
+  }
+}
+
+.cat-slot--itch .cat-slot__facing {
+  animation: itch-lean 3200ms var(--ease-in-out) both;
+}
+
+@keyframes itch-lean {
+  0%,
+  100% {
+    transform: none;
+  }
+  12%,
+  50%,
+  64%,
+  88% {
+    transform: rotate(-7deg);
+  }
+  57% {
+    transform: rotate(-2deg);
+  }
+}
+
+.cat-slot--itch .cat-seat__head {
+  animation: itch-head 3200ms var(--ease-in-out) both;
+}
+
+@keyframes itch-head {
+  0%,
+  100% {
+    transform: none;
+  }
+  14%,
+  50%,
+  64%,
+  88% {
+    transform: rotate(10deg) translateX(0.6px);
+  }
+  57% {
+    transform: rotate(2deg);
+  }
+}
+
+.cat-slot--itch .cat-seat__lid {
+  animation: itch-squint 3200ms linear both;
+}
+
+@keyframes itch-squint {
+  0%,
+  14%,
+  52%,
+  64%,
+  90%,
+  100% {
+    transform: scaleY(0);
+  }
+  18%,
+  48%,
+  68%,
+  86% {
+    transform: scaleY(0.6);
+  }
+}
+
+/* Scritch-scratch, by its ear. */
+.itch-marks {
+  position: absolute;
+  top: 5px;
+  left: calc(27px + var(--belly, 0px));
+  z-index: 3;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.itch-marks i {
+  position: absolute;
+  width: 4px;
+  height: 1.4px;
+  border-radius: 1px;
+  background: #fff;
+  box-shadow: 0 0 1px #000, 0 0 1px #000;
+  transform-origin: 0 50%;
+  opacity: 0;
+  animation: itch-mark 3200ms linear both;
+}
+
+.itch-marks i:nth-child(1) {
+  rotate: -40deg;
+}
+
+.itch-marks i:nth-child(2) {
+  top: 3px;
+  rotate: -5deg;
+  animation-delay: 60ms;
+}
+
+.itch-marks i:nth-child(3) {
+  top: 6.5px;
+  rotate: 30deg;
+  animation-delay: 120ms;
+}
+
+@keyframes itch-mark {
+  0%,
+  17%,
+  49%,
+  67%,
+  87%,
+  100% {
+    opacity: 0;
+  }
+  19% {
+    opacity: 1;
+  }
+  23% {
+    opacity: 0.25;
+  }
+  27% {
+    opacity: 1;
+  }
+  31% {
+    opacity: 0.25;
+  }
+  35% {
+    opacity: 1;
+  }
+  39% {
+    opacity: 0.25;
+  }
+  43% {
+    opacity: 1;
+  }
+  47% {
+    opacity: 0.25;
+  }
+  69% {
+    opacity: 1;
+  }
+  73% {
+    opacity: 0.25;
+  }
+  77% {
+    opacity: 1;
+  }
+  81% {
+    opacity: 0.25;
+  }
+  85% {
+    opacity: 1;
+  }
+}
+
+/* Ooh ooh! (CAT_IDLE_MS.bounce): up and down on the spot, three hops. */
+.cat-slot--bounce .cat-slot__trot {
+  animation: monkey-bounce 1800ms linear both;
+}
+
+@keyframes monkey-bounce {
+  0%,
+  86%,
+  100% {
+    transform: none;
+  }
+  8%,
+  30%,
+  52%,
+  76% {
+    transform: scale(1.1, 0.88);
+    animation-timing-function: var(--ease-out);
+  }
+  19% {
+    transform: translateY(-9px) rotate(-7deg) scale(0.95, 1.06);
+    animation-timing-function: var(--ease-in);
+  }
+  41% {
+    transform: translateY(-9px) rotate(7deg) scale(0.95, 1.06);
+    animation-timing-function: var(--ease-in);
+  }
+  64% {
+    transform: translateY(-12px) scale(0.94, 1.08);
+    animation-timing-function: var(--ease-in);
+  }
+}
+
+/* The bar's ears and peeking face. */
+.monkey-bar {
+  display: none;
+}
+
+:root[data-cat="monkey"] .monkey-bar {
+  display: contents;
+}
+
+.monkey-bar svg {
+  position: absolute;
+  z-index: -1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.monkey-bar__fur {
+  fill: var(--tail-body);
+  stroke: var(--tail-outline);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.monkey-bar__face {
+  fill: var(--cat-lid);
+}
+
+.monkey-bar__eye {
+  fill: #1d120a;
+}
+
+.monkey-bar__head {
+  top: -14px;
+  left: 50%;
+  translate: -50% 0;
+  animation: monkey-bar-head 7s var(--ease-in-out) infinite;
+}
+
+@keyframes monkey-bar-head {
+  0%,
+  78%,
+  100% {
+    transform: none;
+  }
+  82%,
+  90% {
+    transform: translateY(-3px) rotate(-8deg);
+  }
+  86% {
+    transform: translateY(-3px) rotate(8deg);
+  }
+}
+
+.monkey-bar__ear {
+  top: 50%;
+  margin-top: -9px;
+}
+
+.monkey-bar__ear--left {
+  right: calc(100% - 7px);
+}
+
+.monkey-bar__ear--right {
+  left: calc(100% - 7px);
+}

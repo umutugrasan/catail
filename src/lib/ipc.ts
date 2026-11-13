@@ -78,15 +78,16 @@ export interface Settings {
   custom_cat: CustomCat;
 }
 
-export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "custom" | "turtle" | "plain";
-export const CATS: Cat[] = ["orange", "gray", "white", "calico", "black", "custom", "turtle", "plain"];
+export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "custom" | "turtle" | "monkey" | "plain";
+export const CATS: Cat[] = ["orange", "gray", "white", "calico", "black", "custom", "turtle", "monkey", "plain"];
 
 /** Which animal a theme shows; the plain theme has none. The cat comes first, by default. */
-export type Animal = "cat" | "turtle";
-export const ANIMALS: Animal[] = ["cat", "turtle"];
+export type Animal = "cat" | "turtle" | "monkey";
+export const ANIMALS: Animal[] = ["cat", "turtle", "monkey"];
 export const ANIMAL_THEMES: Record<Animal, Cat[]> = {
   cat: ["orange", "gray", "white", "calico", "black", "custom"],
   turtle: ["turtle"],
+  monkey: ["monkey"],
 };
 export const animalOf = (cat: Cat): Animal | null =>
   cat === "plain" ? null : (ANIMALS.find((animal) => ANIMAL_THEMES[animal].includes(cat)) ?? "cat");
@@ -311,9 +312,10 @@ export const StrollEvents = {
 /**
  * What the badge's cat goes down to the taskbar for: a "walk", a mad dash ("zoomies"), a red
  * dot to hunt ("laser"), a "mouse" come in from off the screen, and another cat come to visit,
- * to fight with ("rival") or to say hello to ("friend").
+ * to fight with ("rival") or to say hello to ("friend"). The monkey's own: a leap from the
+ * taskbar up to the top of the screen, to hang there and swing ("climb").
  */
-export type Outing = "walk" | "zoomies" | "laser" | "mouse" | "rival" | "friend";
+export type Outing = "walk" | "zoomies" | "laser" | "mouse" | "rival" | "friend" | "climb";
 
 /** Where a walk starts, in the strip's px (stroll.rs). */
 export interface StrollStart {
@@ -321,6 +323,8 @@ export interface StrollStart {
   home: number;
   seat: number;
   width: number;
+  /** The strip's height: the whole screen's for a "climb". */
+  height: number;
   fat: number;
   /** The badge's size: the cat out walking is as big as the one on it. */
   zoom: number;

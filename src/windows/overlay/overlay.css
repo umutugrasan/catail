@@ -901,6 +901,16 @@ html.pressing .overlay--resize-corner * {
   display: none;
 }
 
+/* The monkey's arm is plain fur, and its hand is bare. */
+:root[data-cat="monkey"] .overlay__tail-stripes {
+  display: none;
+}
+
+.overlay__flipper--hand {
+  fill: var(--cat-lid);
+  stroke-width: 4;
+}
+
 /* The turtle's bar looks like its shell. */
 :root[data-cat="turtle"] .overlay__modes {
   border-color: #9c6b34;

@@ -178,6 +178,8 @@
     "animal_cat": "Chat",
     "animal_turtle": "Tortue",
     "cat_turtle": "Tortue verte",
+    "animal_monkey": "Singe",
+    "cat_monkey": "Singe brun",
     "cat_custom": "Ton propre chat",
     "custom_fur": "Pelage",
     "custom_belly": "Ventre",

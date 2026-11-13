@@ -39,7 +39,7 @@ import {
   type LeapStart,
   type Outing,
 } from "../../lib/ipc";
-import { drawPlay, isOuting, type Play } from "./plays";
+import { drawPlay, isOuting, type Play, type Player } from "./plays";
 import { BUTTON_OUT_FOR_MS, BUTTON_OUT_MS, SHRED_MS, shredPlan } from "../../lib/shred";
 import { CloseIcon, UndoIcon } from "../overlay/icons";
 
@@ -86,7 +86,10 @@ export function Badge() {
   const pillRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLSpanElement>(null);
   const down = state.corner.startsWith("top");
-  const turtle = useWornTheme() === "turtle";
+  const worn = useWornTheme();
+  const turtle = worn === "turtle";
+  const monkey = worn === "monkey";
+  const player: Player = monkey ? "monkey" : "cat";
 
   // "Geri al" brought this many items back; the cat carries them over from its box.
   const [fetching, setFetching] = useState<number | null>(null);
@@ -184,8 +187,9 @@ export function Badge() {
       return;
     }
     if (idle !== null) return;
-    // Mostly a big yawn before it curls up; now and then a chase after its own tail first.
-    const chase = Math.random() < TAIL_CHASE_CHANCE;
+    // Mostly a big yawn before it curls up; now and then a chase after its own tail first. A
+    // monkey just yawns.
+    const chase = !monkey && Math.random() < TAIL_CHASE_CHANCE;
     if (turtle) {
       setSad(true);
     } else {
@@ -269,13 +273,19 @@ export function Badge() {
         return;
       }
       // The taskbar is only there to go down to from a badge along the bottom.
-      const play = drawPlay(pack.current, lastPlay.current, state.corner.startsWith("bottom"));
+      const play = drawPlay(pack.current, lastPlay.current, state.corner.startsWith("bottom"), player);
       lastPlay.current = play;
       if (isOuting(play)) void goOut(play);
       else setIdle(play);
     }, between(IDLE_EVERY_MS));
     return () => clearTimeout(timer);
-  }, [free, state.corner, turtle]);
+  }, [free, state.corner, turtle, player]);
+
+  // Another animal has its own pack of plays.
+  useEffect(() => {
+    pack.current = [];
+    lastPlay.current = null;
+  }, [player]);
 
 
   useEffect(() => {
@@ -702,14 +712,17 @@ export function Badge() {
           idle={windDown === "yawn" ? "yawn" : idle}
           away={strolling}
           tree={!turtle && catsAround()}
+          monkey={monkey}
           bubble={noseBubble}
           purring={purringNow}
           onPet={onPet}
           onLeave={onPetLeave}
           onToyPlay={() => {
-            // Woken by it, or up for a game: it bats the pompom too, now and then.
+            // Woken by it, or up for a game: it bats the pompom too, now and then. The monkey's
+            // bananas were pressed: it has one.
             if (asleep) setPoke((n) => n + 1);
-            else if (free && Math.random() < 0.6) setIdle("bat");
+            else if (monkey && free) setIdle("banana");
+            else if (!monkey && free && Math.random() < 0.6) setIdle("bat");
           }}
           turtle={turtle}
           sad={sad}

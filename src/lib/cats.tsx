@@ -29,6 +29,18 @@ export function CatFace({ size = 18 }: { size?: number }) {
         <ellipse cx="15.4" cy="12.6" rx="1.5" ry="1.8" style={{ fill: "var(--face-eye)" }} />
         <path d="M10.3 16.1q1.7 1.4 3.4 0" fill="none" strokeWidth="0.9" strokeLinecap="round" style={{ stroke: "var(--face-rim)" }} />
       </g>
+      <g className="cat-face__monkey">
+        <circle cx="3.6" cy="12.6" r="3" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <circle cx="20.4" cy="12.6" r="3" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <ellipse cx="12" cy="12.8" rx="8.6" ry="8.2" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <path
+          d="M12 9.4C10.8 7.6 8.6 7.4 7.4 7.8 5.4 8.4 4.8 10.4 5.2 12.2 5.5 13.4 6.2 14.2 7 14.8 7.6 17.4 9.6 19 12 19s4.4-1.6 5-4.2c.8-.6 1.5-1.4 1.8-2.6.4-1.8-.2-3.8-2.2-4.4-1.2-.4-3.4-.2-4.6 1.6Z"
+          style={{ fill: "var(--cat-lid)" }}
+        />
+        <ellipse cx="9" cy="11.6" rx="1.2" ry="1.5" style={{ fill: "var(--face-eye)" }} />
+        <ellipse cx="15" cy="11.6" rx="1.2" ry="1.5" style={{ fill: "var(--face-eye)" }} />
+        <path d="M10.3 16q1.7 1.2 3.4 0" fill="none" strokeWidth="0.9" strokeLinecap="round" style={{ stroke: "var(--face-rim)" }} />
+      </g>
       <g className="cat-face__cat">
       <path
         d="M5 9.5 6.2 3l4.3 3.6h3L17.8 3 19 9.5c1 1.2 1.5 2.7 1.5 4.3C20.5 18 16.7 21 12 21s-8.5-3-8.5-7.2c0-1.6.5-3.1 1.5-4.3Z"
@@ -369,6 +381,7 @@ export function BadgeCat({
   tree = false,
   bubble = null,
   purring = false,
+  monkey = false,
   onToyPlay,
   onPet,
   onLeave,
@@ -401,6 +414,8 @@ export function BadgeCat({
   onToyPlay?: () => void;
   /** Stroked: eyes shut, purring, hearts. */
   purring?: boolean;
+  /** The monkey: a tree beside it instead of the scratching post, and games of its own. */
+  monkey?: boolean;
   /** The pointer moving over it, and leaving it. */
   onPet?: (e: React.MouseEvent) => void;
   onLeave?: () => void;
@@ -445,10 +460,12 @@ export function BadgeCat({
           <b />
         </span>
       )}
-      {tree && <CatTree onPlay={onToyPlay} />}
+      {tree && (monkey ? <MonkeyTree onPlay={onToyPlay} /> : <CatTree onPlay={onToyPlay} />)}
       {chasing && <ChaseCat />}
       <span className="cat-slot__trot">
         <span className="cat-slot__facing">
+          {/* Up a branch, it hangs on by one arm. */}
+          {idle === "swing" && <span className="monkey-hang-arm" />}
           {turtle ? (
             <TurtleSeat fat={fat} asleep={asleep} hatch={hatch} seatRef={seatRef} />
           ) : (
@@ -470,6 +487,14 @@ export function BadgeCat({
         </span>
       )}
       {idle === "butterfly" && <Butterfly />}
+      {idle === "banana" && <Banana />}
+      {idle === "itch" && (
+        <span className="itch-marks" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
     </span>
   );
 }
@@ -493,6 +518,11 @@ export type CatIdle =
   | "knead"
   | "yawn"
   | "butterfly"
+  | "itch"
+  | "banana"
+  | "swing"
+  | "peek"
+  | "bounce"
   | "dive"
   | "silly"
   | "shell";
@@ -506,6 +536,11 @@ export const CAT_IDLE_MS: Record<CatIdle, number> = {
   knead: 4200,
   yawn: 2000,
   butterfly: 6400,
+  itch: 3200,
+  banana: 5600,
+  swing: 4400,
+  peek: 5600,
+  bounce: 1800,
   dive: 4200,
   silly: 2400,
   shell: 3000,
@@ -660,6 +695,89 @@ export function TurtleSeat({
           </span>
         </span>
       )}
+    </span>
+  );
+}
+
+/**
+ * The monkey's tree, beside its seat where the cat has its scratching post: a bushy crown with a
+ * bunch of bananas under it and a branch reaching out over the monkey. Eyes peer out of the
+ * leaves while the monkey hides in them. A press on the bananas sends the monkey for one.
+ */
+export function MonkeyTree({ onPlay }: { onPlay?: () => void }) {
+  return (
+    <svg className="cat-tree monkey-tree" viewBox="0 0 30 58" width={30} height={58} aria-hidden="true">
+      <ellipse className="monkey-tree__grass" cx={15} cy={56.6} rx={11} ry={2.2} />
+      <path className="monkey-tree__wood-line" d="M15 57C17 44 11 30 14 13" strokeWidth={6.4} />
+      <path className="monkey-tree__wood" d="M15 57C17 44 11 30 14 13" strokeWidth={4} />
+      <path className="monkey-tree__wood-line" d="M17 9C28 6.6 40 6.2 52 7.4" strokeWidth={4.4} />
+      <path className="monkey-tree__wood monkey-tree__branch" d="M17 9C28 6.6 40 6.2 52 7.4" strokeWidth={2.4} />
+      <g className="monkey-tree__crown">
+        <g className="monkey-tree__leaf-line">
+          <circle cx={6} cy={10} r={7} />
+          <circle cx={14} cy={5.6} r={7.6} />
+          <circle cx={23} cy={9} r={7} />
+          <circle cx={10} cy={15} r={6} />
+          <circle cx={19.5} cy={15} r={6} />
+        </g>
+        <g className="monkey-tree__leaf">
+          <circle cx={6} cy={10} r={7} />
+          <circle cx={14} cy={5.6} r={7.6} />
+          <circle cx={23} cy={9} r={7} />
+          <circle cx={10} cy={15} r={6} />
+          <circle cx={19.5} cy={15} r={6} />
+        </g>
+        <g className="monkey-tree__shine">
+          <circle cx={11} cy={3.4} r={2.2} />
+          <circle cx={4} cy={8} r={1.6} />
+          <circle cx={21} cy={6} r={1.8} />
+        </g>
+        {/* Someone in there. */}
+        <g className="monkey-tree__eyes">
+          <ellipse cx={-1.8} cy={0} rx={1.5} ry={1.8} />
+          <ellipse cx={1.8} cy={0} rx={1.5} ry={1.8} />
+          <circle className="monkey-tree__pupil" cx={-1.5} cy={0.3} r={0.8} />
+          <circle className="monkey-tree__pupil" cx={2.1} cy={0.3} r={0.8} />
+        </g>
+      </g>
+      <g
+        className="monkey-tree__bananas"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onPlay?.();
+        }}
+      >
+        <circle className="cat-tree__toy-hit" cx={21.5} cy={21} r={5.5} />
+        <path className="monkey-tree__stalk" d="M21 17.6v2.4" />
+        <path className="monkey-tree__banana" d="M20.6 19.6c-2.6 1-3.6 3.6-2.8 6 .5-2 1.6-3.4 3.2-4.2Z" />
+        <path className="monkey-tree__banana monkey-tree__banana--picked" d="M21 19.6c-.4 2.6.4 5 2.6 6.2-.6-2-.6-3.8.2-5.6Z" />
+        <path className="monkey-tree__banana" d="M21.4 19.4c2.4.4 4 2.4 4 4.8-1-1.6-2.4-2.6-4-3Z" />
+      </g>
+      <g className="monkey-tree__fall">
+        <ellipse cx={8} cy={18} rx={2} ry={1} />
+        <ellipse cx={18} cy={19} rx={2} ry={1} />
+        <ellipse cx={13} cy={17} rx={1.8} ry={0.9} />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * A banana from the tree (CAT_IDLE_MS.banana): held up in both hands, peeled one strip at a
+ * time, eaten in three bites, and the peel thrown over its shoulder.
+ */
+function Banana() {
+  return (
+    <span className="banana" aria-hidden="true">
+      <svg viewBox="0 0 12 16" width={12} height={16}>
+        <path className="banana__fruit" d="M4.2 3.4c0-1.4.8-2.2 1.8-2.2s1.8.8 1.8 2.2v6.6H4.2Z" />
+        <path className="banana__peel banana__peel--back" d="M4 9.6C3.6 6 4.2 3 6 1.6c1.8 1.4 2.4 4.4 2 8Z" />
+        <path className="banana__peel banana__peel--left" d="M6 9.6C3.8 8 3.4 4.6 4.6 2.2 5.4 4 5.8 6.6 6 9.6Z" />
+        <path className="banana__peel banana__peel--right" d="M6 9.6c2.2-1.6 2.6-5 1.4-7.4C6.6 4 6.2 6.6 6 9.6Z" />
+        <path className="banana__peel banana__peel--base" d="M3.8 9.4h4.4c.2 2.4-.6 4.4-2.2 5.6-1.6-1.2-2.4-3.2-2.2-5.6Z" />
+        <path className="banana__tip" d="M5.6 15h.8v.8h-.8Z" />
+      </svg>
     </span>
   );
 }
@@ -999,6 +1117,29 @@ export function ShellTurtle({
           <i />
         </span>
       )}
+    </span>
+  );
+}
+
+/** The monkey's version of the cat's ears and whiskers on a bar: its face peeking over, an ear each side. */
+export function MonkeyBar() {
+  return (
+    <span className="monkey-bar" aria-hidden="true">
+      <svg className="monkey-bar__head" viewBox="0 0 40 24" width={34} height={20}>
+        <ellipse className="monkey-bar__fur" cx="20" cy="17" rx="15" ry="12" />
+        <path className="monkey-bar__fur" d="M17 6c0-3 2-5 4-4.4-1 1.4 0 2.4 2 3.4" />
+        <path className="monkey-bar__face" d="M20 10c-1.6-2.6-5-3-7-1.6-2 1.4-2.4 4.4-1 6.6 1.4 2.4 5 3 8 3s6.6-.6 8-3c1.4-2.2 1-5.2-1-6.6-2-1.4-5.4-1-7 1.6Z" />
+        <ellipse className="monkey-bar__eye" cx="15.6" cy="12" rx="1.6" ry="1.9" />
+        <ellipse className="monkey-bar__eye" cx="24.4" cy="12" rx="1.6" ry="1.9" />
+      </svg>
+      <svg className="monkey-bar__ear monkey-bar__ear--left" viewBox="0 0 20 20" width={18} height={18}>
+        <circle className="monkey-bar__fur" cx="10" cy="10" r="8" />
+        <circle className="monkey-bar__face" cx="11" cy="10" r="4.4" />
+      </svg>
+      <svg className="monkey-bar__ear monkey-bar__ear--right" viewBox="0 0 20 20" width={18} height={18}>
+        <circle className="monkey-bar__fur" cx="10" cy="10" r="8" />
+        <circle className="monkey-bar__face" cx="9" cy="10" r="4.4" />
+      </svg>
     </span>
   );
 }

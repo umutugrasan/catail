@@ -185,6 +185,8 @@ pub enum Cat {
     Custom,
     /// Not a cat: the turtle, with pictures of its own.
     Turtle,
+    /// Not a cat either: the monkey, with pictures of its own.
+    Monkey,
     /// No cat: plain colors, system pointers, no tail animation.
     Plain,
     #[default]
@@ -410,6 +412,8 @@ mod tests {
         assert_eq!(s.custom_cat.eyes, "#00ff00");
         let parsed: Settings = serde_json::from_str(r#"{"cat":"turtle"}"#).unwrap();
         assert_eq!(parsed.cat, Cat::Turtle);
+        let monkey: Settings = serde_json::from_str(r#"{"cat":"monkey"}"#).unwrap();
+        assert_eq!(monkey.cat, Cat::Monkey);
         assert_eq!(parsed.custom_cat, CustomCat::default());
         assert_eq!(serde_json::to_string(&Cat::Custom).unwrap(), "\"custom\"");
     }

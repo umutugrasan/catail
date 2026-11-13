@@ -24,6 +24,18 @@ describe("the cat's plays", () => {
     expect(seen.size).toBe(15);
   });
 
+  it("deals the monkey its own plays, and none of the cat's", () => {
+    const pack: Play[] = [];
+    let last: Play | null = null;
+    const seen = new Set<Play>();
+    for (let i = 0; i < 300; i++) {
+      last = drawPlay(pack, last, true, "monkey");
+      seen.add(last);
+    }
+    for (const play of ["banana", "itch", "swing", "peek", "climb", "rival", "friend"] as Play[]) expect(seen).toContain(play);
+    for (const play of ["scratch", "bat", "lick", "mouse", "laser"] as Play[]) expect(seen).not.toContain(play);
+  });
+
   it("goes after a mouse, a dot or a visitor more often than anything else", () => {
     const pack = shuffledPack();
     const chases = pack.filter((play) => ["mouse", "laser", "rival", "friend", "zoomies"].includes(play));

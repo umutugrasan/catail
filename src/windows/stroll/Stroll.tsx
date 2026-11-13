@@ -3,6 +3,7 @@ import { LeapingCat, SeatCat } from "../../lib/cats";
 import { onWindowEvent, strollDone, StrollEvents, type StrollStart } from "../../lib/ipc";
 import {
   AT_REST,
+  NO_BANANA,
   NO_GUEST,
   NO_SCRAP,
   play,
@@ -11,6 +12,7 @@ import {
   setTheStage,
   type Cast,
   type CatPose,
+  type BananaView,
   type Emote,
   type GuestView,
   type ScrapView,
@@ -21,7 +23,22 @@ import { Stage, type Body } from "./stage";
 /** The cats that can come visiting: any but the one that lives here. */
 const BREEDS = ["orange", "gray", "white", "calico", "black"];
 /** Poses drawn with the sitting cat; the rest are the cat on its feet. */
-const SITTING: readonly CatPose[] = ["sit", "look", "groom", "lick", "roll", "proud", "wiggle", "arch", "sniff", "rub", "dizzy"];
+const SITTING: readonly CatPose[] = [
+  "sit",
+  "look",
+  "groom",
+  "lick",
+  "roll",
+  "proud",
+  "wiggle",
+  "arch",
+  "sniff",
+  "rub",
+  "dizzy",
+  "beat",
+  "throw",
+  "pick",
+];
 /** How high up a cat's head is, for something looking at it. */
 const HEAD_UP = 26;
 
@@ -37,18 +54,37 @@ function EmoteMark({ mark }: { mark: Emote }) {
 }
 
 /** A cat on the taskbar: the badge's own, or (with `breed`) one that has come visiting. */
-function CatPuppet({ view, fat, breed, puppetRef }: { view: View; fat: number; breed?: string; puppetRef: Ref<HTMLDivElement> }) {
+function CatPuppet({
+  view,
+  fat,
+  breed,
+  tint = false,
+  puppetRef,
+}: {
+  view: View;
+  fat: number;
+  breed?: string;
+  /** Another of the same animal: in other colors. */
+  tint?: boolean;
+  puppetRef: Ref<HTMLDivElement>;
+}) {
   const sitting = SITTING.includes(view.pose);
   return (
     <div
       ref={puppetRef}
-      className={`stroll-actor stroll-cat stroll-cat--${view.pose}${view.fleeing ? " stroll-actor--fleeing" : ""}`}
+      className={`stroll-actor stroll-cat stroll-cat--${view.pose}${view.fleeing ? " stroll-actor--fleeing" : ""}${tint ? " stroll-actor--tint" : ""}`}
       style={{ visibility: view.hidden ? "hidden" : undefined }}
       data-cat={breed}
     >
       <span className={`stroll-actor__facing${view.right ? " stroll-actor__facing--right" : ""}`}>
         {sitting ? (
           <SeatCat fat={fat} act={view.pose === "lick" || view.pose === "groom" ? view.pose : null} />
+        ) : view.pose === "hang" ? (
+          // By one arm from the top of the screen.
+          <span className="stroll-cat__hang">
+            <i className="stroll-cat__arm" />
+            <LeapingCat />
+          </span>
         ) : (
           <LeapingCat />
         )}
@@ -77,9 +113,21 @@ function Mouse() {
   );
 }
 
-/** Who has turned up: a mouse, a red dot, or another cat. */
-function Guest({ view, fat, breed, puppetRef }: { view: GuestView; fat: number; breed: string; puppetRef: Ref<HTMLDivElement> }) {
-  if (view.kind === "cat") return <CatPuppet view={view} fat={fat} breed={breed} puppetRef={puppetRef} />;
+/** Who has turned up: a mouse, a red dot, or another cat (or monkey). */
+function Guest({
+  view,
+  fat,
+  breed,
+  tint,
+  puppetRef,
+}: {
+  view: GuestView;
+  fat: number;
+  breed: string;
+  tint: boolean;
+  puppetRef: Ref<HTMLDivElement>;
+}) {
+  if (view.kind === "cat") return <CatPuppet view={view} fat={fat} breed={breed} tint={tint} puppetRef={puppetRef} />;
   return (
     <div
       ref={puppetRef}
@@ -131,6 +179,18 @@ function Scrap({ view, breed, scrapRef }: { view: ScrapView; breed: string; scra
   );
 }
 
+/** A banana, end over end through the air. */
+function FlyingBanana({ view, bananaRef }: { view: BananaView; bananaRef: Ref<HTMLDivElement> }) {
+  return (
+    <div ref={bananaRef} className="stroll-actor stroll-banana" style={{ visibility: view.hidden ? "hidden" : undefined }}>
+      <svg viewBox="0 0 16 12" width={16} height={12} aria-hidden="true">
+        <path d="M2 2.4C3 8 8.6 10.6 14.2 8.6 9.6 8.4 5.8 6.2 4 1.8Z" />
+        <path className="stroll-banana__tip" d="M1.4 1.6 2.6 1 3.4 2.2 2.2 2.8Z" />
+      </svg>
+    </div>
+  );
+}
+
 const place = (el: HTMLElement | null, at: Body) => {
   if (el) el.style.transform = `translate(${at.x.toFixed(1)}px, ${(-at.y).toFixed(1)}px)`;
 };
@@ -160,12 +220,14 @@ export function Stroll() {
   const catRef = useRef<HTMLDivElement>(null);
   const guestRef = useRef<HTMLDivElement>(null);
   const scrapRef = useRef<HTMLDivElement>(null);
+  const bananaRef = useRef<HTMLDivElement>(null);
   const [cat, setCat] = useState<View>(AT_REST);
   const [guest, setGuest] = useState<GuestView>(NO_GUEST);
   const [scrap, setScrap] = useState<ScrapView>(NO_SCRAP);
+  const [banana, setBanana] = useState<BananaView>(NO_BANANA);
   const [fat, setFat] = useState(0);
   // Whoever comes visiting: another kind of cat, of its own girth.
-  const [visitor, setVisitor] = useState({ breed: "gray", fat: 0 });
+  const [visitor, setVisitor] = useState({ breed: "gray", fat: 0, tint: false });
   // Out of sight until the first outing; after one the strip itself is out of view.
   const [seen, setSeen] = useState(false);
   const cast = useRef<Cast | null>(null);
@@ -174,6 +236,7 @@ export function Stroll() {
       cat: new Puppet<View>((patch) => setCat((view) => ({ ...view, ...patch }))),
       guest: new Puppet<GuestView>((patch) => setGuest((view) => ({ ...view, ...patch }))),
       scrap: new Prop<ScrapView>((patch) => setScrap((view) => ({ ...view, ...patch }))),
+      banana: new Prop<BananaView>((patch) => setBanana((view) => ({ ...view, ...patch }))),
     }),
     [],
   );
@@ -185,6 +248,7 @@ export function Stroll() {
       place(catRef.current, now.cat);
       place(guestRef.current, now.guest);
       place(scrapRef.current, now.scrap);
+      place(bananaRef.current, now.banana);
       look(catRef.current, now.cat, now.watching ? now.guest : null);
       look(guestRef.current, now.guest, now.watching ? now.cat : null);
     };
@@ -195,19 +259,27 @@ export function Stroll() {
         const zoom = sent.zoom || 1;
         document.documentElement.style.zoom = String(zoom);
         const stage = new Stage(paint);
+        const worn = document.documentElement.dataset.cat;
+        const monkey = worn === "monkey";
         const now: Cast = {
           stage,
           ...puppets,
           home: sent.home / zoom,
           seat: sent.seat / zoom,
           width: sent.width / zoom,
+          height: (sent.height || window.innerHeight) / zoom,
+          animal: monkey ? "monkey" : "cat",
           watching: false,
         };
         cast.current = now;
-        const worn = document.documentElement.dataset.cat;
         const others = BREEDS.filter((breed) => breed !== worn);
         setFat(sent.fat);
-        setVisitor({ breed: others[Math.floor(Math.random() * others.length)], fat: Math.random() * 0.5 });
+        // A monkey's visitors are monkeys, in other colors; a cat's, another kind of cat.
+        setVisitor(
+          monkey
+            ? { breed: "monkey", fat: Math.random() * 0.5, tint: true }
+            : { breed: others[Math.floor(Math.random() * others.length)], fat: Math.random() * 0.5, tint: false },
+        );
         // In place before the strip comes into view, not where the last outing ended.
         setTheStage(now);
         paint();
@@ -235,9 +307,10 @@ export function Stroll() {
 
   return (
     <div className="stroll" style={{ visibility: seen ? "visible" : "hidden" }}>
-      <Guest view={guest} fat={visitor.fat} breed={visitor.breed} puppetRef={guestRef} />
+      <Guest view={guest} fat={visitor.fat} breed={visitor.breed} tint={visitor.tint} puppetRef={guestRef} />
       <CatPuppet view={cat} fat={fat} puppetRef={catRef} />
       <Scrap view={scrap} breed={visitor.breed} scrapRef={scrapRef} />
+      <FlyingBanana view={banana} bananaRef={bananaRef} />
     </div>
   );
 }

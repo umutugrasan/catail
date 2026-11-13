@@ -51,7 +51,11 @@ export type CatPose =
   | "walk"
   | "run"
   | "skid"
-  | "hop";
+  | "hop"
+  | "hang"
+  | "beat"
+  | "throw"
+  | "pick";
 export type Emote = "!" | "?" | "heart" | "anger";
 export type GuestKind = "mouse" | "dot" | "cat";
 
@@ -72,6 +76,11 @@ export interface GuestView extends View {
   kind: GuestKind | null;
 }
 
+/** A banana in the air, thrown in a monkey fight. */
+export interface BananaView {
+  hidden: boolean;
+}
+
 export interface ScrapView {
   hidden: boolean;
   /** The dust settling. */
@@ -81,6 +90,7 @@ export interface ScrapView {
 export const AT_REST: View = { pose: "sit", right: false, hidden: false, fleeing: false, emote: null, emoteKey: 0 };
 export const NO_GUEST: GuestView = { ...AT_REST, hidden: true, kind: null };
 export const NO_SCRAP: ScrapView = { hidden: true, over: false };
+export const NO_BANANA: BananaView = { hidden: true };
 
 /** Something on the stage: where it is, and a way to change how it's drawn. */
 export class Prop<V extends object> implements Body {
@@ -120,10 +130,18 @@ export interface Cast {
   guest: Puppet<GuestView>;
   /** The cloud of dust two cats fight in. */
   scrap: Prop<ScrapView>;
-  /** The seat's middle from the strip's left edge, its height above the taskbar, the strip's width. */
+  /** What monkeys throw at each other. */
+  banana: Prop<BananaView>;
+  /** The badge's animal: a cat, or a monkey (whose visitors are monkeys too). */
+  animal: "cat" | "monkey";
+  /**
+   * The seat's middle from the strip's left edge, its height above the taskbar, the strip's
+   * width and height (the whole height of the screen for a "climb").
+   */
   home: number;
   seat: number;
   width: number;
+  height: number;
   /** The cat keeps its eyes on the guest. */
   watching: boolean;
 }
@@ -139,6 +157,7 @@ export function setTheStage(cast: Cast) {
   cast.cat.show(AT_REST);
   cast.guest.show(NO_GUEST);
   cast.scrap.show(NO_SCRAP);
+  cast.banana.show(NO_BANANA);
 }
 
 /**
@@ -166,6 +185,8 @@ class Scene {
   readonly cat: Puppet<View>;
   readonly guest: Puppet<GuestView>;
   readonly scrap: Prop<ScrapView>;
+  readonly banana: Prop<BananaView>;
+  readonly monkey: boolean;
   readonly home: number;
   readonly seat: number;
   readonly width: number;
@@ -182,6 +203,8 @@ class Scene {
     this.cat = cast.cat;
     this.guest = cast.guest;
     this.scrap = cast.scrap;
+    this.banana = cast.banana;
+    this.monkey = cast.animal === "monkey";
     this.home = cast.home;
     this.seat = cast.seat;
     this.width = cast.width;
@@ -217,6 +240,11 @@ class Scene {
     this.cat.face(dir);
     this.cat.show({ pose: "hop" });
     await this.stage.hop(this.cat, this.home + dir * HOP_SIDEWAYS, 0, HOP_MS, HOP_ARC);
+  }
+
+  /** Off its seat, for a leap that doesn't start with a hop down. */
+  leave() {
+    this.seated = false;
   }
 
   /** A leap from wherever it is onto the ground at `to`. */
@@ -266,6 +294,7 @@ class Scene {
     const { cat, guest, scrap, stage, home } = this;
     this.cast.watching = false;
     scrap.show({ hidden: true });
+    this.banana.show({ hidden: true });
     cat.show({ hidden: false, emote: null });
     if (this.visited) {
       guest.y = Math.min(guest.y, 6);
@@ -490,9 +519,56 @@ async function visit(s: Scene, spot: number) {
   await stage.wait(600);
 }
 
+/** A banana from `from` to `to`'s head, end over end; a hit, or a miss that lands behind. */
+async function throwBanana(s: Scene, from: Puppet<View>, to: Puppet<View>, hit: boolean) {
+  const { stage, banana } = s;
+  from.face(to.x - from.x);
+  from.show({ pose: "throw" });
+  await stage.wait(260);
+  banana.x = from.x;
+  banana.y = 26;
+  banana.show({ hidden: false });
+  const past = Math.sign(to.x - from.x) * (hit ? 0 : 26);
+  await stage.hop(banana, to.x + past, hit ? 24 : 0, 520, 34);
+  banana.show({ hidden: true });
+  from.show({ pose: "beat" });
+  if (hit) {
+    to.emote("!");
+    to.show({ pose: "dizzy" });
+    await stage.wait(520);
+    to.show({ pose: "beat" });
+  } else {
+    to.emote("?");
+    await stage.wait(300);
+  }
+}
+
+/** Another monkey: chests beaten, bananas thrown, then a scrap in a cloud of dust. */
+async function bananaFight(s: Scene) {
+  const { stage, cat, guest, home, far } = s;
+  await visit(s, home + far * (HOP_SIDEWAYS + STANDOFF_GAP + 30));
+  cat.show({ pose: "beat" });
+  cat.emote("anger");
+  await stage.wait(800);
+  guest.show({ pose: "beat" });
+  guest.emote("anger");
+  await stage.wait(700);
+  await s.hopOff(far);
+  cat.show({ pose: "beat" });
+  await stage.wait(400);
+  // Bananas, back and forth: the visitor's first one misses.
+  await throwBanana(s, guest, cat, false);
+  await throwBanana(s, cat, guest, true);
+  await throwBanana(s, guest, cat, true);
+  await throwBanana(s, cat, guest, true);
+  await stage.wait(300);
+  await scrapAndChaseOff(s);
+}
+
 /** A strange cat on its taskbar: backs up, a lot of noise, a scrap in a cloud of dust. */
 async function rival(s: Scene) {
-  const { stage, cat, guest, scrap, home, near, far } = s;
+  if (s.monkey) return bananaFight(s);
+  const { stage, cat, guest, home, near, far } = s;
   await visit(s, home + far * (HOP_SIDEWAYS + STANDOFF_GAP));
   // It isn't having that: its back goes up, on the seat first, then face to face.
   cat.show({ pose: "arch" });
@@ -509,7 +585,12 @@ async function rival(s: Scene) {
     await Promise.all([stage.glide(cat, cat.x + far * 5, 50), stage.glide(guest, guest.x + near * 5, 50)]);
   }
   await stage.wait(260);
-  // Into each other, and all there is to see is dust.
+  await scrapAndChaseOff(s);
+}
+
+/** Into each other, a cloud of dust; it settles with the visitor beaten, and off it runs. */
+async function scrapAndChaseOff(s: Scene) {
+  const { stage, cat, guest, scrap, near, far } = s;
   const middle = (cat.x + guest.x) / 2;
   cat.show({ pose: "hop" });
   guest.show({ pose: "hop" });
@@ -529,7 +610,7 @@ async function rival(s: Scene) {
   cat.y = guest.y = 0;
   scrap.show({ over: true });
   cat.face(near);
-  cat.show({ hidden: false, pose: "arch" });
+  cat.show({ hidden: false, pose: s.monkey ? "beat" : "arch" });
   guest.face(far);
   guest.show({ hidden: false, pose: "dizzy" });
   await stage.wait(700);
@@ -566,6 +647,19 @@ async function friend(s: Scene) {
   await stage.wait(900);
   guest.emote("heart");
   await stage.wait(900);
+  if (s.monkey) {
+    // Monkeys groom each other: each in turn picks through the other's fur, the other blissful.
+    guest.show({ pose: "pick" });
+    cat.show({ pose: "proud" });
+    await stage.wait(1500);
+    cat.emote("heart");
+    await stage.wait(700);
+    cat.show({ pose: "pick" });
+    guest.show({ pose: "proud" });
+    await stage.wait(1500);
+    guest.emote("heart");
+    await stage.wait(600);
+  }
   // The visitor wants a game: a wiggle, and it's over the cat's head.
   guest.show({ pose: "wiggle" });
   cat.show({ pose: "look" });
@@ -585,4 +679,43 @@ async function friend(s: Scene) {
   await s.goHome(WALK_SPEED * 1.3);
 }
 
-const SCENES: Record<Outing, (scene: Scene) => Promise<void>> = { walk, zoomies, laser, mouse, rival, friend };
+/**
+ * A monkey's leap: from its seat all the way up to the top corner of the screen, where it hangs
+ * by one arm and swings, has a look round, and drops back down.
+ */
+async function climb(s: Scene) {
+  const { stage, cat, near } = s;
+  // Hanging by its hand from the top edge: the picture's height and its arm below that.
+  const hangAt = s.cast.height - HANG_BELOW_TOP;
+  if (hangAt < 120) return walk(s);
+  const x = near > 0 ? s.width - CORNER_IN : CORNER_IN;
+  cat.show({ pose: "wiggle" });
+  await stage.wait(600);
+  cat.emote("!");
+  await stage.wait(300);
+  s.leave();
+  cat.face(x - cat.x || near);
+  cat.show({ pose: "hop" });
+  await stage.hop(cat, x, hangAt, CLIMB_MS, 30);
+  cat.face(-near);
+  cat.show({ pose: "hang" });
+  await stage.wait(1800);
+  cat.emote("heart");
+  await stage.wait(1900);
+  cat.emote("!");
+  await stage.wait(500);
+  // Lets go, and down it drops.
+  cat.show({ pose: "hop" });
+  await stage.hop(cat, s.within(x - near * 70), 0, DROP_MS, 16);
+  cat.show({ pose: "sit" });
+  await stage.wait(260);
+  await s.goHome(TROT_SPEED);
+}
+
+/** Up to the top of the screen and down again (ms); how far in from the corner it hangs (px). */
+const CLIMB_MS = 760;
+const DROP_MS = 820;
+const CORNER_IN = 30;
+const HANG_BELOW_TOP = 54;
+
+const SCENES: Record<Outing, (scene: Scene) => Promise<void>> = { walk, zoomies, laser, mouse, rival, friend, climb };

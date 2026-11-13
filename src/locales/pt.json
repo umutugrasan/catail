@@ -178,6 +178,8 @@
     "animal_cat": "Gato",
     "animal_turtle": "Tartaruga",
     "cat_turtle": "Tartaruga verde",
+    "animal_monkey": "Macaco",
+    "cat_monkey": "Macaco marrom",
     "cat_custom": "O teu próprio gato",
     "custom_fur": "Pelo",
     "custom_belly": "Barriga",

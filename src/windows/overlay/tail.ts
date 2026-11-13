@@ -41,8 +41,11 @@ const SNAPSHOT_END_SIZE = 36;
 const ARC_HEIGHT = 90;
 
 export interface TailScene {
-  /** A cat curls its tail round the capture; a turtle reaches out and holds it with a flipper. */
-  kind: "tail" | "flipper";
+  /**
+   * A cat curls its tail round the capture; a turtle reaches out and holds it with a flipper, a
+   * monkey with its hand.
+   */
+  kind: TailKind;
   rect: Rect;
   target: Point;
   view: Size;
@@ -69,6 +72,8 @@ export interface TailSegment {
   /** Stripe pattern position at the start of this piece, so stripes line up across pieces. */
   dashOffset: number;
 }
+
+export type TailKind = "tail" | "flipper" | "hand";
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const phase = (p: number, start: number, end: number) => clamp((p - start) / (end - start), 0, 1);
@@ -99,7 +104,7 @@ export function makeTailScene(
   view: Size,
   spin: 1 | -1,
   base: Point = tailBase(target, view),
-  kind: "tail" | "flipper" = "tail",
+  kind: TailKind = "tail",
 ): TailScene {
   const center = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
   // The corner facing the tail. Small selections get held by the middle.
@@ -205,8 +210,8 @@ export function tailFrame(scene: TailScene, progress: number): TailFrame {
 
   const wave = lerp(lerp(24, 8, squeeze), 3, pull);
   let whole: Point[];
-  if (scene.kind === "flipper") {
-    // Straight in to the grab point, the arm's own line leading on past it.
+  if (scene.kind !== "tail") {
+    // An arm: straight in to the grab point, the arm's own line leading on past it.
     const along = Math.max(distance(base, grab), 0.001);
     const ahead = { x: grab.x + ((grab.x - base.x) / along) * 10, y: grab.y + ((grab.y - base.y) / along) * 10 };
     whole = approach(base, grab, ahead, wave * 0.6, p);
@@ -262,11 +267,14 @@ const LAYERS = ["outline", "body", "stripes"] as const;
 
 /** The flipper at the end of the turtle's arm, pointing along +x from the arm's tip. */
 const FLIPPER_PATH = "M-12 0C6-27 48-33 80-10C54 11 16 24-12 0Z";
+/** The monkey's hand at the end of its arm, fingers along +x, the thumb on one side. */
+const HAND_PATH =
+  "M-12-16C-6-22 2-22 6-22L18-38C22-44 30-40 26-34L20-22C26-24 30-24 34-23L58-26C66-27 67-15 59-14L36-12 64-12C72-12 72 0 64 0L36 0 61 4C69 6 67 17 59 15L34 10 52 18C59 22 54 31 47 27L26 18C14 24-4 22-12 14-18 6-18-8-12-16Z";
 /** The arm is slimmer than a tail. */
 const ARM_WIDTH = 0.62;
 
 /** Paints a frame's centerline into the tail's svg, outlines under everything so they never cut across it. */
-export function drawTail(svg: SVGSVGElement, points: Point[], kind: "tail" | "flipper" = "tail") {
+export function drawTail(svg: SVGSVGElement, points: Point[], kind: TailKind = "tail") {
   if (svg.childElementCount === 0) {
     for (const layer of LAYERS) {
       for (let i = 0; i < SEGMENTS; i += 1) {
@@ -276,8 +284,8 @@ export function drawTail(svg: SVGSVGElement, points: Point[], kind: "tail" | "fl
       }
     }
   }
-  const segments = tailSegments(points, kind === "flipper" ? ARM_WIDTH : 1);
-  if (kind === "flipper") drawFlipper(svg, points);
+  const segments = tailSegments(points, kind === "tail" ? 1 : ARM_WIDTH);
+  if (kind !== "tail") drawFlipper(svg, points, kind === "hand" ? HAND_PATH : FLIPPER_PATH, kind);
   LAYERS.forEach((layer, l) => {
     for (let i = 0; i < SEGMENTS; i += 1) {
       const path = svg.children[l * SEGMENTS + i];
@@ -290,13 +298,13 @@ export function drawTail(svg: SVGSVGElement, points: Point[], kind: "tail" | "fl
   });
 }
 
-/** Puts the flipper on the arm's tip, turned the way the arm points; hidden while there is no arm. */
-function drawFlipper(svg: SVGSVGElement, points: Point[]) {
+/** Puts the flipper (or hand) on the arm's tip, turned the way the arm points; hidden while there is no arm. */
+function drawFlipper(svg: SVGSVGElement, points: Point[], shape: string, kind: TailKind) {
   let flipper = svg.querySelector<SVGPathElement>(".overlay__flipper");
   if (!flipper) {
     flipper = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    flipper.setAttribute("class", "overlay__flipper");
-    flipper.setAttribute("d", FLIPPER_PATH);
+    flipper.setAttribute("class", `overlay__flipper overlay__flipper--${kind}`);
+    flipper.setAttribute("d", shape);
     svg.appendChild(flipper);
   }
   if (points.length < 2) {

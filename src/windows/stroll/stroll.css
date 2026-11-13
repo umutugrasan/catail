@@ -751,3 +751,132 @@ body,
     transform: translate(var(--sx), var(--sy)) scale(1.2) rotate(140deg);
   }
 }
+
+/* ---- The monkey's poses ---- */
+
+/* Another monkey, in other colors. */
+.stroll-actor--tint {
+  filter: saturate(0.2) brightness(1.18);
+}
+
+/* Hanging by one arm from the top of the screen, swinging. */
+.stroll-cat__hang {
+  position: relative;
+  display: block;
+  transform-origin: 32% -10px;
+  animation: hang-swing 1500ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes hang-swing {
+  from {
+    transform: rotate(-13deg);
+  }
+  to {
+    transform: rotate(13deg);
+  }
+}
+
+.stroll-cat__arm {
+  position: absolute;
+  top: -10px;
+  left: 30%;
+  width: 5px;
+  height: 13px;
+  box-sizing: border-box;
+  border: 1.2px solid var(--tail-outline);
+  border-radius: 3px;
+  background: var(--tail-body);
+  translate: -50% 0;
+}
+
+.stroll-cat__arm::before {
+  content: "";
+  position: absolute;
+  top: -3.6px;
+  left: -1.6px;
+  width: 6px;
+  height: 4.8px;
+  box-sizing: border-box;
+  border: 1.1px solid var(--tail-outline);
+  border-radius: 50%;
+  background: var(--cat-lid);
+}
+
+/* Its legs dangle and kick. */
+.stroll-cat--hang .leaping-cat__foot {
+  animation: stroll-step 420ms var(--ease-in-out) infinite alternate;
+}
+
+.stroll-cat--hang .leaping-cat__foot--right {
+  animation-direction: alternate-reverse;
+}
+
+/* Beating its chest: bouncing on the spot, puffed up. */
+.stroll-cat--beat .cat-seat {
+  animation: monkey-beat 130ms linear infinite alternate;
+}
+
+@keyframes monkey-beat {
+  from {
+    transform: scale(1.05, 0.96);
+  }
+  to {
+    transform: translateY(-1.5px) scale(0.97, 1.05);
+  }
+}
+
+/* Winding up and throwing. */
+.stroll-cat--throw .cat-seat {
+  animation: monkey-throw 420ms var(--ease-out) both;
+}
+
+@keyframes monkey-throw {
+  0% {
+    transform: none;
+  }
+  45% {
+    transform: rotate(12deg) translateX(2px);
+  }
+  70% {
+    transform: rotate(-14deg) translateX(-3px) scale(1.04, 0.96);
+  }
+  100% {
+    transform: rotate(-4deg);
+  }
+}
+
+/* Grooming a friend: head down, picking through its fur. */
+.stroll-cat--pick .cat-seat__head {
+  animation: monkey-pick 260ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes monkey-pick {
+  from {
+    transform: translate(-2px, 1.5px) rotate(-8deg);
+  }
+  to {
+    transform: translate(-3px, 0.5px) rotate(-3deg);
+  }
+}
+
+/* The banana in the air. */
+.stroll-banana svg {
+  display: block;
+  overflow: visible;
+  translate: -50% 0;
+  fill: #ffd84a;
+  stroke: #8a5a12;
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+  animation: banana-spin 380ms linear infinite;
+}
+
+.stroll-banana__tip {
+  fill: #5a3b12;
+}
+
+@keyframes banana-spin {
+  to {
+    rotate: 360deg;
+  }
+}

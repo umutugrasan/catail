@@ -178,6 +178,8 @@
     "animal_cat": "Gato",
     "animal_turtle": "Tortuga",
     "cat_turtle": "Tortuga verde",
+    "animal_monkey": "Mono",
+    "cat_monkey": "Mono marrón",
     "cat_custom": "Tu propio gato",
     "custom_fur": "Pelaje",
     "custom_belly": "Barriga",

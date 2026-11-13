@@ -178,6 +178,8 @@
     "animal_cat": "Katze",
     "animal_turtle": "Schildkröte",
     "cat_turtle": "Grüne Schildkröte",
+    "animal_monkey": "Affe",
+    "cat_monkey": "Brauner Affe",
     "cat_custom": "Deine eigene Katze",
     "custom_fur": "Fell",
     "custom_belly": "Bauch",

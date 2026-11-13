@@ -6,11 +6,14 @@ import type { Outing } from "../../lib/ipc";
 
 export type Play = CatIdle | Outing;
 
+/** Whose plays: the cat's, or the monkey's own. */
+export type Player = "cat" | "monkey";
+
 /**
  * Each of the cat's plays, and how many times it's in the pack. The chases and the visitors
  * come round most: they're the fun ones.
  */
-const PACK: [Play, number][] = [
+const CAT_PACK: [Play, number][] = [
   ["scratch", 1],
   ["bat", 1],
   ["stretch", 1],
@@ -28,13 +31,36 @@ const PACK: [Play, number][] = [
   ["friend", 2],
 ];
 
-const OUTINGS: readonly Play[] = ["walk", "zoomies", "laser", "mouse", "rival", "friend"];
+/**
+ * The monkey's: bananas, a scratch, swinging from its tree and hiding in it, and down on the
+ * taskbar a leap up to the top of the screen, a banana fight or a friend to groom.
+ */
+const MONKEY_PACK: [Play, number][] = [
+  ["itch", 2],
+  ["banana", 3],
+  ["swing", 3],
+  ["peek", 3],
+  ["bounce", 2],
+  ["hide", 1],
+  ["stretch", 1],
+  ["yawn", 1],
+  ["butterfly", 1],
+  ["walk", 1],
+  ["zoomies", 2],
+  ["climb", 3],
+  ["rival", 3],
+  ["friend", 2],
+];
+
+const PACKS: Record<Player, [Play, number][]> = { cat: CAT_PACK, monkey: MONKEY_PACK };
+
+const OUTINGS: readonly Play[] = ["walk", "zoomies", "laser", "mouse", "rival", "friend", "climb"];
 
 export const isOuting = (play: Play): play is Outing => OUTINGS.includes(play);
 
 /** A fresh pack, shuffled. `random` is 0..1, as Math.random. */
-export function shuffledPack(random: () => number = Math.random): Play[] {
-  const pack = PACK.flatMap(([play, times]) => Array.from({ length: times }, () => play));
+export function shuffledPack(player: Player = "cat", random: () => number = Math.random): Play[] {
+  const pack = PACKS[player].flatMap(([play, times]) => Array.from({ length: times }, () => play));
   for (let i = pack.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [pack[i], pack[j]] = [pack[j], pack[i]];
@@ -46,11 +72,17 @@ export function shuffledPack(random: () => number = Math.random): Play[] {
  * Takes the next play off `pack` (a new one is dealt when it runs out): the first that isn't
  * `last` again and, where the cat can't get down to the taskbar, isn't an outing.
  */
-export function drawPlay(pack: Play[], last: Play | null, canGoOut: boolean, random: () => number = Math.random): Play {
+export function drawPlay(
+  pack: Play[],
+  last: Play | null,
+  canGoOut: boolean,
+  player: Player = "cat",
+  random: () => number = Math.random,
+): Play {
   const fits = (play: Play) => play !== last && (canGoOut || !isOuting(play));
   let at = pack.findIndex(fits);
   if (at < 0) {
-    pack.push(...shuffledPack(random));
+    pack.push(...shuffledPack(player, random));
     at = pack.findIndex(fits);
   }
   return pack.splice(at, 1)[0];

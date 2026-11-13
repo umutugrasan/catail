@@ -114,6 +114,25 @@
   --paw-blocked: image-set(url("./cursors/turtle/blocked.png") 1x, url("./cursors/turtle/blocked@2x.png") 2x) 2 2, not-allowed;
 }
 
+[data-cat="monkey"] {
+  --cat-head: url("./animals/monkey/box-head.svg");
+  --cat-body: url("./animals/monkey/standing-body.svg");
+  --cat-foot-left: url("./animals/monkey/foot-left.svg");
+  --cat-foot-right: url("./animals/monkey/foot-right.svg");
+  --paw-default: image-set(url("./cursors/monkey/paw.png") 1x, url("./cursors/monkey/paw@2x.png") 2x) 3 2, default;
+  --paw: image-set(url("./cursors/monkey/pointer.png") 1x, url("./cursors/monkey/pointer@2x.png") 2x) 7 6, pointer;
+  --paw-grab: image-set(url("./cursors/monkey/grab.png") 1x, url("./cursors/monkey/grab@2x.png") 2x) 15 12, grab;
+  --paw-grabbing: image-set(url("./cursors/monkey/grabbing.png") 1x, url("./cursors/monkey/grabbing@2x.png") 2x) 11 9, grabbing;
+  --paw-text: image-set(url("./cursors/monkey/text.png") 1x, url("./cursors/monkey/text@2x.png") 2x) 8 16, text;
+  --paw-cross: image-set(url("./cursors/monkey/cross.png") 1x, url("./cursors/monkey/cross@2x.png") 2x) 12 12, crosshair;
+  --paw-ew: image-set(url("./cursors/monkey/ew.png") 1x, url("./cursors/monkey/ew@2x.png") 2x) 23 17, ew-resize;
+  --paw-move: image-set(url("./cursors/monkey/move.png") 1x, url("./cursors/monkey/move@2x.png") 2x) 25 25, move;
+  --paw-ns: image-set(url("./cursors/monkey/ns.png") 1x, url("./cursors/monkey/ns@2x.png") 2x) 17 23, ns-resize;
+  --paw-nwse: image-set(url("./cursors/monkey/corner.png") 1x, url("./cursors/monkey/corner@2x.png") 2x) 21 21, nwse-resize;
+  --paw-nesw: image-set(url("./cursors/monkey/corner.png") 1x, url("./cursors/monkey/corner@2x.png") 2x) 21 21, nesw-resize;
+  --paw-blocked: image-set(url("./cursors/monkey/blocked.png") 1x, url("./cursors/monkey/blocked@2x.png") 2x) 3 2, not-allowed;
+}
+
 [data-cat="custom"] {
   --cat-head: var(--custom-cat-head, url("./cats/box-head.png"));
   --cat-body: var(--custom-cat-body, url("./cats/standing-body.png"));

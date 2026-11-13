@@ -107,6 +107,20 @@ describe("the turtle's flipper", () => {
   });
 });
 
+describe("the monkey's arm", () => {
+  const root = { x: 1580, y: 1000 };
+  const arm = makeTailScene(rect, badge, view, 1, root, "hand");
+
+  it("reaches straight out like the turtle's flipper, and gets the capture in its hand", () => {
+    const points = tailFrame(arm, 0.34).points;
+    const tip = points[points.length - 1];
+    const grab = { x: rect.x + rect.width / 2 + arm.grab.x, y: rect.y + rect.height / 2 + arm.grab.y };
+    expect(points[0]).toEqual(root);
+    expect(Math.hypot(tip.x - grab.x, tip.y - grab.y)).toBeLessThan(2);
+    expect(points).toEqual(tailFrame(makeTailScene(rect, badge, view, 1, root, "flipper"), 0.34).points);
+  });
+});
+
 describe("tailSegments", () => {
   const line = Array.from({ length: 101 }, (_, i) => ({ x: i * 10, y: 0 }));
 

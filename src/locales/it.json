@@ -178,6 +178,8 @@
     "animal_cat": "Gatto",
     "animal_turtle": "Tartaruga",
     "cat_turtle": "Tartaruga verde",
+    "animal_monkey": "Scimmia",
+    "cat_monkey": "Scimmia marrone",
     "cat_custom": "Il tuo gatto",
     "custom_fur": "Pelo",
     "custom_belly": "Pancia",
