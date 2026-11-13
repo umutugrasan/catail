@@ -629,3 +629,20 @@ td:last-child {
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
+
+/* The Catail Studio wordmark on the updates page; light ink on the dark (black cat) theme. */
+.brand-logo {
+  display: block;
+  width: auto;
+  height: 34px;
+  margin: 4px 0 12px;
+}
+
+.brand-logo--light-ink,
+:root[data-cat="black"] .brand-logo--dark-ink {
+  display: none;
+}
+
+:root[data-cat="black"] .brand-logo--light-ink {
+  display: block;
+}

@@ -1,3 +1,5 @@
+<p align="center"><img src="website/assets/catail-studio.png" alt="Catail Studio" height="64" /></p>
+
 # Catail
 
 Kedi temalı, sıralı ekran görüntüsü ve pano kuyruğu aracı (Windows 10/11).

@@ -1002,3 +1002,19 @@ body,
 .stroll-guest .stroll-bird {
   transform: scaleX(-1);
 }
+
+/* A pictured animal walks on its own feet (cats.css, Rig): no rocking the picture from side to
+   side, and no sliding feet of the cat's. */
+.stroll-cat--walk .leaping-cat--rig,
+.stroll-cat--run .leaping-cat--rig {
+  animation: rig-step-bob 230ms var(--ease-in-out) infinite alternate;
+}
+
+.stroll-cat--run .leaping-cat--rig {
+  animation-duration: 130ms;
+}
+
+[data-cat="frog"] .stroll-cat--hop .leaping-cat--rig,
+.stroll-cat--hop[data-cat="frog"] .leaping-cat--rig {
+  transform: none;
+}

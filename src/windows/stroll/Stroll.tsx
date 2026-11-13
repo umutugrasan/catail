@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type Ref } from "react";
-import { capybaraPicture, frogPicture, LeapingCat, monkeyPicture, SeatCat } from "../../lib/cats";
+import { capybaraPicture, frogPicture, isRigged, LeapingCat, monkeyPicture, Rig, SeatCat } from "../../lib/cats";
 import { onWindowEvent, strollDone, StrollEvents, type StrollStart } from "../../lib/ipc";
 import {
   AT_REST,
@@ -104,6 +104,11 @@ function CatPuppet({
   const monkey = animal === "monkey";
   const frog = animal === "frog";
   const capybara = animal === "capybara";
+  // Its everyday pose moves in parts; the rest are pictures of a mood.
+  const happy =
+    sitting &&
+    isRigged(animal) &&
+    ((monkey && !MONKEY_POSE[view.pose]) || (frog && !FROG_POSE[view.pose]) || (capybara && !CAPYBARA_POSE[view.pose]));
   const picture =
     monkey && (sitting || view.pose === "hang")
       ? monkeyPicture(MONKEY_POSE[view.pose] ?? "happy")
@@ -129,7 +134,7 @@ function CatPuppet({
           </span>
         ) : picture ? (
           <span className="cat-seat monkey-pose">
-            <img src={picture} alt="" draggable={false} />
+            {happy && isRigged(animal) ? <Rig animal={animal} /> : <img src={picture} alt="" draggable={false} />}
             {/* The frog's croak, and its tongue. */}
             {(view.pose === "croak" || view.pose === "boast") && <i className="stroll-sac" />}
             {view.pose === "tongue" && <i className="stroll-tongue" />}

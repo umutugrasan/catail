@@ -7309,3 +7309,918 @@
     transform: rotate(-4deg);
   }
 }
+
+/* ===================== Hiding places for "Geri al" (Hideout) =====================
+   The frog, the capybara and the monkey don't get in a box: the frog folds itself up in a lily
+   pad, the capybara gets in its hot tub, the monkey ducks behind a bush. The leap in and the run
+   off are the turtle's (ShellTurtle); each place does its own thing in the 1000 ms of arriving. */
+.hideout {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 53px;
+  height: 40px;
+}
+
+.hideout--arrive .shell-turtle__flyer {
+  animation: turtle-jump-over 1000ms linear both;
+}
+
+.hideout__home {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.hideout__home svg,
+.hideout__home img {
+  position: absolute;
+  display: block;
+}
+
+/* Where it lands: a splash of water, or of leaves. */
+.hideout__splash i {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #8fd3ef;
+  box-shadow: 0 0 0 0.6px #3a8db3;
+  opacity: 0;
+  animation: hideout-splash 1000ms var(--ease-out) both;
+}
+
+.hideout__splash--monkey i {
+  width: 5px;
+  height: 3px;
+  border-radius: 50% 0;
+  background: #7aaf46;
+  box-shadow: 0 0 0 0.6px #4f6f2a;
+}
+
+.hideout__splash i:nth-child(1) {
+  --sx: -16px;
+  --sy: -14px;
+}
+
+.hideout__splash i:nth-child(2) {
+  --sx: -8px;
+  --sy: -22px;
+}
+
+.hideout__splash i:nth-child(3) {
+  --sx: 1px;
+  --sy: -25px;
+}
+
+.hideout__splash i:nth-child(4) {
+  --sx: 9px;
+  --sy: -21px;
+}
+
+.hideout__splash i:nth-child(5) {
+  --sx: 16px;
+  --sy: -13px;
+}
+
+@keyframes hideout-splash {
+  0%,
+  46% {
+    opacity: 0;
+    transform: none;
+  }
+  50% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sx), calc(var(--sy) + 16px)) rotate(120deg);
+  }
+}
+
+@keyframes hideout-splash-up {
+  from {
+    transform: none;
+  }
+}
+
+/* ---- The frog: on its lily pad, afloat ---- */
+.lily-water {
+  inset: 0;
+  overflow: visible;
+}
+
+.lily-water__pond {
+  fill: #8fd3ef;
+  stroke: #3a8db3;
+  stroke-width: 0.8;
+}
+
+.lily-water__ripple {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.lily-water__ring {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 0.8;
+  opacity: 0;
+}
+
+.lily-water__bubble {
+  fill: #e8f8ff;
+  stroke: #3a8db3;
+  stroke-width: 0.4;
+  opacity: 0;
+}
+
+/* Everything above the waterline; anything that sinks below it is gone. */
+.lily-float {
+  position: absolute;
+  top: -40px;
+  right: -10px;
+  bottom: 5px;
+  left: -10px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lily-float__ride {
+  position: absolute;
+  bottom: -5px;
+  left: 10px;
+  width: 53px;
+  height: 80px;
+  transform-origin: 50% 90%;
+  animation: lily-bob 3.4s var(--ease-in-out) infinite;
+}
+
+.lily-pad {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  overflow: visible;
+}
+
+.lily-pad__leaf {
+  fill: #6cbf4a;
+  stroke: #2f6b25;
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+
+.lily-pad__vein {
+  fill: none;
+  stroke: #4f9a35;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+}
+
+.lily-pad__flower {
+  fill: #ff9fc0;
+  stroke: #c2457a;
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+/* Sat in the middle of the pad. */
+.lily-float__frog {
+  position: absolute;
+  bottom: 7px;
+  left: 50%;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+}
+
+.lily-float__frog .leaping-cat {
+  display: block;
+}
+
+/* Afloat: rocking gently on the water. */
+@keyframes lily-bob {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(0.8px) rotate(1.5deg);
+  }
+}
+
+/* Arriving: the frog jumps over onto the pad, which dips under its weight. */
+.hideout--arrive .lily-float__frog {
+  animation: frog-onto-pad 1000ms linear both;
+}
+
+@keyframes frog-onto-pad {
+  0% {
+    transform: translate(var(--dx), var(--dy));
+    animation-timing-function: var(--ease-out);
+  }
+  45% {
+    transform: translate(calc(var(--dx) * 0.45), calc(var(--dy) * 0.45 - 34px)) rotate(-10deg);
+    animation-timing-function: var(--ease-in);
+  }
+  70% {
+    transform: scale(1.14, 0.84);
+    animation-timing-function: var(--ease-out);
+  }
+  84% {
+    transform: translateY(-3px) scale(0.96, 1.05);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.hideout--arrive .lily-float__ride {
+  animation: lily-land 1000ms var(--ease-out) both, lily-bob 3.4s var(--ease-in-out) infinite 1000ms;
+}
+
+@keyframes lily-land {
+  0%,
+  68%,
+  100% {
+    transform: none;
+  }
+  74% {
+    transform: translateY(2.5px) scale(1.03, 0.97);
+  }
+  86% {
+    transform: translateY(-0.6px);
+  }
+}
+
+.hideout--arrive .lily-water__pond {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: lily-dip 1000ms var(--ease-out) both;
+}
+
+@keyframes lily-dip {
+  0%,
+  68%,
+  100% {
+    transform: none;
+  }
+  74% {
+    transform: scale(1.05, 1.25);
+  }
+}
+
+/* Time's up: a wobble, and down it goes, pad and all; rings spread on the water and a few
+   bubbles come up. */
+.hideout--flee .lily-float__ride {
+  animation: lily-sink 1600ms linear forwards;
+}
+
+@keyframes lily-sink {
+  0% {
+    transform: none;
+  }
+  6%,
+  18% {
+    transform: rotate(-4deg);
+  }
+  12%,
+  24% {
+    transform: rotate(4deg);
+  }
+  30% {
+    transform: none;
+    animation-timing-function: var(--ease-in);
+  }
+  62%,
+  100% {
+    transform: translateY(46px) rotate(-6deg);
+  }
+}
+
+.hideout--flee .lily-water__ring {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: lily-ring 1600ms var(--ease-out) forwards;
+}
+
+.hideout--flee .lily-water__ring--2 {
+  animation-delay: 200ms;
+}
+
+@keyframes lily-ring {
+  0%,
+  40% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+.hideout--flee .lily-water__bubble {
+  animation: lily-bubble 1600ms var(--ease-out) forwards;
+}
+
+.hideout--flee .lily-water__bubble--2 {
+  animation-delay: 160ms;
+}
+
+.hideout--flee .lily-water__bubble--3 {
+  animation-delay: 300ms;
+}
+
+@keyframes lily-bubble {
+  0%,
+  50% {
+    opacity: 0;
+    transform: none;
+  }
+  60% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(-9px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-11px) scale(1.4);
+  }
+}
+
+
+@keyframes hideout-gone {
+  0%,
+  26% {
+    opacity: 1;
+  }
+  30%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---- The capybara: in its hot tub ---- */
+.hideout__tub {
+  inset: 0;
+  overflow: visible;
+}
+
+.hideout__tub-water {
+  fill: #9ad8f0;
+  stroke: #3a8db3;
+  stroke-width: 0.7;
+}
+
+.hideout__tub-wood {
+  fill: #c98a4b;
+  stroke: #5a3518;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.hideout__tub-band {
+  fill: none;
+  stroke: #8a5a2b;
+  stroke-width: 1.2;
+}
+
+.hideout__tub-stave {
+  fill: none;
+  stroke: #a0683a;
+  stroke-width: 0.6;
+}
+
+.hideout__inside {
+  bottom: -2px;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+}
+
+/* In the tub (its picture has a tub of its own), bobbing, eyes shut, steam rising. */
+.hideout--capybara .hideout__tub {
+  opacity: 0;
+}
+
+.hideout--capybara .hideout__inside {
+  animation: capy-soak 5200ms var(--ease-in-out) infinite;
+}
+
+.hideout--arrive.hideout--capybara .hideout__tub {
+  animation: tub-swap 1000ms steps(1, end) both;
+}
+
+@keyframes tub-swap {
+  0% {
+    opacity: 1;
+  }
+  48%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hideout--arrive.hideout--capybara .hideout__inside {
+  animation: tub-in 1000ms var(--ease-out) both, capy-soak 5200ms var(--ease-in-out) infinite 1000ms;
+}
+
+@keyframes tub-in {
+  0%,
+  47% {
+    opacity: 0;
+    transform: none;
+  }
+  48% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.06, 0.9);
+  }
+  64% {
+    transform: translateY(-1px) scale(0.97, 1.04);
+  }
+  80%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hideout__steam {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.hideout__steam i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 0.6px rgba(120, 100, 90, 0.4);
+  opacity: 0;
+  animation: steam-rise 2200ms var(--ease-out) infinite;
+}
+
+.hideout__steam i:nth-child(1) {
+  left: -16px;
+  animation-delay: 300ms;
+}
+
+.hideout__steam i:nth-child(2) {
+  left: -3px;
+  animation-delay: 1000ms;
+}
+
+.hideout__steam i:nth-child(3) {
+  left: 10px;
+  animation-delay: 1700ms;
+}
+
+/* Time's up: out it climbs, and off it goes; the tub stays behind, empty, and fades. */
+.hideout--flee.hideout--capybara .hideout__inside,
+.hideout--flee.hideout--capybara .hideout__steam {
+  animation: hideout-gone 1600ms linear forwards;
+}
+
+.hideout--flee.hideout--capybara .hideout__tub {
+  animation: tub-left 1600ms linear forwards;
+}
+
+@keyframes tub-left {
+  0%,
+  29% {
+    opacity: 0;
+  }
+  30%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---- The monkey: behind a bush, peeking over ---- */
+.hideout__window {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  translate: -50% 0;
+}
+
+.hideout--monkey .hideout__inside {
+  bottom: -8px;
+  animation: bush-peek 4800ms var(--ease-in-out) infinite 1200ms;
+}
+
+@keyframes bush-peek {
+  0%,
+  100% {
+    transform: none;
+  }
+  /* Down it ducks... */
+  12%,
+  36% {
+    transform: translateY(26px);
+  }
+  /* ...and up again, at the other side. */
+  44% {
+    transform: translate(3px, -2px);
+  }
+  52%,
+  70% {
+    transform: translateX(3px);
+  }
+  78% {
+    transform: none;
+  }
+}
+
+.hideout__bush {
+  inset: 0;
+  overflow: visible;
+}
+
+.hideout__bush path:first-child {
+  fill: #7aaf46;
+  stroke: #4f6f2a;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.hideout__bush-leaf {
+  fill: #5f9a36;
+}
+
+.hideout--arrive.hideout--monkey .hideout__inside {
+  animation: bush-in 1000ms var(--ease-out) both, bush-peek 4800ms var(--ease-in-out) infinite 2200ms;
+}
+
+@keyframes bush-in {
+  0%,
+  46% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  47% {
+    opacity: 1;
+    transform: translateY(30px);
+  }
+  66% {
+    transform: translateY(26px);
+  }
+  84% {
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hideout--arrive .hideout__bush {
+  transform-origin: 50% 100%;
+  animation: bush-shake 1000ms linear both;
+}
+
+@keyframes bush-shake {
+  0%,
+  46%,
+  70%,
+  100% {
+    transform: none;
+  }
+  50%,
+  58% {
+    transform: scale(1.06, 0.92) rotate(-3deg);
+  }
+  54%,
+  62% {
+    transform: scale(0.98, 1.04) rotate(3deg);
+  }
+}
+
+/* Time's up: out it jumps, and the bush is left shaking. */
+.hideout--flee.hideout--monkey .hideout__inside {
+  animation: hideout-gone 1600ms linear forwards;
+}
+
+.hideout--flee .hideout__bush {
+  transform-origin: 50% 100%;
+  animation: bush-left 1600ms linear forwards;
+}
+
+@keyframes bush-left {
+  0%,
+  10%,
+  20% {
+    transform: rotate(-4deg);
+  }
+  5%,
+  15%,
+  25% {
+    transform: rotate(4deg);
+  }
+  30%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+/* "Geri al" pressed: these come straight out of their place, no box to carry back. */
+[data-cat="frog"] .cat-fetch__box,
+[data-cat="capybara"] .cat-fetch__box,
+[data-cat="monkey"] .cat-fetch__box {
+  display: none;
+}
+
+/* ===================== Pictured animals in moving parts (Rig) =====================
+   Not a picture slid and rocked about: the body breathes, the head turns a little, open eyes
+   blink, arms wave, a tail swings; walking, the feet step one after the other. */
+.rig {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 100%;
+  animation: rig-breathe 3.2s var(--ease-in-out) infinite;
+}
+
+.turtle-seat__pose.rig,
+.leaping-cat--rig .rig {
+  position: absolute;
+  inset: 0;
+}
+
+.rig__part,
+.rig .rig__head img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes rig-breathe {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale(1.015, 0.985);
+  }
+}
+
+/* The head: a slow look this way and that. */
+.rig__head {
+  animation: rig-head 4.2s var(--ease-in-out) infinite;
+}
+
+@keyframes rig-head {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg) translateY(-0.4%);
+  }
+}
+
+/* Open eyes blink. */
+.rig__lid {
+  position: absolute;
+  border-radius: 50%;
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  animation: rig-blink 4.8s infinite;
+}
+
+@keyframes rig-blink {
+  0%,
+  91%,
+  97%,
+  100% {
+    transform: scaleY(0);
+  }
+  94% {
+    transform: scaleY(1.05);
+  }
+}
+
+/* A tail swings. */
+.rig__tail {
+  animation: rig-tail 2.6s var(--ease-in-out) infinite;
+}
+
+@keyframes rig-tail {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+/* Arms: the monkey waves; the frog and the capybara cheer, one arm then the other; the turtle
+   flaps its flippers. */
+.rig--monkey .rig__arm-r {
+  animation: rig-wave 760ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes rig-wave {
+  from {
+    transform: rotate(-16deg);
+  }
+  to {
+    transform: rotate(10deg);
+  }
+}
+
+.rig--frog .rig__arm-l,
+.rig--capybara .rig__arm-l,
+.rig--turtle .rig__arm-l {
+  animation: rig-arm-l 1.3s var(--ease-in-out) infinite alternate;
+}
+
+.rig--frog .rig__arm-r,
+.rig--capybara .rig__arm-r,
+.rig--turtle .rig__arm-r {
+  animation: rig-arm-r 1.3s var(--ease-in-out) infinite alternate;
+  animation-delay: -650ms;
+}
+
+@keyframes rig-arm-l {
+  from {
+    transform: rotate(9deg);
+  }
+  to {
+    transform: rotate(-11deg);
+  }
+}
+
+@keyframes rig-arm-r {
+  from {
+    transform: rotate(-9deg);
+  }
+  to {
+    transform: rotate(11deg);
+  }
+}
+
+.rig--turtle .rig__arm-l,
+.rig--turtle .rig__arm-r {
+  animation-duration: 900ms;
+}
+
+/* Pointer on it: it waves all the harder. */
+.cat-slot:hover .rig__arm-l,
+.cat-slot:hover .rig__arm-r {
+  animation-duration: 380ms;
+}
+
+/* The seat no longer rocks the whole picture about: the parts move instead. */
+.turtle-seat__body {
+  animation: none;
+}
+
+.cat-slot:hover .turtle-seat:not(.turtle-seat--asleep) .turtle-seat__body {
+  animation: none;
+}
+
+/* Walking and running: a step with one foot, then the other, the body bobbing with each, arms
+   swinging. In the air (a hop), feet tucked back. */
+.stroll-cat--walk .leaping-cat--rig,
+.stroll-cat--run .leaping-cat--rig,
+.shell-turtle__runner .leaping-cat--rig {
+  animation: rig-step-bob 230ms var(--ease-in-out) infinite alternate;
+}
+
+.stroll-cat--run .leaping-cat--rig,
+.shell-turtle__runner .leaping-cat--rig {
+  animation-duration: 130ms;
+}
+
+@keyframes rig-step-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-4%) rotate(-1.5deg);
+  }
+}
+
+.stroll-cat--walk .rig__foot-l,
+.stroll-cat--run .rig__foot-l,
+.shell-turtle__runner .rig__foot-l {
+  animation: rig-step 460ms var(--ease-in-out) infinite;
+}
+
+.stroll-cat--walk .rig__foot-r,
+.stroll-cat--run .rig__foot-r,
+.shell-turtle__runner .rig__foot-r {
+  animation: rig-step 460ms var(--ease-in-out) infinite -230ms;
+}
+
+.stroll-cat--run .rig__foot-l,
+.stroll-cat--run .rig__foot-r,
+.shell-turtle__runner .rig__foot-l,
+.shell-turtle__runner .rig__foot-r {
+  animation-duration: 260ms;
+}
+
+.stroll-cat--run .rig__foot-r,
+.shell-turtle__runner .rig__foot-r {
+  animation-delay: -130ms;
+}
+
+@keyframes rig-step {
+  0%,
+  50%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateY(-7%) rotate(-10deg);
+  }
+  35% {
+    transform: translate(2%, -4%) rotate(-4deg);
+  }
+}
+
+.stroll-cat--walk .rig__arm-l,
+.stroll-cat--run .rig__arm-l,
+.shell-turtle__runner .rig__arm-l,
+.stroll-cat--walk .rig__arm-r,
+.stroll-cat--run .rig__arm-r,
+.shell-turtle__runner .rig__arm-r {
+  animation-duration: 460ms;
+}
+
+.stroll-cat--hop .rig__foot-l {
+  transform: translateY(-4%) rotate(16deg);
+}
+
+.stroll-cat--hop .rig__foot-r {
+  transform: translateY(-4%) rotate(-16deg);
+}
+
+.stroll-cat--hop .rig__foot-l,
+.stroll-cat--hop .rig__foot-r {
+  animation: none;
+  transition: transform 120ms var(--ease-out);
+}
+
+/* The frog's arms stay close to its cheeks: a smaller cheer. */
+.rig--frog .rig__arm-l,
+.rig--frog .rig__arm-r {
+  animation-name: rig-arm-l-small;
+}
+
+.rig--frog .rig__arm-r {
+  animation-name: rig-arm-r-small;
+}
+
+@keyframes rig-arm-l-small {
+  from {
+    transform: rotate(6deg);
+  }
+  to {
+    transform: rotate(-7deg);
+  }
+}
+
+@keyframes rig-arm-r-small {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}

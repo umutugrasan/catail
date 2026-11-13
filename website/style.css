@@ -357,8 +357,31 @@ kbd {
   text-decoration: none;
 }
 
-.nav__brand img {
-  border-radius: 9px;
+/* The Catail Studio wordmark: dark ink, or light ink on the black cat's dark theme. */
+.logo {
+  display: block;
+  width: auto;
+  height: 30px;
+}
+
+.logo--light-ink,
+[data-cat="black"] .logo--dark-ink {
+  display: none;
+}
+
+[data-cat="black"] .logo--light-ink {
+  display: block;
+}
+
+.foot__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.foot__logo {
+  height: 22px;
 }
 
 .nav__links {
@@ -1499,6 +1522,10 @@ h1 mark {
 
   .nav__lang {
     margin-left: auto;
+  }
+
+  .nav .logo {
+    height: 22px;
   }
 }
 

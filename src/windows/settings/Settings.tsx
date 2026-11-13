@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWornTheme, wearCustomCat, wearPlainAccent } from "../../lib/cat";
-import { BoxCat, CatFace, LeapingCat, ShellTurtle } from "../../lib/cats";
+import studioLogo from "../../lib/catail-studio.png";
+import studioLogoLight from "../../lib/catail-studio-light.png";
+import { BoxCat, CatFace, Hideout, LeapingCat, ShellTurtle } from "../../lib/cats";
 import { LANGUAGES, t, uiLanguage } from "../../lib/i18n";
 import { CUSTOM_PRESETS, type CustomCat } from "../../lib/customCat";
 import {
@@ -226,7 +228,13 @@ export function Settings() {
           <CatFace size={26} />
           {t("settings.title")}
         </h1>
-        {worn === "turtle" ? <ShellTurtle /> : <BoxCat />}
+        {worn === "turtle" ? (
+          <ShellTurtle />
+        ) : worn === "frog" || worn === "capybara" || worn === "monkey" ? (
+          <Hideout animal={worn} />
+        ) : (
+          <BoxCat />
+        )}
       </header>
 
       <nav className="settings__nav">
@@ -575,6 +583,8 @@ export function Settings() {
         {page === "updates" && (
           <section>
             <h2>{t("settings.updates")}</h2>
+            <img className="brand-logo brand-logo--dark-ink" src={studioLogo} alt="Catail Studio" />
+            <img className="brand-logo brand-logo--light-ink" src={studioLogoLight} alt="" />
             <p className="muted">{t("settings.version", { version })}</p>
             <div className="update">
               {update.kind === "available" ? (

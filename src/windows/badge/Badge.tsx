@@ -14,6 +14,7 @@ import {
   type NoseBubble,
   PACKING_MS,
   PackingCat,
+  Hideout,
   ShellTurtle,
   UNPACKED_MS,
   TURTLE_HATCH_MS,
@@ -649,6 +650,13 @@ export function Badge() {
         <span ref={boxRef} className="undo__cat">
           {turtle ? (
             <ShellTurtle leapFrom={leapFrom} flee={shredding} runDir={shredAt.hopDir} />
+          ) : monkey || frog || capybara ? (
+            <Hideout
+              animal={monkey ? "monkey" : frog ? "frog" : "capybara"}
+              leapFrom={leapFrom}
+              flee={shredding}
+              runDir={shredAt.hopDir}
+            />
           ) : (
             <BoxCat leapFrom={leapFrom} shred={shredding ? shredAt : null} />
           )}

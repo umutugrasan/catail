@@ -1,6 +1,7 @@
 // The Catail cats: a small SVG face, and two drawn cats cut into parts so they can move.
 // Motion lives in cats.css.
-import { useEffect, useRef, useState, type CSSProperties, type Ref } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type Ref } from "react";
+import { useWornTheme } from "./cat";
 import { TrashIcon } from "../windows/overlay/icons";
 import boxFront from "./cats/box-front.png";
 import boxHead from "./cats/box-head.png";
@@ -23,6 +24,7 @@ import capybaraWorried from "./animals/capybara/worried.png";
 import capybaraSplash from "./animals/capybara/splash.png";
 import capybaraOnsen from "./animals/capybara/onsen.png";
 import capybaraBoba from "./animals/capybara/boba.png";
+import monkeyPeek from "./animals/monkey/peek.png";
 import monkeyBanana from "./animals/monkey/banana.png";
 import monkeySilly from "./animals/monkey/silly.png";
 import monkeySurprised from "./animals/monkey/surprised.png";
@@ -157,13 +159,240 @@ export function CatEar({ side }: { side: "left" | "right" }) {
 /** Size of the leaping cat in the panel's bin and in the badge; they must match for the handoff. */
 export const LEAP_CAT_SIZE = 41;
 
-/** The standing cat with its feet as separate parts, so they can kick while it flies. */
-export function LeapingCat({ size = LEAP_CAT_SIZE, className = "", style }: { size?: number; className?: string; style?: CSSProperties }) {
+/**
+ * The pictured animals cut into parts that move (scripts/rig_animals.py): a body, a head that
+ * turns (with eyelids where its eyes are open), arms, feet and a tail. Each part is a picture as
+ * big as the whole, so they stack back into it; the pivots (percent of the picture) are where
+ * each one turns.
+ */
+const RIG_FILES = import.meta.glob("./animals/*/rig/*.png", { eager: true, import: "default" }) as Record<string, string>;
+const RIGS = {
+  "turtle": {
+    pivots: {
+      "arm-l": [
+        22.7,
+        50.0
+      ],
+      "arm-r": [
+        55.7,
+        55.7
+      ],
+      "foot-l": [
+        31.8,
+        79.5
+      ],
+      "foot-r": [
+        58.0,
+        80.7
+      ],
+      "head": [
+        44.3,
+        45.5
+      ]
+    },
+    lids: [
+      {
+        left: 25.9,
+        top: 17.6,
+        width: 8.5,
+        height: 10.2,
+        color: "#bbe39d"
+      },
+      {
+        left: 49.7,
+        top: 22.2,
+        width: 8.5,
+        height: 10.2,
+        color: "#bae39d"
+      }
+    ]
+  },
+  "monkey": {
+    pivots: {
+      "arm-r": [
+        69.3,
+        69.3
+      ],
+      "tail": [
+        31.8,
+        79.5
+      ],
+      "foot-l": [
+        43.2,
+        89.8
+      ],
+      "foot-r": [
+        61.4,
+        89.8
+      ],
+      "head": [
+        51.1,
+        63.6
+      ]
+    },
+    lids: []
+  },
+  "frog": {
+    pivots: {
+      "arm-l": [
+        36.4,
+        62.5
+      ],
+      "arm-r": [
+        69.3,
+        63.6
+      ],
+      "foot-l": [
+        36.4,
+        83.0
+      ],
+      "foot-r": [
+        63.6,
+        83.0
+      ],
+      "head": [
+        52.3,
+        60.2
+      ]
+    },
+    lids: [
+      {
+        left: 33.8,
+        top: 27.0,
+        width: 16.5,
+        height: 15.9,
+        color: "#cce36f"
+      },
+      {
+        left: 66.2,
+        top: 31.5,
+        width: 16.5,
+        height: 15.9,
+        color: "#cce36f"
+      }
+    ]
+  },
+  "capybara": {
+    pivots: {
+      "arm-l": [
+        34.1,
+        61.4
+      ],
+      "arm-r": [
+        77.3,
+        65.9
+      ],
+      "foot-l": [
+        34.1,
+        88.6
+      ],
+      "foot-r": [
+        70.5,
+        88.6
+      ],
+      "head": [
+        54.5,
+        59.1
+      ]
+    },
+    lids: [
+      {
+        left: 34.9,
+        top: 28.7,
+        width: 10.8,
+        height: 11.4,
+        color: "#f8aa6e"
+      },
+      {
+        left: 65.1,
+        top: 35.8,
+        width: 10.8,
+        height: 11.4,
+        color: "#f4a96a"
+      }
+    ]
+  }
+} as const;
+
+export type Rigged = keyof typeof RIGS;
+export const isRigged = (animal: string | undefined): animal is Rigged => !!animal && animal in RIGS;
+
+/** Back to front: the tail behind it all, the arms in front, the head on top. */
+const RIG_ORDER = ["tail", "body", "foot-l", "foot-r", "head", "arm-l", "arm-r"] as const;
+
+/**
+ * A pictured animal that moves like one: it breathes, its head turns a little, it blinks, its
+ * arms wave and its tail swings; walking, its feet take steps (cats.css, stroll.css).
+ */
+export function Rig({ animal, className = "" }: { animal: Rigged; className?: string }) {
+  const rig = RIGS[animal];
+  const pivots: Record<string, readonly number[]> = rig.pivots;
+  const src = (part: string) => RIG_FILES[`./animals/${animal}/rig/${part}.png`];
   return (
-    <span className={`leaping-cat ${className}`} style={{ width: size, height: Math.round((size * 335) / 332), ...style }} aria-hidden="true">
-      <img className="leaping-cat__foot leaping-cat__foot--left" src={footLeft} alt="" draggable={false} />
-      <img className="leaping-cat__foot leaping-cat__foot--right" src={footRight} alt="" draggable={false} />
-      <img className="leaping-cat__body" src={standingBody} alt="" draggable={false} />
+    <span className={`rig rig--${animal} ${className}`} aria-hidden="true">
+      {RIG_ORDER.filter((part) => part === "body" || part in pivots).map((part) => {
+        const pivot = pivots[part];
+        const style = pivot ? { transformOrigin: `${pivot[0]}% ${pivot[1]}%` } : undefined;
+        if (part === "head") {
+          return (
+            <span key={part} className="rig__part rig__head" style={style}>
+              <img src={src(part)} alt="" draggable={false} />
+              {rig.lids.map((lid, i) => (
+                <i
+                  key={i}
+                  className="rig__lid"
+                  style={{
+                    left: `${lid.left}%`,
+                    top: `${lid.top}%`,
+                    width: `${lid.width}%`,
+                    height: `${lid.height}%`,
+                    background: lid.color,
+                  }}
+                />
+              ))}
+            </span>
+          );
+        }
+        return <img key={part} className={`rig__part rig__${part}`} src={src(part)} style={style} alt="" draggable={false} />;
+      })}
+    </span>
+  );
+}
+
+/** The animal this element is drawn for: the nearest data-cat (a settings card, a visitor), else the worn one. */
+function useDrawnAnimal(ref: React.RefObject<HTMLElement | null>) {
+  const worn = useWornTheme();
+  const [animal, setAnimal] = useState<string | undefined>(undefined);
+  useLayoutEffect(() => {
+    setAnimal(ref.current?.closest<HTMLElement>("[data-cat]")?.dataset.cat ?? worn);
+  }, [worn, ref]);
+  return animal;
+}
+
+/**
+ * The standing cat with its feet as separate parts, so they can kick while it flies. A pictured
+ * animal is drawn in its moving parts instead (Rig).
+ */
+export function LeapingCat({ size = LEAP_CAT_SIZE, className = "", style }: { size?: number; className?: string; style?: CSSProperties }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const animal = useDrawnAnimal(ref);
+  const rigged = isRigged(animal);
+  return (
+    <span
+      ref={ref}
+      className={`leaping-cat${rigged ? " leaping-cat--rig" : ""} ${className}`}
+      style={{ width: size, height: Math.round((size * 335) / 332), ...style }}
+      aria-hidden="true"
+    >
+      {rigged ? (
+        <Rig animal={animal} />
+      ) : (
+        <>
+          <img className="leaping-cat__foot leaping-cat__foot--left" src={footLeft} alt="" draggable={false} />
+          <img className="leaping-cat__foot leaping-cat__foot--right" src={footRight} alt="" draggable={false} />
+          <img className="leaping-cat__body" src={standingBody} alt="" draggable={false} />
+        </>
+      )}
     </span>
   );
 }
@@ -699,6 +928,7 @@ export function TurtleSeat({
   hatch,
   seatRef,
   poses = TURTLE_POSES,
+  rig = "turtle",
   className = "",
 }: {
   fat: number;
@@ -707,6 +937,8 @@ export function TurtleSeat({
   seatRef?: Ref<HTMLSpanElement>;
   /** The pictures, by pose: the turtle's, or another pictured animal's. */
   poses?: Record<string, string>;
+  /** Its happy pose, the one it mostly sits in, in moving parts. */
+  rig?: Rigged;
   className?: string;
 }) {
   return (
@@ -726,9 +958,13 @@ export function TurtleSeat({
       <span className="turtle-seat__ground">
         <span className="turtle-seat__act">
           <span className="turtle-seat__body">
-            {Object.entries(poses).map(([pose, src]) => (
-              <img key={pose} className={`turtle-seat__pose turtle-seat__pose--${pose}`} src={src} alt="" draggable={false} />
-            ))}
+            {Object.entries(poses).map(([pose, src]) =>
+              pose === "happy" && rig ? (
+                <Rig key={pose} animal={rig} className="turtle-seat__pose turtle-seat__pose--happy" />
+              ) : (
+                <img key={pose} className={`turtle-seat__pose turtle-seat__pose--${pose}`} src={src} alt="" draggable={false} />
+              ),
+            )}
             <span className="turtle-seat__tears">
               <i />
               <i />
@@ -897,7 +1133,9 @@ const MONKEY_POSES = {
 export const monkeyPicture = (pose: keyof typeof MONKEY_POSES) => MONKEY_POSES[pose];
 
 export function MonkeySeat({ fat, asleep, seatRef }: { fat: number; asleep: boolean; seatRef?: Ref<HTMLSpanElement> }) {
-  return <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={MONKEY_POSES} className="monkey-seat" />;
+  return (
+    <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={MONKEY_POSES} rig="monkey" className="monkey-seat" />
+  );
 }
 
 /**
@@ -918,7 +1156,7 @@ const FROG_POSES = {
 export const frogPicture = (pose: keyof typeof FROG_POSES) => FROG_POSES[pose];
 
 export function FrogSeat({ fat, asleep, seatRef }: { fat: number; asleep: boolean; seatRef?: Ref<HTMLSpanElement> }) {
-  return <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={FROG_POSES} className="frog-seat" />;
+  return <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={FROG_POSES} rig="frog" className="frog-seat" />;
 }
 
 /**
@@ -942,7 +1180,15 @@ export const capybaraPicture = (pose: keyof typeof CAPYBARA_POSES) => CAPYBARA_P
 
 export function CapybaraSeat({ fat, asleep, seatRef }: { fat: number; asleep: boolean; seatRef?: Ref<HTMLSpanElement> }) {
   return (
-    <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={CAPYBARA_POSES} className="capybara-seat" />
+    <TurtleSeat
+      fat={fat}
+      asleep={asleep}
+      hatch={null}
+      seatRef={seatRef}
+      poses={CAPYBARA_POSES}
+      rig="capybara"
+      className="capybara-seat"
+    />
   );
 }
 
@@ -1466,6 +1712,126 @@ export function MonkeyBar() {
         <circle className="monkey-bar__fur" cx="10" cy="10" r="8" />
         <circle className="monkey-bar__face" cx="9" cy="10" r="4.4" />
       </svg>
+    </span>
+  );
+}
+
+/** The animals that hide somewhere of their own for "Geri al", instead of the cat's box. */
+export type Hider = "frog" | "capybara" | "monkey";
+
+const HIDER_FLYER: Record<Hider, string> = { frog: frogHappy, capybara: capybaraHappy, monkey: monkeyHappy };
+
+/**
+ * "Geri al" for the frog, the capybara and the monkey, each in a place of its own: the frog leaps
+ * onto a lily pad and sits on it, afloat; the capybara drops into its hot tub; the monkey ducks
+ * behind a bush. `leapFrom`, `flee` and `runDir` as for ShellTurtle: it jumps over from there,
+ * and when time is up the capybara and the monkey come out and run off, and the frog goes down
+ * under the water, pad and all.
+ */
+export function Hideout({
+  animal,
+  leapFrom,
+  flee = false,
+  runDir = -1,
+}: {
+  animal: Hider;
+  leapFrom?: { x: number; y: number } | null;
+  flee?: boolean;
+  runDir?: number;
+}) {
+  return (
+    <span
+      className={`hideout hideout--${animal}${leapFrom ? " hideout--arrive" : ""}${flee ? " hideout--flee" : ""}`}
+      style={{ "--dx": `${leapFrom?.x ?? 0}px`, "--dy": `${leapFrom?.y ?? 0}px`, "--run": runDir } as CSSProperties}
+      aria-hidden="true"
+    >
+      {leapFrom && animal !== "frog" && (
+        <span className="shell-turtle__flyer">
+          <img src={HIDER_FLYER[animal]} alt="" draggable={false} />
+        </span>
+      )}
+      <span className="hideout__home">
+        {animal === "frog" && (
+          <>
+            <svg className="lily-water" viewBox="0 0 53 40" width={53} height={40}>
+              <ellipse className="lily-water__pond" cx={26.5} cy={35.4} rx={25} ry={4.2} />
+              <path className="lily-water__ripple" d="M6 35.4q3-1.4 6 0M41 36.6q3-1.4 6 0" />
+              {/* Where it went down: rings spreading, bubbles coming up. */}
+              <ellipse className="lily-water__ring" cx={26.5} cy={34} rx={9} ry={2} />
+              <ellipse className="lily-water__ring lily-water__ring--2" cx={26.5} cy={34} rx={9} ry={2} />
+              <circle className="lily-water__bubble" cx={23} cy={33} r={1.4} />
+              <circle className="lily-water__bubble lily-water__bubble--2" cx={29} cy={33} r={1.1} />
+              <circle className="lily-water__bubble lily-water__bubble--3" cx={26} cy={33} r={1.7} />
+            </svg>
+            {/* The pad, and the frog on it; whatever goes under the waterline is out of sight. */}
+            <span className="lily-float">
+              <span className="lily-float__ride">
+                <svg className="lily-pad" viewBox="0 0 53 40" width={53} height={40}>
+                  <path
+                    className="lily-pad__leaf"
+                    d="M26.5 34.6C14 35.4 3.6 34.4 3.6 31.6 3.6 28.6 14 27 26.5 27 39 27 49.4 28.6 49.4 31.6 49.4 33 46 34 40 34.4L27.4 31Z"
+                  />
+                  <path className="lily-pad__vein" d="M27 31 12 30.6M27 31l16-1M27 31l-7 2.6M27 31l8 2.6" />
+                  <path className="lily-pad__flower" d="M44.6 31.2l-2-2.6 2.8 1 .8-3 .8 3 2.8-1-2 2.6Z" />
+                </svg>
+                <span className="lily-float__frog">
+                  <LeapingCat size={36} />
+                </span>
+              </span>
+            </span>
+          </>
+        )}
+        {animal === "capybara" && (
+          <>
+            <svg className="hideout__tub" viewBox="0 0 53 40" width={53} height={40}>
+              <ellipse className="hideout__tub-water" cx={26.5} cy={22} rx={18} ry={3.6} />
+              <path className="hideout__tub-wood" d="M8.4 22h36.2l-2.6 15.4c-.3 1.6-1.6 2.6-3.2 2.6H14.2c-1.6 0-2.9-1-3.2-2.6Z" />
+              <path className="hideout__tub-band" d="M9.6 27.4h33.8M10.6 33.6h31.8" />
+              <path className="hideout__tub-stave" d="M17 22.4l.8 17M26.5 22.6v17.2M36 22.4l-.8 17" />
+            </svg>
+            <img className="hideout__inside" src={capybaraOnsen} alt="" draggable={false} />
+            <span className="hideout__steam">
+              <i />
+              <i />
+              <i />
+            </span>
+          </>
+        )}
+        {animal === "monkey" && (
+          <>
+            <span className="hideout__window">
+              <img className="hideout__inside" src={monkeyPeek} alt="" draggable={false} />
+            </span>
+            <svg className="hideout__bush" viewBox="0 0 53 40" width={53} height={40}>
+              <path d="M3 39.6C.4 35.6 1.6 30.6 6 29.4 6 24.6 11 21.6 15.4 23.8 17.4 19.4 23.4 18 27 21.4 30.4 18.4 36.4 19.6 37.8 24 42.4 22 47.4 25.4 46.8 30 51.4 31 52.6 36.4 50 39.6Z" />
+              <path className="hideout__bush-leaf" d="M14 32.4c1.6-2 4-2.2 5.4-.6-1.6 1.8-3.8 2.2-5.4.6ZM33 33.4c1.6-2.2 4.2-2.4 5.6-.6-1.6 2-4 2.2-5.6.6ZM24 28.4c1.2-1.6 3.2-1.8 4.4-.4-1.2 1.4-3.2 1.6-4.4.4Z" />
+            </svg>
+          </>
+        )}
+      </span>
+      {leapFrom && (
+        <span className={`hideout__splash hideout__splash--${animal}`}>
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
+      {flee && animal !== "frog" && (
+        <span className="shell-turtle__runner">
+          <span className="shell-turtle__facing">
+            <LeapingCat size={40} />
+          </span>
+        </span>
+      )}
+      {flee && animal !== "frog" && (
+        <span className="shell-turtle__dust">
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
     </span>
   );
 }
