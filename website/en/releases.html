@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" data-cat="orange">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catail releases</title>
+    <meta name="description" content="Every published release of Catail, with release notes and direct download links." />
+    <meta name="theme-color" content="#f7b3cf" />
+    <link rel="alternate" hreflang="tr" href="https://umutugrasan.github.io/catail/surumler.html" />
+    <link rel="alternate" hreflang="en" href="https://umutugrasan.github.io/catail/en/releases.html" />
+    <link rel="alternate" hreflang="x-default" href="https://umutugrasan.github.io/catail/en/releases.html" />
+    <link rel="icon" href="../assets/icon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="../assets/icon-128.png" />
+    <script>
+      document.documentElement.classList.add("js");
+      try {
+        var cat = localStorage.getItem("catail.site.cat");
+        if (/^(orange|gray|white|calico|black)$/.test(cat)) document.documentElement.dataset.cat = cat;
+      } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800&display=swap"
+    />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../releases.css" />
+    <script type="module" src="../app.js"></script>
+    <script type="module" src="../releases-page.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#list">Skip to the list of releases</a>
+
+    <header class="nav">
+      <a class="nav__brand" href="./" aria-label="Catail home">
+        <img src="../assets/icon-128.png" alt="" width="36" height="36" />
+        <span>Catail</span>
+      </a>
+      <nav class="nav__links" aria-label="Site">
+        <a href="./#themes">Cats</a>
+        <a href="./#how">How it works</a>
+        <a href="./#features">Features</a>
+        <a href="releases.html" aria-current="page">Releases</a>
+        <a href="./#code">Source code</a>
+      </nav>
+      <a class="nav__lang" href="../surumler.html" hreflang="tr" lang="tr" title="Türkçe">TR</a>
+      <a class="btn btn--small" data-download href="https://github.com/umutugrasan/catail/releases/latest">Download</a>
+    </header>
+
+    <main class="rel wrap">
+      <div class="rel__head">
+        <p class="eyebrow">Release history</p>
+        <h1>All releases</h1>
+        <p class="lead">
+          Every release's installer is here. The newest one is all you need; if you want to go back to an older one,
+          you can download it here too. An installed Catail tells you about new versions itself.
+        </p>
+      </div>
+
+      <p class="rel__status" data-status>Loading releases…</p>
+      <ol class="rel__list" id="list" data-list></ol>
+
+      <p class="rel__foot">
+        Older releases aren't signed either. If Windows warns you,
+        <a href="./#smartscreen">the home page explains what to do</a>.
+      </p>
+    </main>
+
+    <footer class="foot">
+      <span class="boxcat foot__cat" aria-hidden="true"><span class="boxcat__head"></span><span class="boxcat__front"></span></span>
+      <div class="wrap foot__row">
+        <span>Catail is made by Umut Uğraşan.</span>
+        <span class="foot__links">
+          <a href="https://github.com/umutugrasan/catail">GitHub</a>
+          <a href="releases.html">Releases</a>
+          <a href="https://github.com/umutugrasan/catail/issues">Report a bug</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 // The animated feature scenes. Most are CSS loops; this file runs them only while they are on
 // screen, and plays the three that need a script: the queue, the cat on the badge and the
 // languages. None of them take input, they just play.
+import { lang, t } from "./i18n.js";
 
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -41,7 +42,7 @@ function setupLoops() {
 /* ---------- The queue, pasting itself ---------- */
 
 const THUMBS = ["chart", "error", "table", "code"];
-const TEXTS = ["Toplantı 14.00'te", "Fatura no: 2481", "Şuna bakar mısın?", "Sürüm notları ekte"];
+const TEXTS = t.texts;
 const PASTE_STEP_MS = 380;
 
 function setupDemo() {
@@ -204,7 +205,7 @@ function setupSeat() {
   let running = false;
 
   function show(count) {
-    pill.textContent = `Kuyruk: ${count}`;
+    pill.textContent = t.queue(count);
     cat.style.setProperty("--fat", fatness(count).toFixed(3));
     pill.classList.remove("is-bumping");
     void pill.offsetWidth;
@@ -257,7 +258,7 @@ function setupSeat() {
       root.classList.remove("is-pointing");
       head.style.transform = "";
       await wait(600);
-      pill.textContent = "Yapıştırılıyor…";
+      pill.textContent = t.pasting;
       await wait(1100);
     }
     running = false;
@@ -297,7 +298,8 @@ function setupLanguages() {
   const name = document.querySelector("[data-lang-name]");
   if (!word || !name || reducedMotion) return;
   const scene = word.closest(".scene");
-  let index = 0;
+  // It starts on the page's own language.
+  let index = Math.max(0, WORDS.findIndex(([language]) => language === (lang === "en" ? "English" : "Türkçe")));
   let timer = 0;
   const step = () => {
     index = (index + 1) % WORDS.length;

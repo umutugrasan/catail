@@ -384,6 +384,26 @@ kbd {
   margin-left: auto;
 }
 
+/* The other language, beside the download button. */
+.nav__lang {
+  padding: 5px 10px;
+  border: var(--stroke);
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: background-color 140ms var(--out);
+}
+
+.nav__lang:hover {
+  background: var(--bg-2);
+}
+
+.nav__lang + .btn {
+  margin-left: 0;
+}
+
 /* ---------- Hero ---------- */
 
 .hero {
@@ -1475,6 +1495,10 @@ h1 mark {
 
   .nav__links {
     display: none;
+  }
+
+  .nav__lang {
+    margin-left: auto;
   }
 }
 

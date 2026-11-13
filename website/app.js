@@ -1,3 +1,4 @@
+import { asset, locale, t } from "./i18n.js";
 import { compareVersions, loadLatest } from "./release.js";
 
 const CATS = ["orange", "gray", "white", "calico", "black"];
@@ -17,7 +18,7 @@ const imageSetCursors = CSS.supports("cursor", 'image-set(url("a.png") 1x) 0 0, 
 
 function wearCursors(cat) {
   for (const [name, [file, x, y, fallback]] of Object.entries(CURSORS)) {
-    const base = `assets/cursors/${cat}/${file}`;
+    const base = asset(`cursors/${cat}/${file}`);
     const image = imageSetCursors
       ? `image-set(url("${base}.png") 1x, url("${base}@2x.png") 2x)`
       : `url("${base}.png")`;
@@ -63,8 +64,8 @@ function setupCats() {
     button.addEventListener(
       "pointerenter",
       () => {
-        for (const [file] of Object.values(CURSORS)) new Image().src = `assets/cursors/${button.dataset.pick}/${file}.png`;
-        new Image().src = `assets/cats/${button.dataset.pick}/head.png`;
+        for (const [file] of Object.values(CURSORS)) new Image().src = asset(`cursors/${button.dataset.pick}/${file}.png`);
+        new Image().src = asset(`cats/${button.dataset.pick}/head.png`);
       },
       { once: true },
     );
@@ -84,11 +85,11 @@ function setupCats() {
 
 /* ---------- Download buttons ---------- */
 
-const numberFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
-const dateFormat = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+const numberFormat = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+const dateFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" });
 
 function describe(release) {
-  const parts = [`Sürüm ${release.version}`];
+  const parts = [t.version(release.version)];
   if (release.size) parts.push(`${numberFormat.format(release.size / 1024 / 1024)} MB`);
   if (release.publishedAt) parts.push(dateFormat.format(new Date(release.publishedAt)));
   return parts.join(" · ");
@@ -103,7 +104,7 @@ async function setupDownload() {
   const metas = document.querySelectorAll("[data-download-meta]");
   if (!release) {
     // The links already lead to the Releases page; the text just has to admit it.
-    for (const meta of metas) meta.textContent = "GitHub sürümler sayfasından";
+    for (const meta of metas) meta.textContent = t.fromReleases;
     return;
   }
   for (const link of document.querySelectorAll("[data-download]")) link.href = release.url;

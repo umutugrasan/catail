@@ -3,6 +3,12 @@
 Sunucu ve derleme gerektirmeyen statik site: ana sayfa `index.html` (`style.css`, `app.js`, `scenes.css`, `scenes.js`), sürümler sayfası `surumler.html` (`releases.css`, `releases-page.js`), ortak `release.js` ve `assets/`.
 Yollar görelidir; alt klasörde (`kullanici.github.io/catail/`) de kendi alan adında da çalışır.
 
+## İki dil
+
+Türkçe sayfalar kökte (`index.html`, `surumler.html`), İngilizceleri `en/` altında (`en/index.html`, `en/releases.html`). İki dil aynı CSS, JS ve `assets/` dosyalarını kullanır. Sayfalardaki metin her dilin kendi HTML'inde; betiklerin sayfaya yazdığı metinler (indirme düğmesi, sürüm kartları, sahnelerdeki yazılar) `i18n.js` içinde, iki dilde. Sürüm notları `releases-page.js` içinde `NOTES_TR` ve `NOTES_EN`.
+
+Bir sayfada bir şeyi değiştirdiğinde öbür dildekini de değiştir. Üstteki TR/EN düğmesi aynı sayfanın öbür diline gider. `hreflang` bağlantıları tam adres ister: alan adı değişirse dört sayfadaki `https://umutugrasan.github.io/catail/` adresini güncelle.
+
 Yerelde açmak için (modüller `file://` üzerinden çalışmaz):
 
 ```powershell
@@ -15,7 +21,7 @@ python -m http.server 5180 --directory website
 
 ## Sürümler sayfası
 
-`surumler.html`, kurulum dosyası olan bütün yayımlanmış sürümleri en yeniden eskiye listeler. İndirme bağlantıları doğrudan exe dosyasına gider. Her sürümün kısa notları `releases-page.js` içindeki `NOTES` nesnesinde durur. Orada olmayan bir sürüm için GitHub'daki sürüm notu gösterilir. Yeni bir sürüm çıkınca birkaç maddelik notunu `NOTES`'a eklemen yeterli.
+`surumler.html`, kurulum dosyası olan bütün yayımlanmış sürümleri en yeniden eskiye listeler. İndirme bağlantıları doğrudan exe dosyasına gider. Her sürümün kısa notları `releases-page.js` içindeki `NOTES_TR` ve `NOTES_EN` nesnelerinde durur. Orada olmayan bir sürüm için GitHub'daki sürüm notu gösterilir. Yeni bir sürüm çıkınca birkaç maddelik notunu iki dilde de eklemen yeterli.
 
 ## Özellik sahneleri
 
