@@ -232,6 +232,72 @@
   --tail-stripe: #9b6233;
 }
 
+/* The frog: pond greens, lily-pink. */
+[data-cat="frog"] {
+  --tint-50: #f4fbea;
+  --tint-100: #e3f5cd;
+  --tint-200: #c9eba4;
+  --tint-300: #a9dc78;
+  --tint-400: #8ccb52;
+  --tint-500: #3c7a1d;
+  --ink-900: #233414;
+  --ink-700: #34501d;
+  --ink-500: #5a7445;
+  --ink-300: #a9bd94;
+  --surface-raised: #ffffff;
+  --accent-text: #233414;
+  --danger: #b3261e;
+  --danger-soft: #fde6e3;
+  --shadow-rgb: 35, 52, 20;
+  --shade-rgb: 18, 28, 10;
+  --ring-rgb: 35, 52, 20;
+  color-scheme: light;
+
+  --face: #a8d86a;
+  --face-rim: #4a3216;
+  --face-eye: #2a1a0c;
+  --face-whisker: #4a3216;
+  --whisker: #f4fbea;
+  --cat-lid: #a8d86a;
+  --cat-lid-edge: #4a3216;
+  --tail-body: #a8d86a;
+  --tail-outline: #4a3216;
+  --tail-stripe: #a8d86a;
+}
+
+/* The capybara: warm browns, a mandarin orange. */
+[data-cat="capybara"] {
+  --tint-50: #fff7ef;
+  --tint-100: #ffead6;
+  --tint-200: #fbd3ad;
+  --tint-300: #f5b67e;
+  --tint-400: #ec9a56;
+  --tint-500: #9a5418;
+  --ink-900: #3d2412;
+  --ink-700: #5c3a1f;
+  --ink-500: #82603f;
+  --ink-300: #c7a888;
+  --surface-raised: #ffffff;
+  --accent-text: #3d2412;
+  --danger: #b3261e;
+  --danger-soft: #fde6e3;
+  --shadow-rgb: 61, 36, 18;
+  --shade-rgb: 31, 18, 9;
+  --ring-rgb: 61, 36, 18;
+  color-scheme: light;
+
+  --face: #d99a5e;
+  --face-rim: #5a3518;
+  --face-eye: #2a170a;
+  --face-whisker: #5a3518;
+  --whisker: #fff7ef;
+  --cat-lid: #d99a5e;
+  --cat-lid-edge: #5a3518;
+  --tail-body: #c4824a;
+  --tail-outline: #5a3518;
+  --tail-stripe: #c4824a;
+}
+
 /* "Kendi kedin": customCat.ts works these out from the picked colors; until then, the orange
    cat's. */
 [data-cat="custom"] {

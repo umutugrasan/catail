@@ -911,6 +911,25 @@ html.pressing .overlay--resize-corner * {
   stroke-width: 4;
 }
 
+/* The frog's tongue: pink, with a sticky blob at the end. */
+:root[data-cat="frog"] .overlay__tail-stripes {
+  display: none;
+}
+
+:root[data-cat="frog"] .overlay__tail-body {
+  stroke: #ff7f9a;
+}
+
+:root[data-cat="frog"] .overlay__tail-outline {
+  stroke: #8a2a3e;
+}
+
+.overlay__flipper--tongue {
+  fill: #ff7f9a;
+  stroke: #8a2a3e;
+  stroke-width: 4;
+}
+
 /* The turtle's bar looks like its shell. */
 :root[data-cat="turtle"] .overlay__modes {
   border-color: #9c6b34;

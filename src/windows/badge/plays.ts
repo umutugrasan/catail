@@ -7,7 +7,7 @@ import type { Outing } from "../../lib/ipc";
 export type Play = CatIdle | Outing;
 
 /** Whose plays: the cat's, or the monkey's own. */
-export type Player = "cat" | "monkey";
+export type Player = "cat" | "monkey" | "frog" | "capybara";
 
 /**
  * Each of the cat's plays, and how many times it's in the pack. The chases and the visitors
@@ -48,9 +48,46 @@ const MONKEY_PACK: [Play, number][] = [
   ["friend", 2],
 ];
 
-const PACKS: Record<Player, [Play, number][]> = { cat: CAT_PACK, monkey: MONKEY_PACK };
+/**
+ * The frog's, a frog's own only: a fly caught with its tongue most of all, a croak, a big jump, a
+ * dive; and down on the taskbar hops along it, a fly hunt, a croaking match with another frog,
+ * and leapfrog with a friend.
+ */
+const FROG_PACK: [Play, number][] = [
+  ["fly", 5],
+  ["croak", 4],
+  ["jump", 3],
+  ["dive", 3],
+  ["hops", 3],
+  ["flyhunt", 3],
+  ["rival", 2],
+  ["friend", 2],
+];
 
-const OUTINGS: readonly Play[] = ["walk", "zoomies", "laser", "mouse", "rival", "friend", "climb"];
+/**
+ * The capybara's, its own only: a soak in its hot tub most of all, a bubble tea, a mandarin on its
+ * head, a bird come to sit on it, a splash; and down on the taskbar a bird that rides on its head,
+ * a friend to lie about with, a slow walk.
+ */
+const CAPYBARA_PACK: [Play, number][] = [
+  ["onsen", 5],
+  ["boba", 4],
+  ["chill", 3],
+  ["bird", 4],
+  ["bath", 3],
+  ["birdie", 3],
+  ["friend", 2],
+  ["walk", 2],
+];
+
+const PACKS: Record<Player, [Play, number][]> = {
+  cat: CAT_PACK,
+  monkey: MONKEY_PACK,
+  frog: FROG_PACK,
+  capybara: CAPYBARA_PACK,
+};
+
+const OUTINGS: readonly Play[] = ["walk", "zoomies", "laser", "mouse", "rival", "friend", "climb", "hops", "flyhunt", "birdie"];
 
 export const isOuting = (play: Play): play is Outing => OUTINGS.includes(play);
 

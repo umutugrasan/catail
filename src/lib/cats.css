@@ -6224,3 +6224,1088 @@
     opacity: 0;
   }
 }
+
+/* ===================== The frog =====================
+   The turtle's seat with the frog's pictures (FrogSeat), a pond beside it (FrogPond), and games
+   of its own: a fly caught with its tongue, a croak, a big jump. */
+
+.cat-face__frog,
+[data-cat="frog"] .cat-face__cat {
+  display: none;
+}
+
+[data-cat="frog"] .cat-face__frog {
+  display: inline;
+}
+
+:root[data-cat="frog"] .whiskers,
+:root[data-cat="frog"] .cat-ear,
+:root[data-cat="frog"] .cat-nose {
+  display: none;
+}
+
+[data-cat="frog"] .leaping-cat__foot {
+  display: none;
+}
+
+.frog-seat .turtle-seat__tears {
+  display: none;
+}
+
+[data-cat="frog"] .box-cat__lid,
+[data-cat="frog"] .box-cat__glint {
+  display: none;
+}
+
+[data-cat="frog"] .box-cat__ear {
+  animation: none !important;
+}
+
+/* The pond. */
+.frog-pond__water {
+  fill: #8fd3ef;
+  stroke: #3a8db3;
+  stroke-width: 0.8;
+}
+
+.frog-pond__ripple {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  opacity: 0.7;
+  animation: pond-ripple 2.8s var(--ease-in-out) infinite;
+}
+
+@keyframes pond-ripple {
+  50% {
+    opacity: 0.2;
+    transform: translateX(1px);
+  }
+}
+
+.frog-pond__pad {
+  fill: #6cbf4a;
+  stroke: #2f6b25;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.frog-pond__flower path {
+  fill: #ff9fc0;
+  stroke: #c2457a;
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+.frog-pond__stem {
+  fill: none;
+  stroke: #5f9a3a;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.frog-pond__cattail {
+  fill: #8a5a2b;
+  stroke: #4a3216;
+  stroke-width: 0.5;
+}
+
+.frog-pond__leaf {
+  fill: #6cae47;
+  stroke: #2f6b25;
+  stroke-width: 0.5;
+}
+
+.frog-pond__reeds {
+  transform-origin: 25px 37px;
+  animation: reeds-sway 4.2s var(--ease-in-out) infinite;
+}
+
+@keyframes reeds-sway {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+/* A fly (CAT_IDLE_MS.fly): it buzzes round, the frog's eyes on it; it hovers by the pond, and
+   the tongue shoots out and back with it. Gulp. The scene moves out with the frog's belly. */
+.frog-fly-scene {
+  position: absolute;
+  top: 0;
+  left: var(--belly, 0px);
+  z-index: 3;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.frog-fly {
+  position: absolute;
+  top: -3.75px;
+  left: -4.5px;
+  display: block;
+  opacity: 0;
+  animation: fly-path 4200ms linear both;
+}
+
+.frog-fly svg {
+  display: block;
+  overflow: visible;
+  animation: fly-buzz 90ms linear infinite alternate;
+}
+
+@keyframes fly-buzz {
+  from {
+    transform: translate(-0.4px, 0.3px);
+  }
+  to {
+    transform: translate(0.4px, -0.3px);
+  }
+}
+
+.frog-fly__body {
+  fill: #2b2b33;
+}
+
+.frog-fly__eye {
+  fill: #c0392b;
+}
+
+.frog-fly__wing {
+  fill: rgba(220, 240, 255, 0.85);
+  stroke: #6b7c8c;
+  stroke-width: 0.5;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: fly-wing 50ms linear infinite alternate;
+}
+
+@keyframes fly-wing {
+  to {
+    transform: scaleY(0.3);
+  }
+}
+
+@keyframes fly-path {
+  0% {
+    opacity: 0;
+    transform: translate(-44px, -30px);
+  }
+  4% {
+    opacity: 1;
+  }
+  12% {
+    transform: translate(-20px, -18px);
+  }
+  20% {
+    transform: translate(6px, -24px);
+  }
+  28% {
+    transform: translate(30px, -10px);
+  }
+  36% {
+    transform: translate(14px, -4px);
+  }
+  44% {
+    transform: translate(-4px, -14px);
+  }
+  50% {
+    transform: translate(-12px, 2px);
+  }
+  55%,
+  59% {
+    opacity: 1;
+    transform: translate(-8px, 6px);
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: translate(-8px, 6px);
+  }
+}
+
+/* The tongue, from its mouth to where the fly hovers. */
+.frog-tongue {
+  position: absolute;
+  top: 18.8px;
+  left: 21.8px;
+  width: 32.4px;
+  height: 3.2px;
+  margin-top: -1.6px;
+  border-radius: 1.6px;
+  background: #ff7f9a;
+  box-shadow: 0 0 0 0.7px #8a2a3e;
+  transform: rotate(203.2deg) scaleX(0);
+  transform-origin: 0 50%;
+  animation: frog-tongue 4200ms linear both;
+}
+
+.frog-tongue::after {
+  content: "";
+  position: absolute;
+  top: -1.8px;
+  right: -3px;
+  width: 6.4px;
+  height: 6.8px;
+  border-radius: 50%;
+  background: #ff7f9a;
+  box-shadow: 0 0 0 0.7px #8a2a3e;
+}
+
+/* The fly, stuck to the end of it. */
+.frog-tongue::before {
+  content: "";
+  position: absolute;
+  top: -1.6px;
+  right: -2px;
+  z-index: 1;
+  width: 5px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2b2b33;
+  opacity: 0;
+  animation: frog-caught 4200ms steps(1, end) both;
+}
+
+@keyframes frog-tongue {
+  0%,
+  58% {
+    transform: rotate(203.2deg) scaleX(0);
+    animation-timing-function: var(--ease-out);
+  }
+  60%,
+  62% {
+    transform: rotate(203.2deg) scaleX(1);
+    animation-timing-function: var(--ease-in);
+  }
+  69%,
+  100% {
+    transform: rotate(203.2deg) scaleX(0);
+  }
+}
+
+@keyframes frog-caught {
+  0% {
+    opacity: 0;
+  }
+  60%,
+  68% {
+    opacity: 1;
+  }
+  69%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--fly .turtle-seat__body,
+.cat-slot--croak .turtle-seat__body,
+.cat-slot--jump .turtle-seat__body {
+  animation: none;
+}
+
+.cat-slot--fly .frog-seat .turtle-seat__act {
+  animation: frog-watch 4200ms var(--ease-in-out) both;
+}
+
+@keyframes frog-watch {
+  0%,
+  6%,
+  84%,
+  100% {
+    transform: none;
+  }
+  12% {
+    transform: rotate(-4deg);
+  }
+  20% {
+    transform: rotate(2deg);
+  }
+  28% {
+    transform: rotate(6deg);
+  }
+  36% {
+    transform: rotate(3deg);
+  }
+  44% {
+    transform: rotate(-3deg);
+  }
+  52% {
+    transform: rotate(-6deg);
+  }
+  57% {
+    transform: rotate(-6deg) scale(1.07, 0.93);
+  }
+  60% {
+    transform: translateX(-1.5px) rotate(-9deg) scale(0.96, 1.05);
+  }
+  66% {
+    transform: rotate(-3deg);
+  }
+  /* Gulp. */
+  72% {
+    transform: scale(1.08, 0.88);
+  }
+  77% {
+    transform: scale(0.97, 1.05);
+  }
+}
+
+/* A croak (CAT_IDLE_MS.croak): the sac under its chin blown up, three times, notes rising. */
+.frog-sac {
+  position: absolute;
+  top: 27px;
+  left: calc(21.8px + var(--belly, 0px));
+  z-index: 3;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.frog-sac__bag {
+  position: absolute;
+  top: -4px;
+  left: -6.5px;
+  width: 13px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 1px solid #4a3216;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fffbe8, #f3dc9e 72%);
+  transform: scale(0.15);
+  animation: frog-croak 3000ms var(--ease-in-out) both;
+}
+
+@keyframes frog-croak {
+  0%,
+  18%,
+  33%,
+  51%,
+  66%,
+  90%,
+  100% {
+    transform: scale(0.15);
+  }
+  10% {
+    transform: scale(1);
+  }
+  43% {
+    transform: scale(1.1);
+  }
+  78% {
+    transform: scale(1.3);
+  }
+}
+
+.frog-sac i {
+  position: absolute;
+  top: -14px;
+  left: 4px;
+  color: #3c7a1d;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 0 2px #fff, 0 0 1px #fff;
+  opacity: 0;
+  animation: frog-note 900ms var(--ease-out) 300ms both;
+}
+
+.frog-sac i:nth-of-type(2) {
+  font-size: 10px;
+  animation-delay: 1290ms;
+}
+
+.frog-sac i:nth-of-type(3) {
+  animation-delay: 2340ms;
+}
+
+@keyframes frog-note {
+  0% {
+    opacity: 0;
+    transform: translate(0, 4px) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(9px, -12px) scale(1.1) rotate(12deg);
+  }
+}
+
+.cat-slot--croak .frog-seat .turtle-seat__act {
+  animation: frog-puff 3000ms var(--ease-in-out) both;
+}
+
+@keyframes frog-puff {
+  0%,
+  18%,
+  33%,
+  51%,
+  66%,
+  90%,
+  100% {
+    transform: none;
+  }
+  10%,
+  43% {
+    transform: scale(1.04, 0.97);
+  }
+  78% {
+    transform: scale(1.06, 0.96);
+  }
+}
+
+/* A big frog jump (CAT_IDLE_MS.jump): way up, and a little hop after. */
+.cat-slot--jump .cat-slot__trot {
+  animation: frog-jump 1600ms linear both;
+}
+
+@keyframes frog-jump {
+  0%,
+  100% {
+    transform: none;
+  }
+  12% {
+    transform: scale(1.16, 0.8);
+    animation-timing-function: var(--ease-out);
+  }
+  38% {
+    transform: translateY(-26px) scale(0.9, 1.12);
+    animation-timing-function: var(--ease-in);
+  }
+  60% {
+    transform: scale(1.18, 0.8);
+    animation-timing-function: var(--ease-out);
+  }
+  71% {
+    transform: translateY(-7px) scale(0.96, 1.05);
+    animation-timing-function: var(--ease-in);
+  }
+  82% {
+    transform: scale(1.08, 0.92);
+  }
+}
+
+/* The bar's frog eyes, over its top edge, looking about. */
+.frog-bar {
+  display: none;
+}
+
+:root[data-cat="frog"] .frog-bar {
+  display: contents;
+}
+
+.frog-bar__eye {
+  position: absolute;
+  top: -12px;
+  z-index: -1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.frog-bar__eye--left {
+  left: calc(50% - 24px);
+}
+
+.frog-bar__eye--right {
+  left: calc(50% + 4px);
+}
+
+.frog-bar__bulge {
+  fill: var(--face);
+  stroke: var(--face-rim);
+  stroke-width: 1.6;
+}
+
+.frog-bar__white {
+  fill: #fff;
+}
+
+.frog-bar__pupil,
+.frog-bar__glint {
+  animation: frog-bar-look 6s var(--ease-in-out) infinite;
+}
+
+.frog-bar__pupil {
+  fill: #2a1a0c;
+}
+
+.frog-bar__glint {
+  fill: #fff;
+}
+
+@keyframes frog-bar-look {
+  0%,
+  30%,
+  100% {
+    transform: none;
+  }
+  40%,
+  55% {
+    transform: translateX(-1.6px);
+  }
+  65%,
+  85% {
+    transform: translate(1.6px, -0.6px);
+  }
+}
+
+/* ===================== The capybara =====================
+   The turtle's seat with the capybara's pictures (CapybaraSeat), grass and mandarins beside it
+   (CapybaraNook), and games of its own: a hot tub, a bubble tea, a mandarin on its head, a bird
+   come to sit on it, a splash in the water. */
+
+.cat-face__capybara,
+[data-cat="capybara"] .cat-face__cat {
+  display: none;
+}
+
+[data-cat="capybara"] .cat-face__capybara {
+  display: inline;
+}
+
+:root[data-cat="capybara"] .whiskers,
+:root[data-cat="capybara"] .cat-ear,
+:root[data-cat="capybara"] .cat-nose {
+  display: none;
+}
+
+[data-cat="capybara"] .leaping-cat__foot {
+  display: none;
+}
+
+.capybara-seat .turtle-seat__tears {
+  display: none;
+}
+
+[data-cat="capybara"] .box-cat__lid,
+[data-cat="capybara"] .box-cat__glint {
+  display: none;
+}
+
+[data-cat="capybara"] .box-cat__ear {
+  animation: none !important;
+}
+
+/* Mandarins. */
+.mandarin {
+  display: block;
+  overflow: visible;
+}
+
+.mandarin circle:first-child,
+.capybara-nook__fruit {
+  fill: #ff9a2e;
+  stroke: #9a4a0a;
+  stroke-width: 0.8;
+}
+
+.mandarin__leaf,
+.capybara-nook__leaf {
+  fill: #4fa33a;
+  stroke: #2f6b25;
+  stroke-width: 0.5;
+}
+
+.mandarin__shine {
+  fill: #ffd29a;
+}
+
+.capybara-nook__grass path {
+  fill: #7cbf4f;
+  stroke: #3f7a25;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.capybara-nook__grass {
+  transform-origin: 8px 39px;
+  animation: reeds-sway 4.6s var(--ease-in-out) infinite;
+}
+
+.capybara-nook__mandarins {
+  pointer-events: auto;
+  cursor: var(--paw);
+}
+
+/* The poses of its games, each over the happy one while it plays. */
+.capybara-seat .turtle-seat__pose--rest,
+.capybara-seat .turtle-seat__pose--onsen,
+.capybara-seat .turtle-seat__pose--boba,
+.capybara-seat .turtle-seat__pose--splash {
+  opacity: 0;
+}
+
+.cat-slot--onsen .turtle-seat__body,
+.cat-slot--boba .turtle-seat__body,
+.cat-slot--chill .turtle-seat__body,
+.cat-slot--bird .turtle-seat__body,
+.cat-slot--bath .turtle-seat__body {
+  animation: none;
+}
+
+@keyframes capy-off {
+  0% {
+    opacity: 1;
+  }
+  5%,
+  94% {
+    opacity: 0;
+  }
+  95%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes capy-on {
+  0% {
+    opacity: 0;
+  }
+  5%,
+  94% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--onsen .capybara-seat .turtle-seat__pose--happy,
+.cat-slot--boba .capybara-seat .turtle-seat__pose--happy,
+.cat-slot--bath .capybara-seat .turtle-seat__pose--happy {
+  animation: capy-off var(--play-ms) steps(1, end) both;
+}
+
+.cat-slot--onsen .capybara-seat .turtle-seat__pose--onsen,
+.cat-slot--boba .capybara-seat .turtle-seat__pose--boba,
+.cat-slot--bath .capybara-seat .turtle-seat__pose--splash {
+  animation: capy-on var(--play-ms) steps(1, end) both;
+}
+
+.cat-slot--onsen {
+  --play-ms: 5200ms;
+}
+
+.cat-slot--boba {
+  --play-ms: 3800ms;
+}
+
+.cat-slot--bath {
+  --play-ms: 4200ms;
+}
+
+/* A soak: bobbing in the tub, eyes shut, steam rising. */
+.cat-slot--onsen .capybara-seat .turtle-seat__act {
+  animation: capy-soak 5200ms var(--ease-in-out) both;
+}
+
+@keyframes capy-soak {
+  0%,
+  100% {
+    transform: none;
+  }
+  5% {
+    transform: translateY(1.5px) scale(1.04, 0.96);
+  }
+  25%,
+  65% {
+    transform: translateY(0.6px) rotate(-1.5deg);
+  }
+  45%,
+  85% {
+    transform: translateY(-0.4px) rotate(1.5deg);
+  }
+}
+
+.onsen-steam {
+  position: absolute;
+  top: 4px;
+  left: calc(20px + var(--belly, 0px));
+  z-index: 3;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.onsen-steam i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 0.6px rgba(120, 100, 90, 0.4);
+  opacity: 0;
+  animation: steam-rise 2200ms var(--ease-out) infinite;
+}
+
+.onsen-steam i:nth-child(1) {
+  left: -14px;
+  animation-delay: 300ms;
+}
+
+.onsen-steam i:nth-child(2) {
+  left: -2px;
+  animation-delay: 1000ms;
+}
+
+.onsen-steam i:nth-child(3) {
+  left: 10px;
+  animation-delay: 1700ms;
+}
+
+@keyframes steam-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.5);
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(3px, -16px) scale(1.5);
+  }
+}
+
+/* A bubble tea: a sip, and another, and another. */
+.cat-slot--boba .capybara-seat .turtle-seat__act {
+  animation: capy-sip 3800ms var(--ease-in-out) both;
+}
+
+@keyframes capy-sip {
+  0%,
+  100% {
+    transform: none;
+  }
+  20%,
+  50%,
+  80% {
+    transform: translateY(0.8px) scale(1.03, 0.97);
+  }
+  35%,
+  65% {
+    transform: translateY(-0.4px);
+  }
+}
+
+/* A splash about in the water. */
+.cat-slot--bath .capybara-seat .turtle-seat__act {
+  animation: capy-paddle 600ms var(--ease-in-out) infinite alternate;
+}
+
+@keyframes capy-paddle {
+  from {
+    transform: translateY(0.6px) rotate(-2deg);
+  }
+  to {
+    transform: translateY(-0.6px) rotate(2deg);
+  }
+}
+
+/* A mandarin on its head (CAT_IDLE_MS.chill): it drops out of the sky, lands, and the capybara
+   lies down with it balanced there, not bothered in the least. */
+.falling-mandarin {
+  position: absolute;
+  top: 14.8px;
+  left: calc(14.4px + var(--belly, 0px));
+  z-index: 3;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  animation: mandarin-fall 4600ms linear both;
+}
+
+@keyframes mandarin-fall {
+  0%,
+  19% {
+    opacity: 0;
+    transform: translateY(-60px) rotate(-90deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-60px) rotate(-90deg);
+    animation-timing-function: var(--ease-in);
+  }
+  33% {
+    opacity: 1;
+    transform: none;
+  }
+  34%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+.cat-slot--chill .capybara-seat .turtle-seat__pose--happy {
+  animation: capy-chill-happy 4600ms steps(1, end) both;
+}
+
+@keyframes capy-chill-happy {
+  0% {
+    opacity: 1;
+  }
+  34%,
+  92% {
+    opacity: 0;
+  }
+  93%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--chill .capybara-seat .turtle-seat__pose--rest {
+  animation: capy-chill-rest 4600ms steps(1, end) both;
+}
+
+@keyframes capy-chill-rest {
+  0% {
+    opacity: 0;
+  }
+  34%,
+  92% {
+    opacity: 1;
+  }
+  93%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--chill .capybara-seat .turtle-seat__act {
+  animation: capy-bonk 4600ms var(--ease-out) both;
+}
+
+@keyframes capy-bonk {
+  0%,
+  33%,
+  44%,
+  92%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: scale(1.08, 0.9);
+  }
+  39% {
+    transform: scale(0.98, 1.03);
+  }
+  95% {
+    transform: scale(1.04, 0.96);
+  }
+}
+
+/* A bird on its head (CAT_IDLE_MS.bird). */
+.birdie {
+  position: absolute;
+  top: -2px;
+  left: calc(9.5px + var(--belly, 0px));
+  z-index: 3;
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  animation: birdie-path 5400ms linear both;
+}
+
+.birdie__body {
+  display: block;
+  animation: birdie-hop 5400ms linear both;
+}
+
+.birdie svg,
+.stroll-bird {
+  display: block;
+  overflow: visible;
+}
+
+.birdie__belly,
+.birdie__head {
+  fill: #ffd34d;
+  stroke: #8a5a12;
+  stroke-width: 0.7;
+}
+
+.birdie__tail,
+.birdie__wing {
+  fill: #f2a93b;
+  stroke: #8a5a12;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.birdie__wing {
+  transform-box: fill-box;
+  transform-origin: 30% 30%;
+  animation: birdie-flap 110ms linear infinite alternate;
+}
+
+@keyframes birdie-flap {
+  to {
+    transform: rotate(-35deg) scaleY(1.3);
+  }
+}
+
+.birdie__beak {
+  fill: #ff8a3d;
+}
+
+.birdie__eye {
+  fill: #1d120a;
+}
+
+.birdie__legs {
+  stroke: #8a5a12;
+  stroke-width: 0.6;
+}
+
+@keyframes birdie-path {
+  0% {
+    opacity: 0;
+    transform: translate(-60px, -50px);
+  }
+  6% {
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-16px, -20px);
+    animation-timing-function: var(--ease-out);
+  }
+  28%,
+  80% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: var(--ease-in);
+  }
+  92% {
+    opacity: 1;
+    transform: translate(36px, -36px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(60px, -60px);
+  }
+}
+
+/* Sat on its head: a little hop, a turn, a song. */
+@keyframes birdie-hop {
+  0%,
+  36%,
+  44%,
+  58%,
+  100% {
+    transform: none;
+  }
+  40% {
+    transform: translateY(-2.5px);
+  }
+  50%,
+  56% {
+    transform: scaleX(-1);
+  }
+  53% {
+    transform: scaleX(-1) translateY(-2px);
+  }
+}
+
+.birdie i {
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  color: #c76a10;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 800;
+  text-shadow: 0 0 2px #fff, 0 0 1px #fff;
+  opacity: 0;
+  animation: frog-note 900ms var(--ease-out) 3200ms both;
+}
+
+.cat-slot--bird .capybara-seat .turtle-seat__act {
+  animation: capy-perch 5400ms var(--ease-out) both;
+}
+
+@keyframes capy-perch {
+  0%,
+  27%,
+  34%,
+  100% {
+    transform: none;
+  }
+  29% {
+    transform: scale(1.02, 0.97);
+  }
+}
+
+/* The bar: small round ears, a mandarin on top. */
+.capybara-bar {
+  display: none;
+}
+
+:root[data-cat="capybara"] .capybara-bar {
+  display: contents;
+}
+
+.capybara-bar__ear,
+.capybara-bar__mandarin {
+  position: absolute;
+  z-index: -1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.capybara-bar__ear circle {
+  fill: var(--tail-body);
+  stroke: var(--tail-outline);
+  stroke-width: 1.6;
+}
+
+.capybara-bar__ear {
+  top: -6px;
+}
+
+.capybara-bar__ear--left {
+  left: 12px;
+}
+
+.capybara-bar__ear--right {
+  right: 12px;
+}
+
+.capybara-bar__mandarin {
+  top: -9px;
+  left: 50%;
+  translate: -50% 0;
+  animation: mandarin-wobble 5s var(--ease-in-out) infinite;
+}
+
+.capybara-bar__mandarin .mandarin {
+  width: 12px;
+  height: 12px;
+}
+
+@keyframes mandarin-wobble {
+  0%,
+  70%,
+  100% {
+    transform: none;
+  }
+  76% {
+    transform: rotate(-12deg);
+  }
+  84% {
+    transform: rotate(9deg);
+  }
+  90% {
+    transform: rotate(-4deg);
+  }
+}

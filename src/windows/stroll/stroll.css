@@ -894,3 +894,111 @@ body,
 .stroll-cat__hang--picture {
   transform-origin: 50% 22%;
 }
+
+/* ---- The frog on the taskbar ---- */
+
+/* Another frog: a blue one. */
+.stroll-actor--tint[data-cat="frog"] {
+  filter: hue-rotate(75deg) saturate(0.9);
+}
+
+/* Mid-hop: tucked up, legs out behind. */
+[data-cat="frog"] .stroll-cat--hop .leaping-cat,
+.stroll-cat--hop[data-cat="frog"] .leaping-cat {
+  transform: rotate(-10deg) scale(1.04, 0.94);
+}
+
+/* The croak: the sac under its chin swelling and going down; bigger when it's showing off. */
+.stroll-sac {
+  position: absolute;
+  top: 27px;
+  left: 21.8px;
+  width: 13px;
+  height: 10px;
+  margin: -4px 0 0 -6.5px;
+  box-sizing: border-box;
+  border: 1px solid #4a3216;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fffbe8, #f3dc9e 72%);
+  animation: stroll-croak 520ms var(--ease-in-out) infinite alternate;
+}
+
+.stroll-cat--boast .stroll-sac {
+  animation-name: stroll-boast;
+}
+
+@keyframes stroll-croak {
+  from {
+    transform: scale(0.2);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes stroll-boast {
+  from {
+    transform: scale(0.3);
+  }
+  to {
+    transform: scale(1.5);
+  }
+}
+
+/* The tongue, out to the fly and back. */
+.stroll-tongue {
+  position: absolute;
+  top: 18.8px;
+  left: 21.8px;
+  width: 34px;
+  height: 3.2px;
+  margin-top: -1.6px;
+  border-radius: 1.6px;
+  background: #ff7f9a;
+  box-shadow: 0 0 0 0.7px #8a2a3e;
+  transform-origin: 0 50%;
+  animation: stroll-tongue 400ms var(--ease-out) both;
+}
+
+.stroll-tongue::after {
+  content: "";
+  position: absolute;
+  top: -1.8px;
+  right: -3px;
+  width: 6.4px;
+  height: 6.8px;
+  border-radius: 50%;
+  background: #ff7f9a;
+  box-shadow: 0 0 0 0.7px #8a2a3e;
+}
+
+@keyframes stroll-tongue {
+  0% {
+    transform: rotate(200deg) scaleX(0);
+  }
+  40%,
+  55% {
+    transform: rotate(200deg) scaleX(1);
+  }
+  100% {
+    transform: rotate(200deg) scaleX(0);
+  }
+}
+
+.stroll-fly {
+  display: block;
+  overflow: visible;
+  animation: fly-buzz 90ms linear infinite alternate;
+}
+
+/* ---- The capybara on the taskbar ---- */
+
+/* Another capybara: a darker one. */
+.stroll-actor--tint[data-cat="capybara"] {
+  filter: brightness(0.78) saturate(1.2);
+}
+
+/* The bird: its picture faces right, the others' left. */
+.stroll-guest .stroll-bird {
+  transform: scaleX(-1);
+}

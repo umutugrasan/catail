@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type Ref } from "react";
-import { LeapingCat, monkeyPicture, SeatCat } from "../../lib/cats";
+import { capybaraPicture, frogPicture, LeapingCat, monkeyPicture, SeatCat } from "../../lib/cats";
 import { onWindowEvent, strollDone, StrollEvents, type StrollStart } from "../../lib/ipc";
 import {
   AT_REST,
@@ -38,6 +38,10 @@ const SITTING: readonly CatPose[] = [
   "beat",
   "throw",
   "pick",
+  "croak",
+  "boast",
+  "tongue",
+  "lounge",
 ];
 /** How high up a cat's head is, for something looking at it. */
 const HEAD_UP = 26;
@@ -65,6 +69,20 @@ const MONKEY_POSE: Partial<Record<CatPose, Parameters<typeof monkeyPicture>[0]>>
   hang: "hang",
 };
 
+/** The frog's picture for each pose: happy for most, worried when it has lost. */
+const FROG_POSE: Partial<Record<CatPose, Parameters<typeof frogPicture>[0]>> = {
+  dizzy: "worried",
+};
+
+/** The capybara's: lying about whenever it can. */
+const CAPYBARA_POSE: Partial<Record<CatPose, Parameters<typeof capybaraPicture>[0]>> = {
+  lounge: "rest",
+  groom: "rest",
+  lick: "rest",
+  roll: "rest",
+  dizzy: "worried",
+};
+
 /** A cat on the taskbar: the badge's own, or (with `breed`) one that has come visiting. */
 function CatPuppet({
   view,
@@ -82,8 +100,18 @@ function CatPuppet({
 }) {
   const sitting = SITTING.includes(view.pose);
   // The monkey is drawn as pictures, one per mood.
-  const monkey = (breed ?? document.documentElement.dataset.cat) === "monkey";
-  const picture = monkey && (sitting || view.pose === "hang") ? monkeyPicture(MONKEY_POSE[view.pose] ?? "happy") : null;
+  const animal = breed ?? document.documentElement.dataset.cat;
+  const monkey = animal === "monkey";
+  const frog = animal === "frog";
+  const capybara = animal === "capybara";
+  const picture =
+    monkey && (sitting || view.pose === "hang")
+      ? monkeyPicture(MONKEY_POSE[view.pose] ?? "happy")
+      : frog && sitting
+        ? frogPicture(FROG_POSE[view.pose] ?? "happy")
+        : capybara && sitting
+          ? capybaraPicture(CAPYBARA_POSE[view.pose] ?? "happy")
+          : null;
   return (
     <div
       ref={puppetRef}
@@ -102,6 +130,9 @@ function CatPuppet({
         ) : picture ? (
           <span className="cat-seat monkey-pose">
             <img src={picture} alt="" draggable={false} />
+            {/* The frog's croak, and its tongue. */}
+            {(view.pose === "croak" || view.pose === "boast") && <i className="stroll-sac" />}
+            {view.pose === "tongue" && <i className="stroll-tongue" />}
           </span>
         ) : sitting ? (
           <SeatCat fat={fat} act={view.pose === "lick" || view.pose === "groom" ? view.pose : null} />
@@ -163,6 +194,24 @@ function Guest({
       <span className={`stroll-actor__facing${view.right ? " stroll-actor__facing--right" : ""}`}>
         {view.kind === "mouse" && <Mouse />}
         {view.kind === "dot" && <i className="laser-dot" />}
+        {view.kind === "bird" && (
+          <svg className="stroll-bird" viewBox="0 0 16 13" width={11} height={9}>
+            <path className="birdie__tail" d="M3 7.6 0 6.4 1.2 9.4Z" />
+            <ellipse className="birdie__belly" cx="7.6" cy="8" rx="5.4" ry="4.2" />
+            <circle className="birdie__head" cx="11.4" cy="4.6" r="3.2" />
+            <path className="birdie__beak" d="M14.4 4.4 16 5.2 14.4 5.8Z" />
+            <circle className="birdie__eye" cx="12.2" cy="4" r="0.7" />
+            <path className="birdie__wing" d="M4.8 6.8C6.4 4.6 9.4 5 10 7.8 8 9.6 5.6 9 4.8 6.8Z" />
+          </svg>
+        )}
+        {view.kind === "fly" && (
+          <svg className="stroll-fly" viewBox="0 0 12 10" width={9} height={7.5}>
+            <ellipse className="frog-fly__wing" cx={4.4} cy={2.8} rx={2.6} ry={2} />
+            <ellipse className="frog-fly__wing frog-fly__wing--back" cx={7.2} cy={2.6} rx={2.6} ry={2} />
+            <ellipse className="frog-fly__body" cx={6} cy={6.4} rx={3.4} ry={2.4} />
+            <circle className="frog-fly__eye" cx={3.2} cy={5.8} r={1.1} />
+          </svg>
+        )}
       </span>
       {view.emote && <EmoteMark key={view.emoteKey} mark={view.emote} />}
     </div>
@@ -287,6 +336,8 @@ export function Stroll() {
         const stage = new Stage(paint);
         const worn = document.documentElement.dataset.cat;
         const monkey = worn === "monkey";
+        const frog = worn === "frog";
+        const capybara = worn === "capybara";
         const now: Cast = {
           stage,
           ...puppets,
@@ -294,7 +345,7 @@ export function Stroll() {
           seat: sent.seat / zoom,
           width: sent.width / zoom,
           height: (sent.height || window.innerHeight) / zoom,
-          animal: monkey ? "monkey" : "cat",
+          animal: monkey ? "monkey" : frog ? "frog" : capybara ? "capybara" : "cat",
           watching: false,
         };
         cast.current = now;
@@ -302,8 +353,8 @@ export function Stroll() {
         setFat(sent.fat);
         // A monkey's visitors are monkeys, in other colors; a cat's, another kind of cat.
         setVisitor(
-          monkey
-            ? { breed: "monkey", fat: Math.random() * 0.5, tint: true }
+          monkey || frog || capybara
+            ? { breed: worn ?? "monkey", fat: Math.random() * 0.5, tint: true }
             : { breed: others[Math.floor(Math.random() * others.length)], fat: Math.random() * 0.5, tint: false },
         );
         // In place before the strip comes into view, not where the last outing ended.

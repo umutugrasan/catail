@@ -121,6 +121,93 @@ describe("outings", () => {
     }
   }
 
+  // The frog's outings: it hops everywhere.
+  const FROG: Outing[] = ["hops", "flyhunt", "rival", "friend"];
+  for (const [where, home, width] of screens) {
+    for (const kind of FROG) {
+      it(`the frog's ${kind}, ${where}: back on its seat, alone`, async () => {
+        for (let again = 0; again < 4; again++) {
+          const { now, views, result, ms } = await run(kind, home, width, Infinity, "frog");
+          expect(result).toBe(true);
+          expect(ms).toBeLessThan(70_000);
+          expect(now.cat).toMatchObject({ x: home, y: 14 });
+          expect(views.cat).toMatchObject({ pose: "sit", right: false, hidden: false });
+          expect(views.guest.hidden).toBe(true);
+        }
+      });
+
+      it(`the frog's ${kind}, ${where}: told to hurry, it's home in a few seconds`, async () => {
+        for (const hurryAt of [0, 500, 1600, 2600, 4000, 6000, 8000, 10_000]) {
+          const { now, result, ms } = await run(kind, home, width, hurryAt, "frog");
+          expect(result).toBe(true);
+          expect(ms).toBeLessThan(hurryAt + 7000);
+          expect(now.cat).toMatchObject({ x: home, y: 14 });
+        }
+      });
+    }
+  }
+
+  // The capybara's outings: slow, and never alone for long.
+  const CAPYBARA: Outing[] = ["birdie", "friend", "walk"];
+  for (const [where, home, width] of screens) {
+    for (const kind of CAPYBARA) {
+      it(`the capybara's ${kind}, ${where}: back on its seat, alone`, async () => {
+        for (let again = 0; again < 3; again++) {
+          const { now, views, result, ms } = await run(kind, home, width, Infinity, "capybara");
+          expect(result).toBe(true);
+          expect(ms).toBeLessThan(70_000);
+          expect(now.cat).toMatchObject({ x: home, y: 14 });
+          expect(views.cat).toMatchObject({ pose: "sit", right: false, hidden: false });
+          expect(views.guest.hidden).toBe(true);
+        }
+      });
+
+      it(`the capybara's ${kind}, ${where}: told to hurry, it's home in a few seconds`, async () => {
+        for (const hurryAt of [0, 500, 2000, 4000, 7000, 10_000]) {
+          const { now, result, ms } = await run(kind, home, width, hurryAt, "capybara");
+          expect(result).toBe(true);
+          expect(ms).toBeLessThan(hurryAt + 6000);
+          expect(now.cat).toMatchObject({ x: home, y: 14 });
+        }
+      });
+    }
+  }
+
+  it("carries the bird on its head as it walks", async () => {
+    const { now, views } = cast(1770, 1920, "capybara");
+    void play(now, "birdie");
+    let rode = 0;
+    for (let ms = 0; ms < 30_000; ms += 50) {
+      now.stage.advance(50);
+      for (let i = 0; i < 8; i++) await Promise.resolve();
+      if (!views.guest.hidden && views.cat.pose === "walk") {
+        expect(now.guest.y).toBe(33);
+        expect(Math.abs(now.guest.x - now.cat.x)).toBeLessThan(3);
+        rode++;
+      }
+    }
+    expect(rode).toBeGreaterThan(10);
+    now.stage.end();
+  });
+
+  it("catches the fly with its tongue: the fly is right at its tip when it shoots out", async () => {
+    const { now, views } = cast(1770, 1920, "frog");
+    void play(now, "flyhunt");
+    let checked = false;
+    for (let ms = 0; ms < 30_000 && !checked; ms += 50) {
+      now.stage.advance(50);
+      for (let i = 0; i < 8; i++) await Promise.resolve();
+      if (views.cat.pose === "tongue") {
+        const dir = views.cat.right ? 1 : -1;
+        expect(Math.abs(now.guest.x - (now.cat.x + dir * 30))).toBeLessThan(2);
+        expect(Math.abs(now.guest.y - 30)).toBeLessThan(2);
+        checked = true;
+      }
+    }
+    expect(checked).toBe(true);
+    now.stage.end();
+  });
+
   it("climbs right up to hang in the top corner on its side of the screen", async () => {
     const { now } = cast(1770, 1920, "monkey", 1040);
     void play(now, "climb");

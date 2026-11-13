@@ -8,6 +8,21 @@ import footLeft from "./cats/foot-left.png";
 import footRight from "./cats/foot-right.png";
 import standingBody from "./cats/standing-body.png";
 import monkeyHappy from "./animals/monkey/happy.png";
+import frogHappy from "./animals/frog/happy.png";
+import frogCry from "./animals/frog/cry.png";
+import frogRest from "./animals/frog/rest.png";
+import frogSleep from "./animals/frog/sleep.png";
+import frogWorried from "./animals/frog/worried.png";
+import frogDive from "./animals/frog/dive.png";
+import frogSplash from "./animals/frog/splash.png";
+import capybaraHappy from "./animals/capybara/happy.png";
+import capybaraCry from "./animals/capybara/cry.png";
+import capybaraRest from "./animals/capybara/rest.png";
+import capybaraSleep from "./animals/capybara/sleep.png";
+import capybaraWorried from "./animals/capybara/worried.png";
+import capybaraSplash from "./animals/capybara/splash.png";
+import capybaraOnsen from "./animals/capybara/onsen.png";
+import capybaraBoba from "./animals/capybara/boba.png";
 import monkeyBanana from "./animals/monkey/banana.png";
 import monkeySilly from "./animals/monkey/silly.png";
 import monkeySurprised from "./animals/monkey/surprised.png";
@@ -40,6 +55,28 @@ export function CatFace({ size = 18 }: { size?: number }) {
         <ellipse cx="8.6" cy="12.6" rx="1.5" ry="1.8" style={{ fill: "var(--face-eye)" }} />
         <ellipse cx="15.4" cy="12.6" rx="1.5" ry="1.8" style={{ fill: "var(--face-eye)" }} />
         <path d="M10.3 16.1q1.7 1.4 3.4 0" fill="none" strokeWidth="0.9" strokeLinecap="round" style={{ stroke: "var(--face-rim)" }} />
+      </g>
+      <g className="cat-face__capybara">
+        <circle cx="5.4" cy="6.6" r="2.6" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <circle cx="18.6" cy="6.6" r="2.6" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <rect x="3" y="5.6" width="18" height="16" rx="7.6" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <ellipse cx="12" cy="16.2" rx="4.4" ry="3.4" fill="#b8763d" />
+        <circle cx="8" cy="11.6" r="1.3" style={{ fill: "var(--face-eye)" }} />
+        <circle cx="16" cy="11.6" r="1.3" style={{ fill: "var(--face-eye)" }} />
+        <path d="M10.8 15.4h.01M13.2 15.4h.01" strokeWidth="1.3" strokeLinecap="round" style={{ stroke: "var(--face-rim)" }} />
+        <circle cx="12" cy="4.4" r="2.6" fill="#ff9a2e" stroke="#9a4a0a" strokeWidth="0.7" />
+        <path d="M12 2c.8-1.2 2-1.4 2.8-1" fill="none" stroke="#3f8a2a" strokeWidth="1" strokeLinecap="round" />
+      </g>
+      <g className="cat-face__frog">
+        <circle cx="7" cy="7.6" r="4" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <circle cx="17" cy="7.6" r="4" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <ellipse cx="12" cy="14.6" rx="10" ry="7.4" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
+        <path d="M5 10.4h14" style={{ stroke: "var(--face)", strokeWidth: 2.4 }} />
+        <circle cx="7" cy="7.8" r="2" style={{ fill: "var(--face-eye)" }} />
+        <circle cx="17" cy="7.8" r="2" style={{ fill: "var(--face-eye)" }} />
+        <ellipse cx="5.6" cy="15.4" rx="1.8" ry="1.1" fill="#f59a9a" />
+        <ellipse cx="18.4" cy="15.4" rx="1.8" ry="1.1" fill="#f59a9a" />
+        <path d="M9.4 15.4q2.6 2.2 5.2 0" fill="none" strokeWidth="1" strokeLinecap="round" style={{ stroke: "var(--face-rim)" }} />
       </g>
       <g className="cat-face__monkey">
         <circle cx="3.6" cy="12.6" r="3" style={{ fill: "var(--face)", stroke: "var(--face-rim)", strokeWidth: 1 }} />
@@ -394,6 +431,8 @@ export function BadgeCat({
   bubble = null,
   purring = false,
   monkey = false,
+  frog = false,
+  capybara = false,
   onToyPlay,
   onPet,
   onLeave,
@@ -428,6 +467,10 @@ export function BadgeCat({
   purring?: boolean;
   /** The monkey: a tree beside it instead of the scratching post, and games of its own. */
   monkey?: boolean;
+  /** The frog: a pond beside it, and games of its own. */
+  frog?: boolean;
+  /** The capybara: its patch of grass and mandarins beside it, and games of its own. */
+  capybara?: boolean;
   /** The pointer moving over it, and leaving it. */
   onPet?: (e: React.MouseEvent) => void;
   onLeave?: () => void;
@@ -472,7 +515,16 @@ export function BadgeCat({
           <b />
         </span>
       )}
-      {tree && (monkey ? <MonkeyTree onPlay={onToyPlay} /> : <CatTree onPlay={onToyPlay} />)}
+      {tree &&
+        (monkey ? (
+          <MonkeyTree onPlay={onToyPlay} />
+        ) : frog ? (
+          <FrogPond />
+        ) : capybara ? (
+          <CapybaraNook onPlay={onToyPlay} />
+        ) : (
+          <CatTree onPlay={onToyPlay} />
+        ))}
       {chasing && <ChaseCat />}
       <span className="cat-slot__trot">
         <span className="cat-slot__facing">
@@ -480,6 +532,10 @@ export function BadgeCat({
             <TurtleSeat fat={fat} asleep={asleep} hatch={hatch} seatRef={seatRef} />
           ) : monkey ? (
             <MonkeySeat fat={fat} asleep={asleep} seatRef={seatRef} />
+          ) : frog ? (
+            <FrogSeat fat={fat} asleep={asleep} seatRef={seatRef} />
+          ) : capybara ? (
+            <CapybaraSeat fat={fat} asleep={asleep} seatRef={seatRef} />
           ) : (
             <SeatCat fat={fat} asleep={asleep} bubble={bubble} act={act} seatRef={seatRef} />
           )}
@@ -500,6 +556,17 @@ export function BadgeCat({
       )}
       {idle === "butterfly" && <Butterfly />}
       {idle === "banana" && <Banana />}
+      {idle === "fly" && <FrogFly />}
+      {idle === "croak" && <FrogSac />}
+      {idle === "chill" && <FallingMandarin />}
+      {idle === "bird" && <Birdie />}
+      {idle === "onsen" && (
+        <span className="onsen-steam" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
     </span>
   );
 }
@@ -527,6 +594,14 @@ export type CatIdle =
   | "swing"
   | "peek"
   | "think"
+  | "fly"
+  | "croak"
+  | "jump"
+  | "onsen"
+  | "boba"
+  | "chill"
+  | "bird"
+  | "bath"
   | "dive"
   | "silly"
   | "shell";
@@ -544,6 +619,14 @@ export const CAT_IDLE_MS: Record<CatIdle, number> = {
   swing: 4400,
   peek: 5600,
   think: 3600,
+  fly: 4200,
+  croak: 3000,
+  jump: 1600,
+  onsen: 5200,
+  boba: 3800,
+  chill: 4600,
+  bird: 5400,
+  bath: 4200,
   dive: 4200,
   silly: 2400,
   shell: 3000,
@@ -815,6 +898,214 @@ export const monkeyPicture = (pose: keyof typeof MONKEY_POSES) => MONKEY_POSES[p
 
 export function MonkeySeat({ fat, asleep, seatRef }: { fat: number; asleep: boolean; seatRef?: Ref<HTMLSpanElement> }) {
   return <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={MONKEY_POSES} className="monkey-seat" />;
+}
+
+/**
+ * The frog's pictures, by pose. It sits in the turtle's seat too (worried, in tears, asleep; a
+ * dive into the water), with games of its own: a fly caught with its tongue, a croak, a big jump.
+ */
+const FROG_POSES = {
+  happy: frogHappy,
+  cry: frogCry,
+  rest: frogRest,
+  sleep: frogSleep,
+  worried: frogWorried,
+  dive: frogDive,
+  splash: frogSplash,
+} as const;
+
+/** One of the frog's pictures, for a pose drawn elsewhere (the taskbar). */
+export const frogPicture = (pose: keyof typeof FROG_POSES) => FROG_POSES[pose];
+
+export function FrogSeat({ fat, asleep, seatRef }: { fat: number; asleep: boolean; seatRef?: Ref<HTMLSpanElement> }) {
+  return <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={FROG_POSES} className="frog-seat" />;
+}
+
+/**
+ * The capybara's pictures, by pose. The turtle's seat once more (worried, in tears, asleep), with
+ * its own games: a soak in a hot tub, a bubble tea, a mandarin on its head, a bird come to sit on
+ * it, a splash about in the water.
+ */
+const CAPYBARA_POSES = {
+  happy: capybaraHappy,
+  cry: capybaraCry,
+  rest: capybaraRest,
+  sleep: capybaraSleep,
+  worried: capybaraWorried,
+  splash: capybaraSplash,
+  onsen: capybaraOnsen,
+  boba: capybaraBoba,
+} as const;
+
+/** One of the capybara's pictures, for a pose drawn elsewhere (the taskbar). */
+export const capybaraPicture = (pose: keyof typeof CAPYBARA_POSES) => CAPYBARA_POSES[pose];
+
+export function CapybaraSeat({ fat, asleep, seatRef }: { fat: number; asleep: boolean; seatRef?: Ref<HTMLSpanElement> }) {
+  return (
+    <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={CAPYBARA_POSES} className="capybara-seat" />
+  );
+}
+
+/** A mandarin, with its leaf. */
+function Mandarin({ className = "" }: { className?: string }) {
+  return (
+    <svg className={`mandarin ${className}`} viewBox="0 0 12 12" width={8} height={8} aria-hidden="true">
+      <circle cx="6" cy="7" r="4.6" />
+      <path className="mandarin__leaf" d="M6.2 2.6C7 .8 9 .4 10.4 1 9.6 2.6 8 3.2 6.2 2.6Z" />
+      <circle className="mandarin__shine" cx="4.4" cy="5.4" r="1" />
+    </svg>
+  );
+}
+
+/**
+ * Beside the capybara's seat, where the cat has its post: a tuft of grass and a few mandarins.
+ * A press on the mandarins and one ends up on its head.
+ */
+export function CapybaraNook({ onPlay }: { onPlay?: () => void }) {
+  return (
+    <svg className="cat-tree capybara-nook" viewBox="0 0 30 40" width={30} height={40} aria-hidden="true">
+      <g className="capybara-nook__grass">
+        <path d="M6 39C5 33 3 29 1 27 5 28 7 32 8 36 8 30 7 25 8 21 10 26 11 32 10.6 39Z" />
+        <path d="M11 39C11 33 12.6 28 15 25 14 30 13.6 34 13.8 39Z" />
+      </g>
+      <g
+        className="capybara-nook__mandarins"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onPlay?.();
+        }}
+      >
+        <circle className="cat-tree__toy-hit" cx={21} cy={34} r={7} />
+        <g transform="translate(14 30)">
+          <circle className="capybara-nook__fruit" cx="5" cy="5" r="4.4" />
+          <path className="capybara-nook__leaf" d="M5.2 1C6 -.6 7.8-1 9 -.4 8.2 1 6.8 1.6 5.2 1Z" />
+        </g>
+        <g transform="translate(21 31.4)">
+          <circle className="capybara-nook__fruit" cx="4.4" cy="4.4" r="3.8" />
+          <path className="capybara-nook__leaf" d="M4.6.8C5.2-.6 6.8-.9 7.8-.4 7.2.8 6 1.4 4.6.8Z" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+/** A mandarin drops out of nowhere onto its head (CAT_IDLE_MS.chill): it lies down with it there. */
+function FallingMandarin() {
+  return (
+    <span className="falling-mandarin" aria-hidden="true">
+      <Mandarin />
+    </span>
+  );
+}
+
+/**
+ * A little bird comes and sits on its head (CAT_IDLE_MS.bird), as birds do on capybaras, and the
+ * capybara couldn't care less; a song, and off it flies.
+ */
+function Birdie() {
+  return (
+    <span className="birdie" aria-hidden="true">
+      <span className="birdie__body">
+        <svg viewBox="0 0 16 13" width={11} height={9}>
+          <path className="birdie__tail" d="M3 7.6 0 6.4 1.2 9.4Z" />
+          <ellipse className="birdie__belly" cx="7.6" cy="8" rx="5.4" ry="4.2" />
+          <circle className="birdie__head" cx="11.4" cy="4.6" r="3.2" />
+          <path className="birdie__beak" d="M14.4 4.4 16 5.2 14.4 5.8Z" />
+          <circle className="birdie__eye" cx="12.2" cy="4" r="0.7" />
+          <path className="birdie__wing" d="M4.8 6.8C6.4 4.6 9.4 5 10 7.8 8 9.6 5.6 9 4.8 6.8Z" />
+          <path className="birdie__legs" d="M7 12v1M9 12v1" />
+        </svg>
+      </span>
+      <i>♪</i>
+    </span>
+  );
+}
+
+/** The frog's pond beside its seat, where the cat has its scratching post: a lily pad and reeds. */
+export function FrogPond() {
+  return (
+    <svg className="cat-tree frog-pond" viewBox="0 0 30 40" width={30} height={40} aria-hidden="true">
+      <g className="frog-pond__reeds">
+        <path className="frog-pond__stem" d="M23.6 37C23.4 28 24.4 18 25.6 9" />
+        <path className="frog-pond__stem" d="M27 37C27 30 27.6 23 28.8 15" />
+        <rect className="frog-pond__cattail" x={24} y={8} width={3.2} height={8} rx={1.6} transform="rotate(7 25.6 12)" />
+        <rect className="frog-pond__cattail" x={27.4} y={14} width={2.8} height={7} rx={1.4} transform="rotate(8 28.8 17.5)" />
+        <path className="frog-pond__leaf" d="M22 37C19.6 30 19.4 25 21 19.4 21.8 26 22.4 31 23.6 37Z" />
+      </g>
+      <ellipse className="frog-pond__water" cx={15} cy={36.6} rx={14} ry={3.2} />
+      <path className="frog-pond__ripple" d="M5 36.4q3-1.2 6 0M18 37.6q2.4-1 4.8 0" />
+      <path className="frog-pond__pad" d="M11.6 35.6C8 35.4 5.6 35.9 5.8 36.9 6 38 9.4 38.4 12.6 38.1 15.6 37.8 17.4 37 17 36.2 16.6 35.6 14.6 35.4 13 35.5L12.4 36.8Z" />
+      <g className="frog-pond__flower">
+        <path d="M14.2 35.8l-1.4-2.2 2.2 1 .6-2.4.6 2.4 2.2-1-1.4 2.2Z" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * A fly comes buzzing round (CAT_IDLE_MS.fly): the frog follows it with its eyes and, when it
+ * hovers just there, out shoots its tongue; and back, with the fly on it. Gulp.
+ */
+function FrogFly() {
+  return (
+    <span className="frog-fly-scene" aria-hidden="true">
+      <i className="frog-tongue" />
+      <span className="frog-fly">
+        <svg viewBox="0 0 12 10" width={9} height={7.5}>
+          <ellipse className="frog-fly__wing" cx={4.4} cy={2.8} rx={2.6} ry={2} />
+          <ellipse className="frog-fly__wing frog-fly__wing--back" cx={7.2} cy={2.6} rx={2.6} ry={2} />
+          <ellipse className="frog-fly__body" cx={6} cy={6.4} rx={3.4} ry={2.4} />
+          <circle className="frog-fly__eye" cx={3.2} cy={5.8} r={1.1} />
+        </svg>
+      </span>
+    </span>
+  );
+}
+
+/** A croak (CAT_IDLE_MS.croak): the sac under its chin blown up big, three times, notes rising. */
+function FrogSac() {
+  return (
+    <span className="frog-sac" aria-hidden="true">
+      <span className="frog-sac__bag" />
+      <i>♪</i>
+      <i>♫</i>
+      <i>♪</i>
+    </span>
+  );
+}
+
+/** The capybara's version of the cat's ears on a bar: small round ears, and a mandarin on top. */
+export function CapybaraBar() {
+  return (
+    <span className="capybara-bar" aria-hidden="true">
+      <svg className="capybara-bar__ear capybara-bar__ear--left" viewBox="0 0 14 14" width={12} height={12}>
+        <circle cx="7" cy="7" r="5.6" />
+      </svg>
+      <svg className="capybara-bar__ear capybara-bar__ear--right" viewBox="0 0 14 14" width={12} height={12}>
+        <circle cx="7" cy="7" r="5.6" />
+      </svg>
+      <span className="capybara-bar__mandarin">
+        <Mandarin />
+      </span>
+    </span>
+  );
+}
+
+/** The frog's version of the cat's ears on a bar: its two big eyes looking over the top. */
+export function FrogBar() {
+  return (
+    <span className="frog-bar" aria-hidden="true">
+      {["left", "right"].map((side) => (
+        <svg key={side} className={`frog-bar__eye frog-bar__eye--${side}`} viewBox="0 0 20 18" width={20} height={18}>
+          <circle className="frog-bar__bulge" cx="10" cy="10" r="8" />
+          <circle className="frog-bar__white" cx="10" cy="9.4" r="5" />
+          <circle className="frog-bar__pupil" cx="10.6" cy="9.8" r="3" />
+          <circle className="frog-bar__glint" cx="9.2" cy="8.4" r="1" />
+        </svg>
+      ))}
+    </span>
+  );
 }
 
 /** Rope turns round the post. */

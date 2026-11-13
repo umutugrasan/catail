@@ -15,6 +15,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from monkey_cursors import HOTSPOTS as MONKEY_HOTSPOTS
+from frog_cursors import HOTSPOTS as FROG_HOTSPOTS
+from capybara_cursors import HOTSPOTS as CAPYBARA_HOTSPOTS
 from turtle_cursors import HOTSPOTS as TURTLE_HOTSPOTS
 
 LIB = Path(__file__).resolve().parent.parent / "src" / "lib"
@@ -173,8 +175,8 @@ def recolor(image, cat, name):
 
 CATS = ["gray", "white", "calico", "black"]
 # Animals with pictures and cursors of their own, drawn by scripts/<animal>_cursors.py.
-ANIMALS = ["turtle", "monkey"]
-ANIMAL_HOTSPOTS = {"turtle": TURTLE_HOTSPOTS, "monkey": MONKEY_HOTSPOTS}
+ANIMALS = ["turtle", "monkey", "frog", "capybara"]
+ANIMAL_HOTSPOTS = {"turtle": TURTLE_HOTSPOTS, "monkey": MONKEY_HOTSPOTS, "frog": FROG_HOTSPOTS, "capybara": CAPYBARA_HOTSPOTS}
 ART = ["box-head", "standing-body", "foot-left", "foot-right"]
 # Variable, file, hotspot x, hotspot y, keyword the browser falls back on.
 CURSORS = [
@@ -205,6 +207,18 @@ ART_VARS = (
 ANIMAL_PICTURES = {
     "turtle": {"standing-body": "happy.png"},
     "monkey": {"standing-body": "wink.png", "box-head": "box-head.png"},
+    "frog": {
+        "standing-body": "happy.png",
+        "box-head": "box-head.png",
+        "foot-left": "../monkey/foot-left.svg",
+        "foot-right": "../monkey/foot-right.svg",
+    },
+    "capybara": {
+        "standing-body": "happy.png",
+        "box-head": "box-head.png",
+        "foot-left": "../monkey/foot-left.svg",
+        "foot-right": "../monkey/foot-right.svg",
+    },
 }
 
 

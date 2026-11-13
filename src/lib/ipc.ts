@@ -78,16 +78,30 @@ export interface Settings {
   custom_cat: CustomCat;
 }
 
-export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "custom" | "turtle" | "monkey" | "plain";
-export const CATS: Cat[] = ["orange", "gray", "white", "calico", "black", "custom", "turtle", "monkey", "plain"];
+export type Cat = "orange" | "gray" | "white" | "calico" | "black" | "custom" | "turtle" | "monkey" | "frog" | "capybara" | "plain";
+export const CATS: Cat[] = [
+  "orange",
+  "gray",
+  "white",
+  "calico",
+  "black",
+  "custom",
+  "turtle",
+  "monkey",
+  "frog",
+  "capybara",
+  "plain",
+];
 
 /** Which animal a theme shows; the plain theme has none. The cat comes first, by default. */
-export type Animal = "cat" | "turtle" | "monkey";
-export const ANIMALS: Animal[] = ["cat", "turtle", "monkey"];
+export type Animal = "cat" | "turtle" | "monkey" | "frog" | "capybara";
+export const ANIMALS: Animal[] = ["cat", "turtle", "monkey", "frog", "capybara"];
 export const ANIMAL_THEMES: Record<Animal, Cat[]> = {
   cat: ["orange", "gray", "white", "calico", "black", "custom"],
   turtle: ["turtle"],
   monkey: ["monkey"],
+  frog: ["frog"],
+  capybara: ["capybara"],
 };
 export const animalOf = (cat: Cat): Animal | null =>
   cat === "plain" ? null : (ANIMALS.find((animal) => ANIMAL_THEMES[animal].includes(cat)) ?? "cat");
@@ -313,9 +327,21 @@ export const StrollEvents = {
  * What the badge's cat goes down to the taskbar for: a "walk", a mad dash ("zoomies"), a red
  * dot to hunt ("laser"), a "mouse" come in from off the screen, and another cat come to visit,
  * to fight with ("rival") or to say hello to ("friend"). The monkey's own: a leap from the
- * taskbar up to the top of the screen, to hang there and swing ("climb").
+ * taskbar up to the top of the screen, to hang there and swing ("climb"). The frog's: big hops
+ * along the taskbar ("hops"), and a fly to catch with its tongue ("flyhunt"). The capybara's: a
+ * bird that comes and rides on its head ("birdie").
  */
-export type Outing = "walk" | "zoomies" | "laser" | "mouse" | "rival" | "friend" | "climb";
+export type Outing =
+  | "walk"
+  | "zoomies"
+  | "laser"
+  | "mouse"
+  | "rival"
+  | "friend"
+  | "climb"
+  | "hops"
+  | "flyhunt"
+  | "birdie";
 
 /** Where a walk starts, in the strip's px (stroll.rs). */
 export interface StrollStart {

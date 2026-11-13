@@ -55,9 +55,13 @@ export type CatPose =
   | "hang"
   | "beat"
   | "throw"
-  | "pick";
+  | "pick"
+  | "croak"
+  | "boast"
+  | "tongue"
+  | "lounge";
 export type Emote = "!" | "?" | "heart" | "anger";
-export type GuestKind = "mouse" | "dot" | "cat";
+export type GuestKind = "mouse" | "dot" | "cat" | "fly" | "bird";
 
 /** How one of the cast is drawn right now. */
 export interface View {
@@ -133,7 +137,7 @@ export interface Cast {
   /** What monkeys throw at each other. */
   banana: Prop<BananaView>;
   /** The badge's animal: a cat, or a monkey (whose visitors are monkeys too). */
-  animal: "cat" | "monkey";
+  animal: "cat" | "monkey" | "frog" | "capybara";
   /**
    * The seat's middle from the strip's left edge, its height above the taskbar, the strip's
    * width and height (the whole height of the screen for a "climb").
@@ -187,6 +191,9 @@ class Scene {
   readonly scrap: Prop<ScrapView>;
   readonly banana: Prop<BananaView>;
   readonly monkey: boolean;
+  /** A frog gets about in hops, never a walk. */
+  readonly frog: boolean;
+  readonly capybara: boolean;
   readonly home: number;
   readonly seat: number;
   readonly width: number;
@@ -205,6 +212,8 @@ class Scene {
     this.scrap = cast.scrap;
     this.banana = cast.banana;
     this.monkey = cast.animal === "monkey";
+    this.frog = cast.animal === "frog";
+    this.capybara = cast.animal === "capybara";
     this.home = cast.home;
     this.seat = cast.seat;
     this.width = cast.width;
@@ -226,12 +235,28 @@ class Scene {
     return Math.min(Math.max(x, EDGE), this.width - EDGE);
   }
 
-  /** `who` goes along to `to`, facing the way it's going. */
+  /** `who` goes along to `to`, facing the way it's going. A frog (or its visitor) hops there. */
   async go(who: Puppet<View> | Puppet<GuestView>, to: number, speed: number) {
     who.face(to - who.x);
+    const isFly = who === this.guest && this.flyAbout;
+    if (this.frog && !isFly) {
+      // Hop by hop: each as long as a frog's hop, as quick as `speed` would have it.
+      while (Math.abs(to - who.x) > 0.5) {
+        const step = Math.sign(to - who.x) * Math.min(FROG_HOP, Math.abs(to - who.x));
+        const ms = Math.max(FROG_HOP_MS_MIN, (Math.abs(step) / speed) * 1000);
+        who.show({ pose: "hop" });
+        await this.stage.hop(who, who.x + step, who.y, ms, FROG_HOP_ARC * Math.min(1, Math.abs(step) / FROG_HOP));
+        who.show({ pose: "sit" });
+        await this.stage.wait(speed > RUNS_ABOVE ? 40 : 160);
+      }
+      return;
+    }
     who.show({ pose: speed > RUNS_ABOVE ? "run" : "walk" });
     await this.stage.glide(who, to, speed);
   }
+
+  /** A fly is about: it buzzes, it doesn't hop. */
+  flyAbout = false;
 
   /** Down off the seat, to the `dir` side of it. */
   async hopOff(dir: number) {
@@ -568,6 +593,7 @@ async function bananaFight(s: Scene) {
 /** A strange cat on its taskbar: backs up, a lot of noise, a scrap in a cloud of dust. */
 async function rival(s: Scene) {
   if (s.monkey) return bananaFight(s);
+  if (s.frog) return croakingMatch(s);
   const { stage, cat, guest, home, near, far } = s;
   await visit(s, home + far * (HOP_SIDEWAYS + STANDOFF_GAP));
   // It isn't having that: its back goes up, on the seat first, then face to face.
@@ -630,6 +656,8 @@ async function scrapAndChaseOff(s: Scene) {
 
 /** A cat it knows: noses touch, heads rub, a game of leapfrog, and the visitor is on its way. */
 async function friend(s: Scene) {
+  if (s.frog) return leapfrog(s);
+  if (s.capybara) return lieAbout(s);
   const { stage, cat, guest, home, near, far } = s;
   await visit(s, home + far * (HOP_SIDEWAYS + STANDOFF_GAP));
   guest.emote("heart");
@@ -718,4 +746,232 @@ const DROP_MS = 820;
 const CORNER_IN = 30;
 const HANG_BELOW_TOP = 36;
 
-const SCENES: Record<Outing, (scene: Scene) => Promise<void>> = { walk, zoomies, laser, mouse, rival, friend, climb };
+/** A frog's hop: how far, at quickest how long, how high. */
+const FROG_HOP = 64;
+const FROG_HOP_MS_MIN = 300;
+const FROG_HOP_ARC = 26;
+/** Where its tongue reaches: so far ahead of it, so high up. */
+const TONGUE_AHEAD = 30;
+const TONGUE_UP = 30;
+
+/** Along the taskbar in big hops, a croak at the far end, and hops home. */
+async function hops(s: Scene) {
+  const { stage, cat, home } = s;
+  const dir = s.room(-1) > s.room(1) ? -1 : 1;
+  await s.hopOff(dir);
+  await s.go(cat, home + dir * (HOP_SIDEWAYS + Math.min(s.room(dir), random(220, 460))), 200);
+  cat.face(-dir);
+  cat.show({ pose: "croak" });
+  await stage.wait(2000);
+  cat.show({ pose: "sit" });
+  await stage.wait(400);
+  await s.goHome(160);
+}
+
+/** The fly buzzes over to `x`, `y` (above the taskbar), bobbing as it goes. */
+function buzz(s: Scene, x: number, y: number, speed: number) {
+  const fly = s.guest;
+  let t = 0;
+  const fromY = fly.y;
+  const fromX = fly.x;
+  const far = Math.max(Math.abs(x - fromX), 1);
+  fly.face(x - fly.x);
+  return s.stage.run((dt) => {
+    t += dt;
+    const left = x - fly.x;
+    const move = (speed * dt) / 1000;
+    if (Math.abs(left) <= move) fly.x = x;
+    else fly.x += Math.sign(left) * move;
+    const p = Math.min(1, Math.abs(fly.x - fromX) / far);
+    fly.y = Math.max(4, fromY + (y - fromY) * p + Math.sin(t / 90) * 4 * (1 - p * 0.7));
+    if (fly.x !== x) return false;
+    fly.y = y;
+    return true;
+  });
+}
+
+/** A fly comes by. The frog hops after it, it dodges, twice; then out shoots the tongue. Gulp. */
+async function flyhunt(s: Scene) {
+  const { stage, cat, guest, home, near, far } = s;
+  s.flyAbout = true;
+  s.bring("fly", s.edge(near));
+  guest.y = 44;
+  s.cast.watching = true;
+  await buzz(s, home + far * 30, 52, 150);
+  cat.emote("!");
+  await stage.wait(400);
+  await s.hopOff(far);
+  for (let i = 0; i < 2; i++) {
+    const to = s.within(guest.x + far * random(80, 130));
+    await Promise.all([buzz(s, to, random(26, 50), 170), s.go(cat, s.within(to - far * 40), 220)]);
+    cat.face(guest.x - cat.x);
+    cat.show({ pose: "wiggle" });
+    await stage.wait(320);
+  }
+  // It settles, just in reach: the tongue.
+  const dir = cat.right ? 1 : -1;
+  await buzz(s, cat.x + dir * TONGUE_AHEAD, TONGUE_UP, 120);
+  await stage.wait(250);
+  cat.show({ pose: "tongue" });
+  await stage.wait(170);
+  s.dismiss();
+  s.flyAbout = false;
+  s.cast.watching = false;
+  await stage.wait(250);
+  cat.show({ pose: "croak" });
+  await stage.wait(500);
+  cat.emote("heart");
+  await stage.wait(900);
+  await s.goHome(160);
+}
+
+/** Another frog: each croaks louder than the other, until the visitor gives up and hops off. */
+async function croakingMatch(s: Scene) {
+  const { stage, cat, guest, home, near, far } = s;
+  await visit(s, home + far * (HOP_SIDEWAYS + STANDOFF_GAP + 10));
+  await s.hopOff(far);
+  cat.face(near);
+  guest.face(far);
+  for (const [who, pose, wait] of [
+    [cat, "croak", 1300],
+    [guest, "croak", 1300],
+    [cat, "boast", 1500],
+    [guest, "boast", 1100],
+    [cat, "boast", 1700],
+  ] as const) {
+    who.show({ pose });
+    who.emote("anger");
+    await stage.wait(wait);
+    who.show({ pose: "sit" });
+    await stage.wait(200);
+  }
+  // That was the loudest: the visitor is crestfallen, and off it hops.
+  guest.show({ pose: "dizzy" });
+  guest.emote("?");
+  await stage.wait(1000);
+  guest.show({ fleeing: true });
+  cat.emote("heart");
+  await s.go(guest, s.edge(near), 320);
+  s.dismiss();
+  s.cast.watching = false;
+  await stage.wait(500);
+  await s.goHome(160);
+}
+
+/** A friend: leapfrog, the visitor over the frog, the frog over it, again; a croak together. */
+async function leapfrog(s: Scene) {
+  const { stage, cat, guest, home, near, far } = s;
+  await visit(s, home + far * (HOP_SIDEWAYS + STANDOFF_GAP));
+  guest.emote("heart");
+  await stage.wait(400);
+  await s.hopOff(far);
+  cat.show({ pose: "sit" });
+  const over = async (who: Puppet<View>, other: Puppet<View>, dir: number) => {
+    who.face(dir);
+    who.show({ pose: "wiggle" });
+    await stage.wait(300);
+    who.show({ pose: "hop" });
+    await stage.hop(who, s.within(other.x + dir * 34), 0, 520, 40);
+    who.show({ pose: "sit" });
+    await stage.wait(250);
+  };
+  await over(guest, cat, near);
+  await over(cat, guest, near);
+  await over(guest, cat, near);
+  await over(cat, guest, near);
+  cat.face(guest.x - cat.x);
+  guest.face(cat.x - guest.x);
+  cat.show({ pose: "croak" });
+  guest.show({ pose: "croak" });
+  await stage.wait(1400);
+  cat.emote("heart");
+  guest.emote("heart");
+  await stage.wait(800);
+  cat.show({ pose: "sit" });
+  await s.go(guest, s.edge(near), 220);
+  s.dismiss();
+  s.cast.watching = false;
+  await stage.wait(300);
+  await s.goHome(160);
+}
+
+/** How high the top of a capybara's head is: where a bird sits on it. */
+const HEAD_TOP = 33;
+const CAPYBARA_PACE = 30;
+
+/** A bird flies in and sits on the capybara's head; the capybara takes it for a walk, unbothered. */
+async function birdie(s: Scene) {
+  const { stage, cat, guest, home, near, far } = s;
+  s.flyAbout = true;
+  s.bring("bird", s.edge(near));
+  guest.y = 70;
+  await s.hopOff(far);
+  cat.show({ pose: "sit" });
+  // Down it comes, onto its head.
+  await buzz(s, cat.x - 2, HEAD_TOP + 6, 160);
+  await stage.hop(guest, cat.x - 2, HEAD_TOP, 220, 0);
+  guest.emote("heart");
+  await stage.wait(900);
+  // Off for a walk, the bird riding along.
+  let riding = true;
+  const ride = stage.run(() => {
+    guest.x = cat.x - 2;
+    guest.y = HEAD_TOP;
+    guest.face(cat.right ? 1 : -1);
+    return !riding;
+  });
+  const end = home + far * (HOP_SIDEWAYS + Math.min(s.room(far), random(140, 260)));
+  await s.go(cat, end, CAPYBARA_PACE);
+  cat.show({ pose: "lounge" });
+  await stage.wait(1800);
+  riding = false;
+  await ride;
+  // A song, and away it flies.
+  guest.emote("heart");
+  await stage.wait(600);
+  await buzz(s, s.edge(far), 90, 180);
+  s.dismiss();
+  s.flyAbout = false;
+  cat.show({ pose: "sit" });
+  await stage.wait(400);
+  await s.goHome(CAPYBARA_PACE * 1.6);
+}
+
+/** Another capybara: it comes and lies down beside it; the two of them, doing nothing at all. */
+async function lieAbout(s: Scene) {
+  const { stage, cat, guest, home, near, far } = s;
+  await visit(s, home + far * (HOP_SIDEWAYS + STANDOFF_GAP));
+  await s.hopOff(far);
+  await s.go(cat, cat.x + far * 8, CAPYBARA_PACE);
+  cat.face(near);
+  guest.face(far);
+  guest.show({ pose: "lounge" });
+  await stage.wait(500);
+  cat.show({ pose: "lounge" });
+  await stage.wait(1500);
+  cat.emote("heart");
+  await stage.wait(1400);
+  guest.emote("heart");
+  await stage.wait(1800);
+  guest.show({ pose: "sit" });
+  await stage.wait(400);
+  await s.go(guest, s.edge(near), CAPYBARA_PACE * 2);
+  s.dismiss();
+  s.cast.watching = false;
+  cat.show({ pose: "sit" });
+  await stage.wait(500);
+  await s.goHome(CAPYBARA_PACE * 1.6);
+}
+
+const SCENES: Record<Outing, (scene: Scene) => Promise<void>> = {
+  walk,
+  zoomies,
+  laser,
+  mouse,
+  rival,
+  friend,
+  climb,
+  hops,
+  flyhunt,
+  birdie,
+};

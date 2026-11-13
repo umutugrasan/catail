@@ -89,9 +89,11 @@ export function Badge() {
   const worn = useWornTheme();
   const turtle = worn === "turtle";
   const monkey = worn === "monkey";
-  const player: Player = monkey ? "monkey" : "cat";
+  const frog = worn === "frog";
+  const capybara = worn === "capybara";
+  const player: Player = monkey ? "monkey" : frog ? "frog" : capybara ? "capybara" : "cat";
   // Drawn as pictures, one per mood: no cat parts to move, its own way of winding down.
-  const pictured = turtle || monkey;
+  const pictured = turtle || monkey || frog || capybara;
 
   // "Geri al" brought this many items back; the cat carries them over from its box.
   const [fetching, setFetching] = useState<number | null>(null);
@@ -715,6 +717,8 @@ export function Badge() {
           away={strolling}
           tree={!turtle && catsAround()}
           monkey={monkey}
+          frog={frog}
+          capybara={capybara}
           bubble={noseBubble}
           purring={purringNow}
           onPet={onPet}
@@ -724,7 +728,8 @@ export function Badge() {
             // bananas were pressed: it has one.
             if (asleep) setPoke((n) => n + 1);
             else if (monkey && free) setIdle("banana");
-            else if (!monkey && free && Math.random() < 0.6) setIdle("bat");
+            else if (capybara && free) setIdle("chill");
+            else if (!pictured && free && Math.random() < 0.6) setIdle("bat");
           }}
           turtle={turtle}
           sad={sad}

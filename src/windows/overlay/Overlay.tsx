@@ -9,6 +9,10 @@ import {
   SeatCat,
   TRASH_JUMP_MS,
   TrashJump,
+  CapybaraBar,
+  CapybaraSeat,
+  FrogBar,
+  FrogSeat,
   MonkeyBar,
   MonkeySeat,
   TurtleBar,
@@ -364,9 +368,11 @@ export function Overlay() {
     const tail = tailRef.current;
     if (!el || !tail) return;
     const spin = Math.random() < 0.5 ? 1 : -1;
-    // The turtle reaches out with a flipper, the monkey with a long arm; a cat curls its tail.
+    // The turtle reaches out with a flipper, the monkey with a long arm, the frog shoots out its
+    // tongue; a cat curls its tail.
     const worn = document.documentElement.dataset.cat;
-    const kind = worn === "turtle" ? "flipper" : worn === "monkey" ? "hand" : "tail";
+    const kind =
+      worn === "turtle" ? "flipper" : worn === "monkey" || worn === "capybara" ? "hand" : worn === "frog" ? "tongue" : "tail";
     const scene = makeTailScene(selection, target, viewSize(), spin, cat ? catTailRoot(cat) : undefined, kind);
     await playTail(el, tail, scene);
   }, [info, selection, shapes.length]);
@@ -825,6 +831,10 @@ export function Overlay() {
             <TurtleSeat fat={seatFat} asleep={false} hatch={null} />
           ) : document.documentElement.dataset.cat === "monkey" ? (
             <MonkeySeat fat={seatFat} asleep={false} />
+          ) : document.documentElement.dataset.cat === "frog" ? (
+            <FrogSeat fat={seatFat} asleep={false} />
+          ) : document.documentElement.dataset.cat === "capybara" ? (
+            <CapybaraSeat fat={seatFat} asleep={false} />
           ) : (
             <SeatCat fat={seatFat} />
           )}
@@ -884,6 +894,8 @@ export function Overlay() {
         <Whiskers side="right" />
         <TurtleBar />
         <MonkeyBar />
+        <FrogBar />
+        <CapybaraBar />
         <button
           type="button"
           className={info.textMode ? undefined : "active"}

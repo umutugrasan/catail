@@ -133,6 +133,44 @@
   --paw-blocked: image-set(url("./cursors/monkey/blocked.png") 1x, url("./cursors/monkey/blocked@2x.png") 2x) 3 2, not-allowed;
 }
 
+[data-cat="frog"] {
+  --cat-head: url("./animals/frog/box-head.png");
+  --cat-body: url("./animals/frog/happy.png");
+  --cat-foot-left: url("./animals/frog/../monkey/foot-left.svg");
+  --cat-foot-right: url("./animals/frog/../monkey/foot-right.svg");
+  --paw-default: image-set(url("./cursors/frog/paw.png") 1x, url("./cursors/frog/paw@2x.png") 2x) 3 2, default;
+  --paw: image-set(url("./cursors/frog/pointer.png") 1x, url("./cursors/frog/pointer@2x.png") 2x) 7 6, pointer;
+  --paw-grab: image-set(url("./cursors/frog/grab.png") 1x, url("./cursors/frog/grab@2x.png") 2x) 16 12, grab;
+  --paw-grabbing: image-set(url("./cursors/frog/grabbing.png") 1x, url("./cursors/frog/grabbing@2x.png") 2x) 11 9, grabbing;
+  --paw-text: image-set(url("./cursors/frog/text.png") 1x, url("./cursors/frog/text@2x.png") 2x) 8 16, text;
+  --paw-cross: image-set(url("./cursors/frog/cross.png") 1x, url("./cursors/frog/cross@2x.png") 2x) 12 12, crosshair;
+  --paw-ew: image-set(url("./cursors/frog/ew.png") 1x, url("./cursors/frog/ew@2x.png") 2x) 23 17, ew-resize;
+  --paw-move: image-set(url("./cursors/frog/move.png") 1x, url("./cursors/frog/move@2x.png") 2x) 25 25, move;
+  --paw-ns: image-set(url("./cursors/frog/ns.png") 1x, url("./cursors/frog/ns@2x.png") 2x) 17 23, ns-resize;
+  --paw-nwse: image-set(url("./cursors/frog/corner.png") 1x, url("./cursors/frog/corner@2x.png") 2x) 21 21, nwse-resize;
+  --paw-nesw: image-set(url("./cursors/frog/corner.png") 1x, url("./cursors/frog/corner@2x.png") 2x) 21 21, nesw-resize;
+  --paw-blocked: image-set(url("./cursors/frog/blocked.png") 1x, url("./cursors/frog/blocked@2x.png") 2x) 3 2, not-allowed;
+}
+
+[data-cat="capybara"] {
+  --cat-head: url("./animals/capybara/box-head.png");
+  --cat-body: url("./animals/capybara/happy.png");
+  --cat-foot-left: url("./animals/capybara/../monkey/foot-left.svg");
+  --cat-foot-right: url("./animals/capybara/../monkey/foot-right.svg");
+  --paw-default: image-set(url("./cursors/capybara/paw.png") 1x, url("./cursors/capybara/paw@2x.png") 2x) 3 2, default;
+  --paw: image-set(url("./cursors/capybara/pointer.png") 1x, url("./cursors/capybara/pointer@2x.png") 2x) 7 6, pointer;
+  --paw-grab: image-set(url("./cursors/capybara/grab.png") 1x, url("./cursors/capybara/grab@2x.png") 2x) 16 12, grab;
+  --paw-grabbing: image-set(url("./cursors/capybara/grabbing.png") 1x, url("./cursors/capybara/grabbing@2x.png") 2x) 11 9, grabbing;
+  --paw-text: image-set(url("./cursors/capybara/text.png") 1x, url("./cursors/capybara/text@2x.png") 2x) 8 16, text;
+  --paw-cross: image-set(url("./cursors/capybara/cross.png") 1x, url("./cursors/capybara/cross@2x.png") 2x) 12 12, crosshair;
+  --paw-ew: image-set(url("./cursors/capybara/ew.png") 1x, url("./cursors/capybara/ew@2x.png") 2x) 23 17, ew-resize;
+  --paw-move: image-set(url("./cursors/capybara/move.png") 1x, url("./cursors/capybara/move@2x.png") 2x) 25 25, move;
+  --paw-ns: image-set(url("./cursors/capybara/ns.png") 1x, url("./cursors/capybara/ns@2x.png") 2x) 17 23, ns-resize;
+  --paw-nwse: image-set(url("./cursors/capybara/corner.png") 1x, url("./cursors/capybara/corner@2x.png") 2x) 21 21, nwse-resize;
+  --paw-nesw: image-set(url("./cursors/capybara/corner.png") 1x, url("./cursors/capybara/corner@2x.png") 2x) 21 21, nesw-resize;
+  --paw-blocked: image-set(url("./cursors/capybara/blocked.png") 1x, url("./cursors/capybara/blocked@2x.png") 2x) 3 2, not-allowed;
+}
+
 [data-cat="custom"] {
   --cat-head: var(--custom-cat-head, url("./cats/box-head.png"));
   --cat-body: var(--custom-cat-body, url("./cats/standing-body.png"));

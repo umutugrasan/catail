@@ -32,6 +32,37 @@ describe("the cat's plays", () => {
     }
   });
 
+  it("deals the frog its own plays: flies and croaks, nothing a cat or a monkey does", () => {
+    const pack: Play[] = [];
+    let last: Play | null = null;
+    const seen = new Set<Play>();
+    for (let i = 0; i < 300; i++) {
+      last = drawPlay(pack, last, true, "frog");
+      seen.add(last);
+    }
+    for (const play of ["fly", "croak", "jump", "dive", "hops", "flyhunt", "rival", "friend"] as Play[]) expect(seen).toContain(play);
+    for (const play of ["scratch", "bat", "lick", "mouse", "laser", "banana", "swing", "climb", "peek"] as Play[]) {
+      expect(seen).not.toContain(play);
+    }
+    const frogPack = shuffledPack("frog");
+    const times = (play: Play) => frogPack.filter((one) => one === play).length;
+    expect(times("fly")).toBeGreaterThan(times("jump"));
+  });
+
+  it("deals the capybara its own plays: a soak, a tea, a bird, nothing a cat does", () => {
+    const pack: Play[] = [];
+    let last: Play | null = null;
+    const seen = new Set<Play>();
+    for (let i = 0; i < 300; i++) {
+      last = drawPlay(pack, last, true, "capybara");
+      seen.add(last);
+    }
+    for (const play of ["onsen", "boba", "chill", "bird", "bath", "birdie", "friend", "walk"] as Play[]) expect(seen).toContain(play);
+    for (const play of ["scratch", "bat", "lick", "mouse", "laser", "rival", "banana", "fly"] as Play[]) {
+      expect(seen).not.toContain(play);
+    }
+  });
+
   it("deals the monkey its own plays, and none of the cat's", () => {
     const pack: Play[] = [];
     let last: Play | null = null;

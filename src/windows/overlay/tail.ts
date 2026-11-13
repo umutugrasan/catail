@@ -73,7 +73,7 @@ export interface TailSegment {
   dashOffset: number;
 }
 
-export type TailKind = "tail" | "flipper" | "hand";
+export type TailKind = "tail" | "flipper" | "hand" | "tongue";
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const phase = (p: number, start: number, end: number) => clamp((p - start) / (end - start), 0, 1);
@@ -270,6 +270,8 @@ const FLIPPER_PATH = "M-12 0C6-27 48-33 80-10C54 11 16 24-12 0Z";
 /** The monkey's hand at the end of its arm, fingers along +x, the thumb on one side. */
 const HAND_PATH =
   "M-12-16C-6-22 2-22 6-22L18-38C22-44 30-40 26-34L20-22C26-24 30-24 34-23L58-26C66-27 67-15 59-14L36-12 64-12C72-12 72 0 64 0L36 0 61 4C69 6 67 17 59 15L34 10 52 18C59 22 54 31 47 27L26 18C14 24-4 22-12 14-18 6-18-8-12-16Z";
+/** The frog's tongue ends in a sticky blob. */
+const TONGUE_TIP_PATH = "M-6 0C-6-11 4-15 12-14 22-12 26-5 26 0 26 5 22 12 12 14 4 15-6 11-6 0Z";
 /** The arm is slimmer than a tail. */
 const ARM_WIDTH = 0.62;
 
@@ -284,8 +286,9 @@ export function drawTail(svg: SVGSVGElement, points: Point[], kind: TailKind = "
       }
     }
   }
-  const segments = tailSegments(points, kind === "tail" ? 1 : ARM_WIDTH);
-  if (kind !== "tail") drawFlipper(svg, points, kind === "hand" ? HAND_PATH : FLIPPER_PATH, kind);
+  const segments = tailSegments(points, kind === "tail" ? 1 : kind === "tongue" ? ARM_WIDTH * 0.7 : ARM_WIDTH);
+  const tip = { flipper: FLIPPER_PATH, hand: HAND_PATH, tongue: TONGUE_TIP_PATH }[kind as Exclude<TailKind, "tail">];
+  if (kind !== "tail") drawFlipper(svg, points, tip, kind);
   LAYERS.forEach((layer, l) => {
     for (let i = 0; i < SEGMENTS; i += 1) {
       const path = svg.children[l * SEGMENTS + i];
