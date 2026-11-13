@@ -7,6 +7,18 @@ import boxHead from "./cats/box-head.png";
 import footLeft from "./cats/foot-left.png";
 import footRight from "./cats/foot-right.png";
 import standingBody from "./cats/standing-body.png";
+import monkeyHappy from "./animals/monkey/happy.png";
+import monkeyBanana from "./animals/monkey/banana.png";
+import monkeySilly from "./animals/monkey/silly.png";
+import monkeySurprised from "./animals/monkey/surprised.png";
+import monkeyThink from "./animals/monkey/think.png";
+import monkeyDive from "./animals/monkey/dive.png";
+import monkeySplash from "./animals/monkey/splash.png";
+import monkeyCry from "./animals/monkey/cry.png";
+import monkeySleep from "./animals/monkey/sleep.png";
+import monkeyWink from "./animals/monkey/wink.png";
+import monkeyWorried from "./animals/monkey/worried.png";
+import monkeyHang from "./animals/monkey/hang.png";
 import turtleCry from "./animals/turtle/cry.png";
 import turtleDive from "./animals/turtle/dive.png";
 import turtleHappy from "./animals/turtle/happy.png";
@@ -464,10 +476,10 @@ export function BadgeCat({
       {chasing && <ChaseCat />}
       <span className="cat-slot__trot">
         <span className="cat-slot__facing">
-          {/* Up a branch, it hangs on by one arm. */}
-          {idle === "swing" && <span className="monkey-hang-arm" />}
           {turtle ? (
             <TurtleSeat fat={fat} asleep={asleep} hatch={hatch} seatRef={seatRef} />
+          ) : monkey ? (
+            <MonkeySeat fat={fat} asleep={asleep} seatRef={seatRef} />
           ) : (
             <SeatCat fat={fat} asleep={asleep} bubble={bubble} act={act} seatRef={seatRef} />
           )}
@@ -488,13 +500,6 @@ export function BadgeCat({
       )}
       {idle === "butterfly" && <Butterfly />}
       {idle === "banana" && <Banana />}
-      {idle === "itch" && (
-        <span className="itch-marks" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
-      )}
     </span>
   );
 }
@@ -518,11 +523,10 @@ export type CatIdle =
   | "knead"
   | "yawn"
   | "butterfly"
-  | "itch"
   | "banana"
   | "swing"
   | "peek"
-  | "bounce"
+  | "think"
   | "dive"
   | "silly"
   | "shell";
@@ -536,11 +540,10 @@ export const CAT_IDLE_MS: Record<CatIdle, number> = {
   knead: 4200,
   yawn: 2000,
   butterfly: 6400,
-  itch: 3200,
   banana: 5600,
   swing: 4400,
   peek: 5600,
-  bounce: 1800,
+  think: 3600,
   dive: 4200,
   silly: 2400,
   shell: 3000,
@@ -612,16 +615,21 @@ export function TurtleSeat({
   asleep,
   hatch,
   seatRef,
+  poses = TURTLE_POSES,
+  className = "",
 }: {
   fat: number;
   asleep: boolean;
   hatch: TurtleHatch | null;
   seatRef?: Ref<HTMLSpanElement>;
+  /** The pictures, by pose: the turtle's, or another pictured animal's. */
+  poses?: Record<string, string>;
+  className?: string;
 }) {
   return (
     <span
       ref={seatRef}
-      className={`cat-seat turtle-seat${asleep ? " turtle-seat--asleep" : ""}`}
+      className={`cat-seat turtle-seat${asleep ? " turtle-seat--asleep" : ""} ${className}`}
       style={{ "--fat": fat } as CSSProperties}
       aria-hidden="true"
     >
@@ -635,7 +643,7 @@ export function TurtleSeat({
       <span className="turtle-seat__ground">
         <span className="turtle-seat__act">
           <span className="turtle-seat__body">
-            {Object.entries(TURTLE_POSES).map(([pose, src]) => (
+            {Object.entries(poses).map(([pose, src]) => (
               <img key={pose} className={`turtle-seat__pose turtle-seat__pose--${pose}`} src={src} alt="" draggable={false} />
             ))}
             <span className="turtle-seat__tears">
@@ -780,6 +788,33 @@ function Banana() {
       </svg>
     </span>
   );
+}
+
+/**
+ * The monkey's pictures, by pose. It sits in the same seat as the turtle (the same moods: worried,
+ * in tears, asleep; the same dive and dance), with games of its own: a banana, a think about
+ * one, swinging from its tree, hiding in it.
+ */
+const MONKEY_POSES = {
+  happy: monkeyHappy,
+  banana: monkeyBanana,
+  silly: monkeySilly,
+  surprised: monkeySurprised,
+  think: monkeyThink,
+  dive: monkeyDive,
+  splash: monkeySplash,
+  cry: monkeyCry,
+  sleep: monkeySleep,
+  wink: monkeyWink,
+  worried: monkeyWorried,
+  hang: monkeyHang,
+} as const;
+
+/** One of the monkey's pictures, for a pose drawn elsewhere (the taskbar). */
+export const monkeyPicture = (pose: keyof typeof MONKEY_POSES) => MONKEY_POSES[pose];
+
+export function MonkeySeat({ fat, asleep, seatRef }: { fat: number; asleep: boolean; seatRef?: Ref<HTMLSpanElement> }) {
+  return <TurtleSeat fat={fat} asleep={asleep} hatch={null} seatRef={seatRef} poses={MONKEY_POSES} className="monkey-seat" />;
 }
 
 /** Rope turns round the post. */

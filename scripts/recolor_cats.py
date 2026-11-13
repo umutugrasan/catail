@@ -202,7 +202,10 @@ ART_VARS = (
 
 
 # An animal's pictures that aren't drawn as SVG: its whole standing figure is a picture.
-ANIMAL_PICTURES = {"turtle": {"standing-body": "happy.png"}}
+ANIMAL_PICTURES = {
+    "turtle": {"standing-body": "happy.png"},
+    "monkey": {"standing-body": "wink.png", "box-head": "box-head.png"},
+}
 
 
 def css_block(selector, folder, art=None, custom=False):

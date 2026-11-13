@@ -10,6 +10,7 @@ import {
   TRASH_JUMP_MS,
   TrashJump,
   MonkeyBar,
+  MonkeySeat,
   TurtleBar,
   TurtleSeat,
   Whiskers,
@@ -822,6 +823,8 @@ export function Overlay() {
             </span>
           ) : turtle ? (
             <TurtleSeat fat={seatFat} asleep={false} hatch={null} />
+          ) : document.documentElement.dataset.cat === "monkey" ? (
+            <MonkeySeat fat={seatFat} asleep={false} />
           ) : (
             <SeatCat fat={seatFat} />
           )}

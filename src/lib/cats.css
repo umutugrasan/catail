@@ -5365,32 +5365,6 @@
   display: none;
 }
 
-/* Its eyes, mouth and nose are where the monkey's picture has them. */
-[data-cat="monkey"] .cat-seat__lid {
-  width: 6.6%;
-  height: 7.6%;
-}
-
-[data-cat="monkey"] .cat-seat__lid--left {
-  top: 19.4%;
-  left: 14.8%;
-}
-
-[data-cat="monkey"] .cat-seat__lid--right {
-  top: 22.2%;
-  left: 37.6%;
-}
-
-[data-cat="monkey"] .cat-seat__yawn {
-  top: 12.4px;
-  left: 9.2px;
-}
-
-[data-cat="monkey"] .nose-bubble {
-  top: 28.6%;
-  left: 27.4%;
-}
-
 /* In a top corner the tree reaches above the badge: the row makes room for it. */
 #root[data-corner^="top"] .badge-row:has(.monkey-tree) {
   padding-top: 20px;
@@ -5478,52 +5452,9 @@
   opacity: 0;
 }
 
-/* Hanging from the branch by one arm (CAT_IDLE_MS.swing). */
-.monkey-hang-arm {
-  position: absolute;
-  top: -3px;
-  left: calc(var(--belly, 0px) + 10.6px);
-  z-index: 2;
-  width: 5px;
-  height: 10px;
-  box-sizing: border-box;
-  border: 1.2px solid var(--tail-outline);
-  border-radius: 3px;
-  background: var(--tail-body);
-  opacity: 0;
-  animation: hang-arm 4400ms linear both;
-}
-
-.monkey-hang-arm::before {
-  content: "";
-  position: absolute;
-  top: -3.2px;
-  left: -1.4px;
-  width: 5.4px;
-  height: 4.4px;
-  box-sizing: border-box;
-  border: 1.1px solid var(--tail-outline);
-  border-radius: 50%;
-  background: var(--cat-lid);
-}
-
-@keyframes hang-arm {
-  0%,
-  13% {
-    opacity: 0;
-  }
-  14%,
-  85% {
-    opacity: 1;
-  }
-  86%,
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Up it jumps, catches the branch, and swings: the trot does the jump, the facing the swing,
-   round the hand on the branch. */
+/* Up it jumps, catches the branch, and swings (the hanging picture has the monkey's hands on a
+   branch of its own, laid along the tree's): the trot does the jump, the facing the swing, round
+   its hands. */
 .cat-slot--swing .cat-slot__trot {
   animation: swing-jump 4400ms linear both;
 }
@@ -5537,12 +5468,12 @@
     animation-timing-function: var(--ease-out);
   }
   12% {
-    transform: translateY(-14px) scale(0.94, 1.08);
+    transform: translateY(-24px) scale(0.94, 1.08);
     animation-timing-function: var(--ease-in-out);
   }
   15%,
   85% {
-    transform: translateY(-5.7px);
+    transform: translateY(-19px);
     animation-timing-function: var(--ease-in);
   }
   91% {
@@ -5557,7 +5488,7 @@
 }
 
 .cat-slot--swing .cat-slot__facing {
-  transform-origin: calc(13px + var(--belly, 0px)) -3px;
+  transform-origin: calc(20px + var(--belly, 0px)) 8px;
   animation: swing-sway 4400ms var(--ease-in-out) both;
 }
 
@@ -5567,22 +5498,22 @@
     transform: none;
   }
   24% {
-    transform: rotate(22deg);
+    transform: rotate(12deg);
   }
   34% {
-    transform: rotate(-20deg);
+    transform: rotate(-11deg);
   }
   44% {
-    transform: rotate(17deg);
+    transform: rotate(9deg);
   }
   54% {
-    transform: rotate(-15deg);
+    transform: rotate(-4deg);
   }
   64% {
-    transform: rotate(11deg);
+    transform: rotate(6deg);
   }
   73% {
-    transform: rotate(-8deg);
+    transform: rotate(-4deg);
   }
   80% {
     transform: rotate(3deg);
@@ -5872,34 +5803,14 @@
 
 @keyframes banana-hold {
   0%,
-  11% {
+  79% {
     opacity: 0;
-    transform: translate(-10px, -10px) rotate(-30deg) scale(0.8);
+    transform: none;
   }
-  12% {
-    opacity: 1;
-    transform: translate(-10px, -10px) rotate(-30deg) scale(0.8);
-    animation-timing-function: var(--ease-out);
-  }
-  19%,
-  40%,
-  48%,
-  52%,
-  60%,
-  64%,
-  72%,
-  78% {
+  80% {
     opacity: 1;
     transform: none;
-    animation-timing-function: var(--ease-in-out);
-  }
-  /* Up to its mouth for a bite, three times. */
-  44%,
-  56%,
-  68% {
-    opacity: 1;
-    transform: translate(-4px, -5px) rotate(-16deg);
-    animation-timing-function: var(--ease-in-out);
+    animation-timing-function: var(--ease-out);
   }
   /* Wound up, and over its shoulder with the peel. */
   81% {
@@ -6013,345 +5924,6 @@
   }
 }
 
-/* Chewing, eyes shut with the taste of it. */
-.cat-slot--banana .cat-seat__head {
-  animation: banana-chew 5600ms linear both;
-}
-
-@keyframes banana-chew {
-  0%,
-  42%,
-  76%,
-  100% {
-    transform: none;
-  }
-  45%,
-  57%,
-  69% {
-    transform: rotate(-6deg) translateY(1px);
-  }
-  48%,
-  52%,
-  60%,
-  64%,
-  72% {
-    transform: rotate(-1deg) translateY(0.4px) scale(1.04, 0.98);
-  }
-  50%,
-  62%,
-  74% {
-    transform: rotate(-2deg) scale(0.99, 1.02);
-  }
-}
-
-.cat-slot--banana .cat-seat__lid {
-  animation: banana-yum 5600ms linear both;
-}
-
-@keyframes banana-yum {
-  0%,
-  45%,
-  76%,
-  100% {
-    transform: scaleY(0);
-  }
-  47%,
-  74% {
-    transform: scaleY(0.7);
-  }
-}
-
-/* A scratch (CAT_IDLE_MS.itch): a hind foot up behind its ear, scratching away, eyes half
-   shut; a rest, and again. */
-.cat-slot--itch .cat-seat .leaping-cat__foot--right {
-  z-index: 3;
-  animation: itch-foot 3200ms linear both;
-}
-
-@keyframes itch-foot {
-  0%,
-  58%,
-  92%,
-  100% {
-    transform: none;
-  }
-  10% {
-    transform: translate(1px, -12px) rotate(-30deg);
-  }
-  16.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  18.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  20.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  22.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  24.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  26.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  28.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  30.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  32.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  34.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  36.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  38.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  40.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  42.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  44.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  46.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  48.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  52% {
-    transform: translate(1px, -10px) rotate(-20deg);
-  }
-  63% {
-    transform: translate(1px, -12px) rotate(-30deg);
-  }
-  66.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  68.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  70.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  72.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  74.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  76.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  78.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  80.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  82.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-  84.0% {
-    transform: translate(3.4px, -20.6px) rotate(-48deg);
-  }
-  86.0% {
-    transform: translate(2px, -22px) rotate(-55deg);
-  }
-}
-
-.cat-slot--itch .cat-slot__facing {
-  animation: itch-lean 3200ms var(--ease-in-out) both;
-}
-
-@keyframes itch-lean {
-  0%,
-  100% {
-    transform: none;
-  }
-  12%,
-  50%,
-  64%,
-  88% {
-    transform: rotate(-7deg);
-  }
-  57% {
-    transform: rotate(-2deg);
-  }
-}
-
-.cat-slot--itch .cat-seat__head {
-  animation: itch-head 3200ms var(--ease-in-out) both;
-}
-
-@keyframes itch-head {
-  0%,
-  100% {
-    transform: none;
-  }
-  14%,
-  50%,
-  64%,
-  88% {
-    transform: rotate(10deg) translateX(0.6px);
-  }
-  57% {
-    transform: rotate(2deg);
-  }
-}
-
-.cat-slot--itch .cat-seat__lid {
-  animation: itch-squint 3200ms linear both;
-}
-
-@keyframes itch-squint {
-  0%,
-  14%,
-  52%,
-  64%,
-  90%,
-  100% {
-    transform: scaleY(0);
-  }
-  18%,
-  48%,
-  68%,
-  86% {
-    transform: scaleY(0.6);
-  }
-}
-
-/* Scritch-scratch, by its ear. */
-.itch-marks {
-  position: absolute;
-  top: 5px;
-  left: calc(27px + var(--belly, 0px));
-  z-index: 3;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.itch-marks i {
-  position: absolute;
-  width: 4px;
-  height: 1.4px;
-  border-radius: 1px;
-  background: #fff;
-  box-shadow: 0 0 1px #000, 0 0 1px #000;
-  transform-origin: 0 50%;
-  opacity: 0;
-  animation: itch-mark 3200ms linear both;
-}
-
-.itch-marks i:nth-child(1) {
-  rotate: -40deg;
-}
-
-.itch-marks i:nth-child(2) {
-  top: 3px;
-  rotate: -5deg;
-  animation-delay: 60ms;
-}
-
-.itch-marks i:nth-child(3) {
-  top: 6.5px;
-  rotate: 30deg;
-  animation-delay: 120ms;
-}
-
-@keyframes itch-mark {
-  0%,
-  17%,
-  49%,
-  67%,
-  87%,
-  100% {
-    opacity: 0;
-  }
-  19% {
-    opacity: 1;
-  }
-  23% {
-    opacity: 0.25;
-  }
-  27% {
-    opacity: 1;
-  }
-  31% {
-    opacity: 0.25;
-  }
-  35% {
-    opacity: 1;
-  }
-  39% {
-    opacity: 0.25;
-  }
-  43% {
-    opacity: 1;
-  }
-  47% {
-    opacity: 0.25;
-  }
-  69% {
-    opacity: 1;
-  }
-  73% {
-    opacity: 0.25;
-  }
-  77% {
-    opacity: 1;
-  }
-  81% {
-    opacity: 0.25;
-  }
-  85% {
-    opacity: 1;
-  }
-}
-
-/* Ooh ooh! (CAT_IDLE_MS.bounce): up and down on the spot, three hops. */
-.cat-slot--bounce .cat-slot__trot {
-  animation: monkey-bounce 1800ms linear both;
-}
-
-@keyframes monkey-bounce {
-  0%,
-  86%,
-  100% {
-    transform: none;
-  }
-  8%,
-  30%,
-  52%,
-  76% {
-    transform: scale(1.1, 0.88);
-    animation-timing-function: var(--ease-out);
-  }
-  19% {
-    transform: translateY(-9px) rotate(-7deg) scale(0.95, 1.06);
-    animation-timing-function: var(--ease-in);
-  }
-  41% {
-    transform: translateY(-9px) rotate(7deg) scale(0.95, 1.06);
-    animation-timing-function: var(--ease-in);
-  }
-  64% {
-    transform: translateY(-12px) scale(0.94, 1.08);
-    animation-timing-function: var(--ease-in);
-  }
-}
-
 /* The bar's ears and peeking face. */
 .monkey-bar {
   display: none;
@@ -6416,4 +5988,239 @@
 
 .monkey-bar__ear--right {
   left: calc(100% - 7px);
+}
+
+/* ---- The monkey's pictures (MonkeySeat): the turtle's seat, the monkey's own poses ---- */
+[data-cat="monkey"] .leaping-cat__foot {
+  display: none;
+}
+
+/* Its tears are in the picture. */
+.monkey-seat .turtle-seat__tears {
+  display: none;
+}
+
+/* Its box: just its head, eyes and all, peeking over. */
+[data-cat="monkey"] .box-cat__lid,
+[data-cat="monkey"] .box-cat__glint {
+  display: none;
+}
+
+[data-cat="monkey"] .box-cat__ear {
+  animation: none !important;
+}
+
+/* The poses of its own games, each over the happy one while it plays. */
+.monkey-seat .turtle-seat__pose--banana,
+.monkey-seat .turtle-seat__pose--think,
+.monkey-seat .turtle-seat__pose--hang,
+.monkey-seat .turtle-seat__pose--surprised,
+.monkey-seat .turtle-seat__pose--wink {
+  opacity: 0;
+}
+
+.cat-slot--banana .turtle-seat__body,
+.cat-slot--swing .turtle-seat__body,
+.cat-slot--think .turtle-seat__body,
+.cat-slot--peek .turtle-seat__body {
+  animation: none;
+}
+
+/* A banana: off the tree, and it sits there munching it, until there's only the peel. */
+.cat-slot--banana .monkey-seat .turtle-seat__pose--happy {
+  animation: monkey-banana-happy 5600ms steps(1, end) both;
+}
+
+@keyframes monkey-banana-happy {
+  0% {
+    opacity: 1;
+  }
+  15%,
+  80% {
+    opacity: 0;
+  }
+  81%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--banana .monkey-seat .turtle-seat__pose--banana {
+  animation: monkey-banana-pose 5600ms steps(1, end) both;
+}
+
+@keyframes monkey-banana-pose {
+  0% {
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  81%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--banana .monkey-seat .turtle-seat__act {
+  animation: monkey-munch 5600ms linear both;
+}
+
+@keyframes monkey-munch {
+  0%,
+  20%,
+  80%,
+  100% {
+    transform: none;
+  }
+  26%,
+  38%,
+  50%,
+  62%,
+  74% {
+    transform: translateY(0.6px) scale(1.04, 0.96);
+  }
+  32%,
+  44%,
+  56%,
+  68% {
+    transform: translateY(-0.6px) rotate(-2deg);
+  }
+}
+
+/* Hanging from its branch. */
+.cat-slot--swing .monkey-seat .turtle-seat__pose--happy {
+  animation: monkey-swing-happy 4400ms steps(1, end) both;
+}
+
+@keyframes monkey-swing-happy {
+  0% {
+    opacity: 1;
+  }
+  12%,
+  87% {
+    opacity: 0;
+  }
+  88%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--swing .monkey-seat .turtle-seat__pose--hang {
+  animation: monkey-swing-hang 4400ms steps(1, end) both;
+}
+
+@keyframes monkey-swing-hang {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  87% {
+    opacity: 1;
+  }
+  88%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Thinking about bananas, its chin in its hand, rocking a little. */
+.cat-slot--think .monkey-seat .turtle-seat__pose--happy {
+  animation: monkey-think-happy 3600ms steps(1, end) both;
+}
+
+@keyframes monkey-think-happy {
+  0% {
+    opacity: 1;
+  }
+  6%,
+  94% {
+    opacity: 0;
+  }
+  95%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--think .monkey-seat .turtle-seat__pose--think {
+  animation: monkey-think-pose 3600ms steps(1, end) both;
+}
+
+@keyframes monkey-think-pose {
+  0% {
+    opacity: 0;
+  }
+  6%,
+  94% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cat-slot--think .monkey-seat .turtle-seat__act {
+  transform-origin: 50% 100%;
+  animation: monkey-ponder 3600ms var(--ease-in-out) both;
+}
+
+@keyframes monkey-ponder {
+  0%,
+  100% {
+    transform: none;
+  }
+  5% {
+    transform: scale(1.06, 0.94);
+  }
+  10%,
+  40%,
+  70% {
+    transform: rotate(-3deg);
+  }
+  25%,
+  55%,
+  85% {
+    transform: rotate(3deg);
+  }
+}
+
+/* Peeking out of the leaves: wide-eyed. */
+.cat-slot--peek .monkey-seat .turtle-seat__pose--happy {
+  animation: monkey-peek-happy 5600ms steps(1, end) both;
+}
+
+@keyframes monkey-peek-happy {
+  0% {
+    opacity: 1;
+  }
+  69%,
+  84% {
+    opacity: 0;
+  }
+  85%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.cat-slot--peek .monkey-seat .turtle-seat__pose--surprised {
+  animation: monkey-peek-pose 5600ms steps(1, end) both;
+}
+
+@keyframes monkey-peek-pose {
+  0% {
+    opacity: 0;
+  }
+  69%,
+  84% {
+    opacity: 1;
+  }
+  85%,
+  100% {
+    opacity: 0;
+  }
 }

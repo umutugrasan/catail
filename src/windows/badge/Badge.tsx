@@ -90,6 +90,8 @@ export function Badge() {
   const turtle = worn === "turtle";
   const monkey = worn === "monkey";
   const player: Player = monkey ? "monkey" : "cat";
+  // Drawn as pictures, one per mood: no cat parts to move, its own way of winding down.
+  const pictured = turtle || monkey;
 
   // "Geri al" brought this many items back; the cat carries them over from its box.
   const [fetching, setFetching] = useState<number | null>(null);
@@ -165,7 +167,7 @@ export function Badge() {
   // (a walk, a scratch) don't: left alone that long, it gets sleepy.
   const hasUndo = state.undo !== null;
   // How it winds down before sleep: the cat chases its tail, the turtle mopes.
-  const windDownMs = turtle ? TURTLE_SAD_MS : CHASE_MS;
+  const windDownMs = pictured ? TURTLE_SAD_MS : CHASE_MS;
   useEffect(() => {
     setAsleep(false);
     setWindDown(null);
@@ -174,7 +176,7 @@ export function Badge() {
     if (state.pasting || hasUndo || packing !== null || !catsAround()) return;
     const timer = setTimeout(() => setSleepy(true), SLEEP_AFTER_MS - windDownMs);
     return () => clearTimeout(timer);
-  }, [state.count, state.textMode, state.pasting, hasUndo, poke, packing, turtle]);
+  }, [state.count, state.textMode, state.pasting, hasUndo, poke, packing, pictured]);
 
   // Sleepy: home from its walk first, done with what it's at, then it chases its own tail a few
   // times and curls up. The turtle has no tail to chase: nobody's come, and it's sad about it,
@@ -189,8 +191,8 @@ export function Badge() {
     if (idle !== null) return;
     // Mostly a big yawn before it curls up; now and then a chase after its own tail first. A
     // monkey just yawns.
-    const chase = !monkey && Math.random() < TAIL_CHASE_CHANCE;
-    if (turtle) {
+    const chase = !pictured && Math.random() < TAIL_CHASE_CHANCE;
+    if (pictured) {
       setSad(true);
     } else {
       setWindDown(chase ? "chase" : "yawn");
@@ -201,10 +203,10 @@ export function Badge() {
         setSad(false);
         setAsleep(true);
       },
-      turtle || chase ? windDownMs : CAT_IDLE_MS.yawn,
+      pictured || chase ? windDownMs : CAT_IDLE_MS.yawn,
     );
     return () => clearTimeout(timer);
-  }, [sleepy, asleep, strolling, idle, turtle]);
+  }, [sleepy, asleep, strolling, idle, pictured]);
 
   // A nap doesn't last for ever: it wakes up by itself and has a good stretch.
   useEffect(() => {
@@ -212,15 +214,15 @@ export function Badge() {
     const timer = setTimeout(() => {
       setPoke((n) => n + 1);
       // The cat stretches; the turtle's up for a dance.
-      setIdle(turtle ? "silly" : "stretch");
+      setIdle(pictured ? "silly" : "stretch");
     }, between(NAP_MS));
     return () => clearTimeout(timer);
-  }, [asleep, turtle]);
+  }, [asleep, pictured]);
 
   // Fast asleep, a bubble swells out of its nose with each breath until it pops. That gives it
   // such a fright it's wide awake.
   useEffect(() => {
-    if (!asleep || turtle) return;
+    if (!asleep || pictured) return;
     let pop = 0;
     const swell = setTimeout(() => {
       setNoseBubble("grow");
@@ -235,7 +237,7 @@ export function Badge() {
       // Woken some other way, the bubble goes with the nap; a pop plays out.
       setNoseBubble((bubble) => (bubble === "grow" ? null : bubble));
     };
-  }, [asleep, turtle]);
+  }, [asleep, pictured]);
 
   useEffect(() => {
     if (noseBubble !== "pop") return;
@@ -259,7 +261,7 @@ export function Badge() {
     !dropHover &&
     hatch === null &&
     catsAround();
-  const purringNow = purring && calm && !turtle;
+  const purringNow = purring && calm && !pictured;
   const free = calm && !purringNow;
   useEffect(() => {
     if (!free) return;
@@ -318,7 +320,7 @@ export function Badge() {
     stroke.x = e.clientX;
     stroke.y = e.clientY;
     stroke.at = now;
-    if (stroke.far < PET_AFTER_PX || !calm || turtle) return;
+    if (stroke.far < PET_AFTER_PX || !calm || pictured) return;
     window.clearTimeout(purrTimer.current);
     if (!purring) {
       setPurring(true);

@@ -24,6 +24,14 @@ describe("the cat's plays", () => {
     expect(seen.size).toBe(15);
   });
 
+  it("swings from its tree more than anything else, if it's a monkey", () => {
+    const pack = shuffledPack("monkey");
+    const times = (play: Play) => pack.filter((one) => one === play).length;
+    for (const other of ["banana", "peek", "think", "dive", "silly", "climb", "rival", "friend"] as Play[]) {
+      expect(times("swing")).toBeGreaterThan(times(other));
+    }
+  });
+
   it("deals the monkey its own plays, and none of the cat's", () => {
     const pack: Play[] = [];
     let last: Play | null = null;
@@ -32,8 +40,13 @@ describe("the cat's plays", () => {
       last = drawPlay(pack, last, true, "monkey");
       seen.add(last);
     }
-    for (const play of ["banana", "itch", "swing", "peek", "climb", "rival", "friend"] as Play[]) expect(seen).toContain(play);
-    for (const play of ["scratch", "bat", "lick", "mouse", "laser"] as Play[]) expect(seen).not.toContain(play);
+    for (const play of ["banana", "swing", "peek", "think", "dive", "silly", "climb", "rival", "friend"] as Play[]) {
+      expect(seen).toContain(play);
+    }
+    // Nothing a cat does.
+    for (const play of ["scratch", "bat", "lick", "groom", "knead", "stretch", "hide", "mouse", "laser", "walk"] as Play[]) {
+      expect(seen).not.toContain(play);
+    }
   });
 
   it("goes after a mouse, a dot or a visitor more often than anything else", () => {

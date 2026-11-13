@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type Ref } from "react";
-import { LeapingCat, SeatCat } from "../../lib/cats";
+import { LeapingCat, monkeyPicture, SeatCat } from "../../lib/cats";
 import { onWindowEvent, strollDone, StrollEvents, type StrollStart } from "../../lib/ipc";
 import {
   AT_REST,
@@ -53,6 +53,18 @@ function EmoteMark({ mark }: { mark: Emote }) {
   return <span className={`stroll-emote stroll-emote--${mark === "heart" ? "heart" : "mark"}`}>{mark === "heart" ? "♥" : mark}</span>;
 }
 
+/** The monkey's picture for each pose of a sitting cat: it has no parts to move, only moods. */
+const MONKEY_POSE: Partial<Record<CatPose, Parameters<typeof monkeyPicture>[0]>> = {
+  look: "surprised",
+  sniff: "surprised",
+  wiggle: "surprised",
+  beat: "silly",
+  throw: "wink",
+  dizzy: "cry",
+  pick: "happy",
+  hang: "hang",
+};
+
 /** A cat on the taskbar: the badge's own, or (with `breed`) one that has come visiting. */
 function CatPuppet({
   view,
@@ -69,6 +81,9 @@ function CatPuppet({
   puppetRef: Ref<HTMLDivElement>;
 }) {
   const sitting = SITTING.includes(view.pose);
+  // The monkey is drawn as pictures, one per mood.
+  const monkey = (breed ?? document.documentElement.dataset.cat) === "monkey";
+  const picture = monkey && (sitting || view.pose === "hang") ? monkeyPicture(MONKEY_POSE[view.pose] ?? "happy") : null;
   return (
     <div
       ref={puppetRef}
@@ -77,7 +92,18 @@ function CatPuppet({
       data-cat={breed}
     >
       <span className={`stroll-actor__facing${view.right ? " stroll-actor__facing--right" : ""}`}>
-        {sitting ? (
+        {picture && view.pose === "hang" ? (
+          // By its hands from a branch at the top of the screen.
+          <span className="stroll-cat__hang stroll-cat__hang--picture">
+            <span className="cat-seat monkey-pose">
+              <img src={picture} alt="" draggable={false} />
+            </span>
+          </span>
+        ) : picture ? (
+          <span className="cat-seat monkey-pose">
+            <img src={picture} alt="" draggable={false} />
+          </span>
+        ) : sitting ? (
           <SeatCat fat={fat} act={view.pose === "lick" || view.pose === "groom" ? view.pose : null} />
         ) : view.pose === "hang" ? (
           // By one arm from the top of the screen.

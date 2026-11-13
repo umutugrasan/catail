@@ -716,6 +716,6 @@ async function climb(s: Scene) {
 const CLIMB_MS = 760;
 const DROP_MS = 820;
 const CORNER_IN = 30;
-const HANG_BELOW_TOP = 54;
+const HANG_BELOW_TOP = 36;
 
 const SCENES: Record<Outing, (scene: Scene) => Promise<void>> = { walk, zoomies, laser, mouse, rival, friend, climb };

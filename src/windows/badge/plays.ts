@@ -32,22 +32,18 @@ const CAT_PACK: [Play, number][] = [
 ];
 
 /**
- * The monkey's: bananas, a scratch, swinging from its tree and hiding in it, and down on the
- * taskbar a leap up to the top of the screen, a banana fight or a friend to groom.
+ * The monkey's, a monkey's own only: swinging from its tree most of all, bananas, hiding in the
+ * leaves, a think about bananas, a dip and a dance; and down on the taskbar a leap up to the top
+ * of the screen, a banana fight or a friend to groom.
  */
 const MONKEY_PACK: [Play, number][] = [
-  ["itch", 2],
-  ["banana", 3],
-  ["swing", 3],
-  ["peek", 3],
-  ["bounce", 2],
-  ["hide", 1],
-  ["stretch", 1],
-  ["yawn", 1],
-  ["butterfly", 1],
-  ["walk", 1],
-  ["zoomies", 2],
-  ["climb", 3],
+  ["swing", 6],
+  ["banana", 4],
+  ["peek", 4],
+  ["think", 3],
+  ["dive", 2],
+  ["silly", 2],
+  ["climb", 4],
   ["rival", 3],
   ["friend", 2],
 ];
